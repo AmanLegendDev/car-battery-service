@@ -20,47 +20,48 @@ export default function Navbar() {
   return (
     <>
       <header className="relative z-50 px-4 pt-4 sm:px-6 sm:pt-5 lg:px-8 lg:pt-6">
-        <div className="mx-auto max-w-7xl">
+        <div className="mx-auto max-w-[1420px]">
           <nav
             aria-label="Main navigation"
-            className="relative flex min-h-[72px] items-center rounded-[22px] border border-white/[0.08] bg-[#08263D]/90 px-4 shadow-[0_20px_60px_rgba(0,0,0,0.22)] backdrop-blur-xl sm:min-h-[74px] sm:px-5 lg:min-h-[78px] lg:rounded-[26px] lg:px-6"
+            className="relative flex min-h-[72px] items-center rounded-[24px] border border-white/[0.09] bg-[#08263D]/[0.92] px-4 shadow-[0_20px_70px_rgba(0,0,0,0.25)] backdrop-blur-2xl sm:min-h-[76px] sm:px-5 lg:min-h-[82px] lg:rounded-[28px] lg:px-6"
           >
+            {/* Brand */}
             <NavbarLogo />
 
-            <div className="ml-auto flex items-center">
-              {/* Desktop navigation */}
-              <div className="hidden lg:flex">
-                <DesktopNav />
-              </div>
-
-              {/* Mobile menu trigger */}
-              <button
-                type="button"
-                onClick={openMobileMenu}
-                aria-label="Open navigation menu"
-                aria-expanded={isMobileMenuOpen}
-                aria-controls="mobile-navigation"
-                className="group flex h-11 w-11 items-center justify-center rounded-xl border border-white/[0.09] bg-white/[0.035] text-[#F8FAFC] transition-all duration-200 hover:border-white/[0.16] hover:bg-white/[0.07] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#FFD400]/50 active:scale-95 lg:hidden"
-              >
-                <span className="sr-only">
-                  Open navigation menu
-                </span>
-
-                <span
-                  aria-hidden="true"
-                  className="flex w-[19px] flex-col items-end gap-[5px]"
-                >
-                  <span className="h-[2px] w-full rounded-full bg-current transition-transform duration-200 group-hover:translate-x-0.5" />
-                  <span className="h-[2px] w-[13px] rounded-full bg-current transition-transform duration-200 group-hover:w-full" />
-                  <span className="h-[2px] w-full rounded-full bg-current transition-transform duration-200 group-hover:-translate-x-0.5" />
-                </span>
-              </button>
+            {/* Desktop navigation */}
+            <div className="ml-auto hidden lg:flex">
+              <DesktopNav />
             </div>
+
+            {/* Mobile menu trigger */}
+            <button
+              type="button"
+              onClick={openMobileMenu}
+              aria-label="Open navigation menu"
+              aria-expanded={isMobileMenuOpen}
+              aria-controls="mobile-navigation"
+              className="group ml-auto flex h-12 w-12 shrink-0 items-center justify-center rounded-[15px] border border-white/[0.1] bg-white/[0.035] text-[#F8FAFC] shadow-[0_8px_25px_rgba(0,0,0,0.12)] transition-all duration-200 hover:border-white/[0.18] hover:bg-white/[0.07] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#FFD400]/50 active:scale-[0.95] lg:hidden"
+            >
+              <span className="sr-only">
+                Open navigation menu
+              </span>
+
+              <span
+                aria-hidden="true"
+                className="flex w-[21px] flex-col items-end gap-[5px]"
+              >
+                <span className="h-[2px] w-full rounded-full bg-current transition-transform duration-200 group-hover:translate-x-0.5" />
+
+                <span className="h-[2px] w-[14px] rounded-full bg-current transition-all duration-200 group-hover:w-full" />
+
+                <span className="h-[2px] w-full rounded-full bg-current transition-transform duration-200 group-hover:-translate-x-0.5" />
+              </span>
+            </button>
           </nav>
         </div>
       </header>
 
-      {/* Mobile navigation drawer */}
+      {/* Mobile navigation */}
       <div id="mobile-navigation">
         <MobileMenu
           isOpen={isMobileMenuOpen}

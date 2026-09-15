@@ -14,25 +14,25 @@ export default function MobileMenuHeader({
       href="/"
       onClick={onClick}
       aria-label={`${NAVBAR_BRAND.name} - Home`}
-      className="flex min-w-0 items-center gap-3"
+      className="group flex min-w-0 items-center gap-3"
     >
-      <span className="relative flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-white/[0.09] bg-[#08263D]">
+      <span className="relative flex h-12 w-12 shrink-0 items-center justify-center transition-transform duration-200 group-hover:scale-[1.02]">
         <Image
           src={NAVBAR_BRAND.logoSrc}
           alt=""
-          width={44}
-          height={44}
+          width={48}
+          height={48}
           priority
-          className="h-full w-full object-contain p-1.5"
+          className="h-12 w-12 object-contain"
         />
       </span>
 
-      <span className="min-w-0">
-        <span className="block truncate text-[15px] font-extrabold tracking-[-0.02em] text-[#F8FAFC]">
+      <span className="min-w-0 leading-none">
+        <span className="block truncate text-[15px] font-extrabold tracking-[-0.025em] text-[#F8FAFC]">
           {NAVBAR_BRAND.name}
         </span>
 
-        <span className="mt-1 block truncate text-[9px] font-semibold uppercase tracking-[0.16em] text-[#A8BBC8]">
+        <span className="mt-1.5 block truncate text-[9px] font-semibold uppercase tracking-[0.17em] text-[#A8BBC8]">
           {NAVBAR_BRAND.tagline}
         </span>
       </span>

@@ -41,15 +41,15 @@ export const NAVBAR_LINKS = [
 
 export const SERVICE_LINKS = [
   {
-    label: "Replacement",
+    label: "Car Battery Replacement",
     href: "/mobile-car-battery-replacement/",
   },
   {
-    label: "Testing",
+    label: "Car Battery Testing",
     href: "/car-battery-testing/",
   },
   {
-    label: "Jump Start",
+    label: "Jump Start Assistance",
     href: "/car-jump-start/",
   },
 ] as const;
