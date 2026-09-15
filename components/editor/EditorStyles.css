@@ -1,0 +1,243 @@
+/* Root */
+
+.ProseMirror {
+  min-height: 520px;
+  padding: 28px;
+  outline: none;
+  color: #0f172a;
+  line-height: 1.9;
+  font-size: 17px;
+}
+
+/* Placeholder */
+
+.ProseMirror p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+
+  color: #94a3b8;
+
+  float: left;
+
+  pointer-events: none;
+
+  height: 0;
+}
+
+/* Selection */
+
+.ProseMirror ::selection {
+  background: #d1fae5;
+}
+
+/* Headings */
+
+.ProseMirror h1 {
+  font-size: 42px;
+  font-weight: 700;
+  margin-top: 1.6rem;
+  margin-bottom: 1rem;
+}
+
+.ProseMirror h2 {
+  font-size: 34px;
+  font-weight: 700;
+  margin-top: 1.5rem;
+  margin-bottom: .9rem;
+}
+
+.ProseMirror h3 {
+  font-size: 28px;
+  font-weight: 700;
+  margin-top: 1.3rem;
+  margin-bottom: .8rem;
+}
+
+.ProseMirror h4 {
+  font-size: 22px;
+  font-weight: 600;
+  margin-top: 1rem;
+  margin-bottom: .6rem;
+}
+
+/* Paragraph */
+
+.ProseMirror p {
+  margin: 14px 0;
+}
+
+/* Lists */
+
+.ProseMirror ul,
+.ProseMirror ol {
+  padding-left: 28px;
+  margin: 16px 0;
+}
+
+.ProseMirror li {
+  margin: 6px 0;
+}
+
+/* Task List */
+
+.ProseMirror ul[data-type="taskList"] {
+  list-style: none;
+  padding-left: 0;
+}
+
+.ProseMirror ul[data-type="taskList"] li {
+  display: flex;
+  align-items: start;
+  gap: 12px;
+}
+
+.ProseMirror ul[data-type="taskList"] input {
+  margin-top: 6px;
+}
+
+/* Quote */
+
+.ProseMirror blockquote {
+  border-left: 5px solid #10b981;
+
+  background: #ecfdf5;
+
+  padding: 18px 22px;
+
+  border-radius: 12px;
+
+  font-style: italic;
+
+  margin: 24px 0;
+}
+
+/* Code */
+
+.ProseMirror code {
+  background: #f1f5f9;
+
+  color: #059669;
+
+  padding: 2px 6px;
+
+  border-radius: 6px;
+
+  font-size: .95em;
+}
+
+.ProseMirror pre {
+  background: #0f172a;
+
+  color: white;
+
+  border-radius: 16px;
+
+  padding: 22px;
+
+  overflow-x: auto;
+
+  margin: 22px 0;
+}
+
+.ProseMirror pre code {
+  background: transparent;
+  color: inherit;
+  padding: 0;
+}
+
+/* Images */
+
+.ProseMirror img {
+  width: 100%;
+
+  border-radius: 22px;
+
+  margin: 28px 0;
+
+  box-shadow:
+    0 20px 40px rgba(0,0,0,.12);
+}
+
+/* Links */
+
+.ProseMirror a {
+  color: #059669;
+
+  font-weight: 600;
+
+  text-decoration: none;
+}
+
+.ProseMirror a:hover {
+  text-decoration: underline;
+}
+
+/* Horizontal Rule */
+
+.ProseMirror hr {
+  border: none;
+
+  border-top: 2px solid #e2e8f0;
+
+  margin: 38px 0;
+}
+
+/* Tables */
+
+.ProseMirror table {
+  width: 100%;
+
+  border-collapse: collapse;
+
+  margin: 28px 0;
+}
+
+.ProseMirror th {
+  background: #f8fafc;
+
+  border: 1px solid #e2e8f0;
+
+  padding: 14px;
+
+  font-weight: 700;
+}
+
+.ProseMirror td {
+  border: 1px solid #e2e8f0;
+
+  padding: 14px;
+}
+
+/* Youtube */
+
+.ProseMirror iframe {
+  width: 100%;
+
+  aspect-ratio: 16 / 9;
+
+  border: none;
+
+  border-radius: 18px;
+
+  margin: 30px 0;
+}
+
+/* Focus */
+
+.ProseMirror:focus {
+  outline: none;
+}
+
+/* Scrollbar */
+
+.ProseMirror::-webkit-scrollbar {
+  width: 8px;
+}
+
+.ProseMirror::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 999px;
+}
+
+.ProseMirror::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
