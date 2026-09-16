@@ -84,7 +84,7 @@ export default function TiptapEditor({
     editorProps: {
       attributes: {
         class:
-          "prose prose-lg max-w-none focus:outline-none min-h-[450px] px-6 py-5",
+  "max-w-none focus:outline-none min-h-[450px] px-6 py-5",
       },
     },
 

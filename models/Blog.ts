@@ -44,6 +44,12 @@ export interface IBlog extends Document {
   featured: boolean;
 
   publishedAt: Date | null;
+
+  /**
+   * Estimated article reading time in minutes.
+   */
+  readingTime: number | null;
+
   scheduledAt: Date | null;
 
   displayOrder: number;
@@ -124,7 +130,7 @@ const blogMediaSchema = new Schema<IBlogMedia>(
   },
   {
     _id: false,
-  }
+  },
 );
 
 const blogSchema = new Schema<IBlog>(
@@ -230,6 +236,13 @@ const blogSchema = new Schema<IBlog>(
       default: null,
     },
 
+    readingTime: {
+      type: Number,
+      default: null,
+      min: 1,
+      max: 120,
+    },
+
     scheduledAt: {
       type: Date,
       default: null,
@@ -303,7 +316,7 @@ const blogSchema = new Schema<IBlog>(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 /*
