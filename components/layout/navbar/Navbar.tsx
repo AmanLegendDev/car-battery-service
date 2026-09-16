@@ -19,7 +19,7 @@ export default function Navbar() {
 
   return (
     <>
-      <header className="relative z-50 px-4 pt-4 sm:px-6 sm:pt-5 lg:px-8 lg:pt-6">
+      <header className="sticky top-0 z-50 px-4 pt-4 sm:px-6 sm:pt-5 lg:px-8 lg:pt-6">
         <div className="mx-auto max-w-[1420px]">
           <nav
             aria-label="Main navigation"

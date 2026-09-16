@@ -16,7 +16,7 @@ import FloatingCallButton from "@/components/layout/floating-call/FloatingCallBu
 
 export default function HomePage() {
   return (
-    <main className="min-h-screen overflow-x-hidden bg-[#061A2B] text-[#F8FAFC]">
+    <main className="min-h-screen bg-[#061A2B] text-[#F8FAFC]">
       <Navbar />
 
       <Hero />
