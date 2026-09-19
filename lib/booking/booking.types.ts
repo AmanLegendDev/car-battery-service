@@ -1,12 +1,8 @@
 import type {
-  BOOKING_FUEL_TYPES,
   BOOKING_STATUSES,
   BOOKING_TIME_SLOTS,
   BOOKING_VEHICLE_ISSUES,
 } from "./booking.constants";
-
-export type BookingFuelType =
-  (typeof BOOKING_FUEL_TYPES)[number];
 
 export type BookingVehicleIssue =
   (typeof BOOKING_VEHICLE_ISSUES)[number];
@@ -19,10 +15,6 @@ export type BookingTimeSlot =
 
 export interface BookingVehicleData {
   registrationNumber: string;
-  make: string;
-  model: string;
-  year: string;
-  fuelType: BookingFuelType | "";
   issue: BookingVehicleIssue | "";
   notes: string;
 }

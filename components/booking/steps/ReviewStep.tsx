@@ -1,4 +1,5 @@
 "use client";
+
 import type { ReactNode } from "react";
 import {
   CalendarDays,
@@ -57,7 +58,7 @@ function Section({
   onEdit: (
     step: number
   ) => void;
- children: ReactNode;
+  children: ReactNode;
 }) {
   return (
     <section className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
@@ -111,6 +112,7 @@ export default function ReviewStep({
       </p>
 
       <div className="mt-8 space-y-4">
+        {/* Vehicle */}
         <Section
           icon={<Car size={19} />}
           title="Vehicle"
@@ -127,27 +129,6 @@ export default function ReviewStep({
             />
 
             <Info
-              label="Vehicle"
-              value={`${booking.vehicle.make} ${booking.vehicle.model}`}
-            />
-
-            <Info
-              label="Year"
-              value={
-                booking.vehicle.year
-              }
-            />
-
-            <Info
-              label="Fuel"
-              value={
-                booking.vehicle
-                  .fuelType ||
-                "Not provided"
-              }
-            />
-
-            <Info
               label="Issue"
               value={
                 booking.vehicle.issue ||
@@ -157,6 +138,7 @@ export default function ReviewStep({
           </div>
         </Section>
 
+        {/* Service */}
         <Section
           icon={<Wrench size={19} />}
           title="Service"
@@ -168,6 +150,7 @@ export default function ReviewStep({
           </p>
         </Section>
 
+        {/* Date & Time */}
         <Section
           icon={<CalendarDays size={19} />}
           title="Date & Time"
@@ -186,6 +169,7 @@ export default function ReviewStep({
           </p>
         </Section>
 
+        {/* Contact & Location */}
         <Section
           icon={<MapPin size={19} />}
           title="Contact & Location"
@@ -222,6 +206,7 @@ export default function ReviewStep({
         </Section>
       </div>
 
+      {/* Terms */}
       <label className="mt-7 flex cursor-pointer items-start gap-3 rounded-2xl border border-white/10 bg-white/[0.03] p-4">
         <input
           type="checkbox"
@@ -257,6 +242,7 @@ export default function ReviewStep({
         </span>
       </label>
 
+      {/* Submission notice */}
       <div className="mt-5 flex items-center gap-3 rounded-2xl border border-[#FFD400]/10 bg-[#FFD400]/5 p-4">
         <CheckCircle2
           className="shrink-0 text-[#FFD400]"

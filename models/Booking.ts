@@ -12,13 +12,6 @@ export type BookingStatus =
   | "completed"
   | "cancelled";
 
-export type FuelType =
-  | "Petrol"
-  | "Diesel"
-  | "Hybrid"
-  | "Electric"
-  | "Other";
-
 export type VehicleIssue =
   | "Car won't start"
   | "Battery appears flat"
@@ -36,10 +29,6 @@ export interface IBookingCustomer {
 
 export interface IBookingVehicle {
   registrationNumber: string;
-  make: string;
-  model: string;
-  year: number;
-  fuelType: FuelType | "";
   issue: VehicleIssue | "";
   notes: string;
 }
@@ -83,182 +72,155 @@ export interface IBooking extends Document {
   updatedAt: Date;
 }
 
-const BookingCustomerSchema = new Schema<IBookingCustomer>(
-  {
-    fullName: {
-      type: String,
-      required: true,
-      trim: true,
-    },
+const BookingCustomerSchema =
+  new Schema<IBookingCustomer>(
+    {
+      fullName: {
+        type: String,
+        required: true,
+        trim: true,
+      },
 
-    phone: {
-      type: String,
-      required: true,
-      trim: true,
-    },
+      phone: {
+        type: String,
+        required: true,
+        trim: true,
+      },
 
-    email: {
-      type: String,
-      default: "",
-      trim: true,
-    },
+      email: {
+        type: String,
+        default: "",
+        trim: true,
+      },
 
-    notes: {
-      type: String,
-      default: "",
-      trim: true,
-      maxlength: 2000,
+      notes: {
+        type: String,
+        default: "",
+        trim: true,
+        maxlength: 2000,
+      },
     },
-  },
-  { _id: false }
-);
+    { _id: false }
+  );
 
-const BookingVehicleSchema = new Schema<IBookingVehicle>(
-  {
-    registrationNumber: {
-      type: String,
-      required: true,
-      trim: true,
-      uppercase: true,
+const BookingVehicleSchema =
+  new Schema<IBookingVehicle>(
+    {
+      registrationNumber: {
+        type: String,
+        required: true,
+        trim: true,
+        uppercase: true,
+      },
+
+      issue: {
+        type: String,
+        enum: [
+          "",
+          "Car won't start",
+          "Battery appears flat",
+          "Needs a jump start",
+          "Battery testing",
+          "Battery replacement",
+          "Not sure / Need help",
+        ],
+        default: "",
+      },
+
+      notes: {
+        type: String,
+        default: "",
+        trim: true,
+        maxlength: 2000,
+      },
     },
+    { _id: false }
+  );
 
-    make: {
-      type: String,
-      required: true,
-      trim: true,
+const BookingServiceSchema =
+  new Schema<IBookingService>(
+    {
+      serviceId: {
+        type: Schema.Types.ObjectId,
+        ref: "Service",
+        default: null,
+      },
+
+      serviceName: {
+        type: String,
+        required: true,
+        trim: true,
+      },
     },
+    { _id: false }
+  );
 
-    model: {
-      type: String,
-      required: true,
-      trim: true,
+const BookingLocationSchema =
+  new Schema<IBookingLocation>(
+    {
+      address: {
+        type: String,
+        required: true,
+        trim: true,
+      },
+
+      suburb: {
+        type: String,
+        required: true,
+        trim: true,
+      },
+
+      state: {
+        type: String,
+        required: true,
+        trim: true,
+      },
+
+      postcode: {
+        type: String,
+        required: true,
+        trim: true,
+      },
+
+      accessNotes: {
+        type: String,
+        default: "",
+        trim: true,
+        maxlength: 2000,
+      },
     },
+    { _id: false }
+  );
 
-    year: {
-      type: Number,
-      required: true,
-      min: 1900,
-      max: 2100,
+const BookingAppointmentSchema =
+  new Schema<IBookingAppointment>(
+    {
+      date: {
+        type: String,
+        required: true,
+        trim: true,
+      },
+
+      startTime: {
+        type: String,
+        required: true,
+        trim: true,
+      },
+
+      endTime: {
+        type: String,
+        required: true,
+        trim: true,
+      },
+
+      timezone: {
+        type: String,
+        required: true,
+        default: "Australia/Melbourne",
+      },
     },
-
-    fuelType: {
-      type: String,
-      enum: [
-        "",
-        "Petrol",
-        "Diesel",
-        "Hybrid",
-        "Electric",
-        "Other",
-      ],
-      default: "",
-    },
-
-    issue: {
-      type: String,
-      enum: [
-        "",
-        "Car won't start",
-        "Battery appears flat",
-        "Needs a jump start",
-        "Battery testing",
-        "Battery replacement",
-        "Not sure / Need help",
-      ],
-      default: "",
-    },
-
-    notes: {
-      type: String,
-      default: "",
-      trim: true,
-      maxlength: 2000,
-    },
-  },
-  { _id: false }
-);
-
-const BookingServiceSchema = new Schema<IBookingService>(
-  {
-  serviceId: {
-  type: Schema.Types.ObjectId,
-  ref: "Service",
-  default: null,
-},
-
-    serviceName: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-  },
-  { _id: false }
-);
-
-const BookingLocationSchema = new Schema<IBookingLocation>(
-  {
-    address: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-
-    suburb: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-
-    state: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-
-    postcode: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-
-    accessNotes: {
-      type: String,
-      default: "",
-      trim: true,
-      maxlength: 2000,
-    },
-  },
-  { _id: false }
-);
-
-const BookingAppointmentSchema = new Schema<IBookingAppointment>(
-  {
-    date: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-
-    startTime: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-
-    endTime: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-
-    timezone: {
-      type: String,
-      required: true,
-      default: "Australia/Melbourne",
-    },
-  },
-  { _id: false }
-);
+    { _id: false }
+  );
 
 const BookingSchema = new Schema<IBooking>(
   {
@@ -314,14 +276,15 @@ const BookingSchema = new Schema<IBooking>(
 );
 
 /*
- * Used later by the availability / booking system.
+ * Used by the availability / booking system.
  *
  * We intentionally do NOT make this unique because cancelled bookings
  * should not permanently consume a time slot.
  *
- * Final booking creation will perform a server-side availability check
+ * Final booking creation performs a server-side availability check
  * before saving.
  */
+
 BookingSchema.index({
   "appointment.date": 1,
   "appointment.startTime": 1,
@@ -335,6 +298,9 @@ BookingSchema.index({
 
 const Booking: Model<IBooking> =
   mongoose.models.Booking ||
-  mongoose.model<IBooking>("Booking", BookingSchema);
+  mongoose.model<IBooking>(
+    "Booking",
+    BookingSchema
+  );
 
 export default Booking;

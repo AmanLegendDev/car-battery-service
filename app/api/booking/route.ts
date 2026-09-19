@@ -5,6 +5,7 @@ import { connectDB } from "@/lib/db";
 import Booking from "@/models/Booking";
 import Service from "@/models/Service";
 import Availability from "@/models/Availability";
+import Counter from "@/models/Counter";
 
 import {
   BOOKING_TIMEZONE,
@@ -299,28 +300,32 @@ export async function POST(request: Request) {
        BOOKING REFERENCE
     ===================================================== */
 
-    const latestBooking =
-      await Booking.findOne({})
-        .sort({ createdAt: -1 })
-        .select("bookingReference")
-        .lean();
+    /* =====================================================
+   BOOKING REFERENCE
+===================================================== */
 
-    let nextNumber = 1;
+const counter = await Counter.findOneAndUpdate(
+  { key: "booking" },
+  {
+    $inc: {
+      value: 1,
+    },
+  },
+  {
+    new: true,
+    upsert: true,
+    setDefaultsOnInsert: true,
+  }
+);
 
-    if (latestBooking?.bookingReference) {
-      const match =
-        latestBooking.bookingReference.match(
-          /BCS-(\d+)/
-        );
+if (!counter) {
+  throw new Error(
+    "Unable to generate booking reference."
+  );
+}
 
-      if (match) {
-        nextNumber =
-          Number(match[1]) + 1;
-      }
-    }
-
-    const bookingReference =
-      `BCS-${nextNumber}`;
+const bookingReference =
+  `BCS-${counter.value}`;
 
     /* =====================================================
        CREATE BOOKING
@@ -347,17 +352,7 @@ export async function POST(request: Request) {
           registrationNumber:
             data.vehicle.registrationNumber.toUpperCase(),
 
-          make:
-            data.vehicle.make,
-
-          model:
-            data.vehicle.model,
-
-          year: Number(data.vehicle.year),
-
-          fuelType:
-            data.vehicle.fuelType,
-
+       
           issue:
             data.vehicle.issue,
 

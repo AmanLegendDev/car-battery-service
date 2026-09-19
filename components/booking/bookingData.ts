@@ -7,10 +7,6 @@ import {
 export const INITIAL_BOOKING_DATA: BookingFormData = {
   vehicle: {
     registrationNumber: "",
-    make: "",
-    model: "",
-    year: "",
-    fuelType: "",
     issue: "",
     notes: "",
   },

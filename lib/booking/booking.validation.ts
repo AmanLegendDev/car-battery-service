@@ -1,7 +1,6 @@
 import { z } from "zod";
 
 import {
-  BOOKING_FUEL_TYPES,
   BOOKING_MAX_ADDRESS_LENGTH,
   BOOKING_MAX_EMAIL_LENGTH,
   BOOKING_MAX_NAME_LENGTH,
@@ -9,7 +8,6 @@ import {
   BOOKING_MAX_PHONE_LENGTH,
   BOOKING_MAX_POSTCODE_LENGTH,
   BOOKING_MAX_SUBURB_LENGTH,
-  BOOKING_MIN_YEAR,
   BOOKING_VEHICLE_ISSUES,
   BOOKING_TIMEZONE,
 } from "./booking.constants";
@@ -28,35 +26,9 @@ export const bookingVehicleSchema = z.object({
     .min(1, "Registration number is required.")
     .max(30, "Registration number is too long."),
 
-  make: z
-    .string()
-    .trim()
-    .min(1, "Vehicle make is required.")
-    .max(80, "Vehicle make is too long."),
-
-  model: z
-    .string()
-    .trim()
-    .min(1, "Vehicle model is required.")
-    .max(80, "Vehicle model is too long."),
-
-  year: z
-    .string()
-    .trim()
-    .regex(/^\d{4}$/, "Please enter a valid vehicle year.")
-    .refine(
-      (value) => {
-        const year = Number(value);
-        return year >= BOOKING_MIN_YEAR && year <= new Date().getFullYear() + 1;
-      },
-      {
-        message: "Please enter a valid vehicle year.",
-      }
-    ),
-
-  fuelType: z.enum(BOOKING_FUEL_TYPES).or(z.literal("")),
-
-  issue: z.enum(BOOKING_VEHICLE_ISSUES).or(z.literal("")),
+  issue: z
+    .enum(BOOKING_VEHICLE_ISSUES)
+    .or(z.literal("")),
 
   notes: z
     .string()
@@ -77,7 +49,10 @@ export const bookingServiceSchema = z.object({
     .string()
     .trim()
     .min(1, "Please select a service.")
-    .max(150, "Service name is too long."),
+    .max(
+      150,
+      "Service name is too long."
+    ),
 });
 
 export const bookingAppointmentSchema = z.object({
@@ -124,7 +99,10 @@ export const bookingCustomerSchema = z.object({
   phone: z
     .string()
     .trim()
-    .min(7, "Please enter a valid mobile number.")
+    .min(
+      7,
+      "Please enter a valid mobile number."
+    )
     .max(
       BOOKING_MAX_PHONE_LENGTH,
       "Mobile number is too long."
@@ -164,7 +142,10 @@ export const bookingLocationSchema = z.object({
     .string()
     .trim()
     .min(2, "State is required.")
-    .max(10, "State is invalid."),
+    .max(
+      10,
+      "State is invalid."
+    ),
 
   postcode: z
     .string()
@@ -206,6 +187,7 @@ export const bookingFormSchema = z.object({
     ),
 });
 
-export type BookingFormValidationData = z.infer<
-  typeof bookingFormSchema
->;
+export type BookingFormValidationData =
+  z.infer<
+    typeof bookingFormSchema
+  >;

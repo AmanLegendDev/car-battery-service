@@ -5,7 +5,6 @@ import type {
 } from "@/lib/booking/booking.types";
 
 import {
-  BOOKING_FUEL_TYPES,
   BOOKING_VEHICLE_ISSUES,
 } from "@/lib/booking/booking.constants";
 
@@ -39,7 +38,7 @@ export default function VehicleStep({
         your service request.
       </p>
 
-      <div className="mt-8 grid gap-5 sm:grid-cols-2">
+      <div className="mt-8">
         <label className="block">
           <span className="text-sm font-semibold">
             Registration Number *
@@ -56,96 +55,6 @@ export default function VehicleStep({
             placeholder="ABC123"
             className={inputClass}
           />
-        </label>
-
-        <label className="block">
-          <span className="text-sm font-semibold">
-            Make *
-          </span>
-
-          <input
-            value={value.make}
-            onChange={(event) =>
-              onChange({
-                make: event.target.value,
-              })
-            }
-            placeholder="Toyota"
-            className={inputClass}
-          />
-        </label>
-
-        <label className="block">
-          <span className="text-sm font-semibold">
-            Model *
-          </span>
-
-          <input
-            value={value.model}
-            onChange={(event) =>
-              onChange({
-                model: event.target.value,
-              })
-            }
-            placeholder="Corolla"
-            className={inputClass}
-          />
-        </label>
-
-        <label className="block">
-          <span className="text-sm font-semibold">
-            Year *
-          </span>
-
-          <input
-            type="number"
-            min={1900}
-            max={new Date().getFullYear() + 1}
-            value={value.year}
-            onChange={(event) =>
-              onChange({
-                year: event.target.value,
-              })
-            }
-            placeholder="2020"
-            className={inputClass}
-          />
-        </label>
-
-        <label className="block">
-          <span className="text-sm font-semibold">
-            Fuel Type
-          </span>
-
-          <select
-            value={value.fuelType}
-            onChange={(event) =>
-              onChange({
-                fuelType:
-                  event.target.value as BookingVehicleData["fuelType"],
-              })
-            }
-            className={inputClass}
-          >
-            <option
-              value=""
-              className="bg-[#08263D]"
-            >
-              Select fuel type
-            </option>
-
-            {BOOKING_FUEL_TYPES.map(
-              (fuelType) => (
-                <option
-                  key={fuelType}
-                  value={fuelType}
-                  className="bg-[#08263D]"
-                >
-                  {fuelType}
-                </option>
-              )
-            )}
-          </select>
         </label>
       </div>
 
