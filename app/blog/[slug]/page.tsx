@@ -8,9 +8,7 @@ import Service from "@/models/Service";
 import ServiceArea from "@/models/ServiceArea";
 import SiteSettings from "@/models/SiteSettings";
 
-import Navbar from "@/components/layout/navbar/Navbar";
-import Footer from "@/components/layout/footer/Footer";
-import FloatingCallButton from "@/components/layout/floating-call/FloatingCallButton";
+
 
 import BlogDetailPage from "@/components/blog/detail/BlogDetailPage";
 
@@ -831,7 +829,7 @@ export default async function BlogArticlePage({
 
   return (
     <>
-      <Navbar />
+      
 
       <main>
         <BlogDetailPage
@@ -841,9 +839,7 @@ export default async function BlogArticlePage({
         />
       </main>
 
-      <Footer />
-
-      <FloatingCallButton />
+     
 
       <script
         type="application/ld+json"

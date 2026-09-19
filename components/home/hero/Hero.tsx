@@ -5,7 +5,7 @@ export default function Hero() {
   return (
     <section
       aria-labelledby="hero-heading"
-      className="relative isolate min-h-[calc(100svh-108px)] overflow-hidden bg-[#061A2B] text-[#F8FAFC]"
+      className="relative isolate min-h-[100svh] overflow-hidden bg-[#061A2B] text-[#F8FAFC]"
     >
       {/* Cinematic background */}
       <HeroVisual />
@@ -26,7 +26,7 @@ export default function Hero() {
       />
 
       {/* Main hero content */}
-      <div className="relative z-10 mx-auto flex min-h-[calc(100svh-108px)] w-full max-w-[1600px] items-center px-5 pb-16 pt-16 sm:px-8 sm:pb-20 sm:pt-20 lg:px-12 lg:pb-24 lg:pt-16 xl:px-16">
+      <div className="relative z-10 mx-auto flex min-h-[100svh] w-full max-w-[1600px] items-center px-5 pb-16 pt-32 sm:px-8 sm:pb-20 sm:pt-36 lg:px-12 lg:pb-24 lg:pt-32 xl:px-16">
         <div className="w-full">
           <HeroContent />
         </div>

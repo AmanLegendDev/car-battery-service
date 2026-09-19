@@ -67,7 +67,7 @@ export default function ContactHero({
       <div className="relative mx-auto max-w-7xl px-5 pb-20 pt-16 sm:px-6 sm:pb-24 sm:pt-20 lg:px-8 lg:pb-28 lg:pt-24">
         <div className="grid items-center gap-14 lg:grid-cols-[1.08fr_0.92fr] lg:gap-20">
           {/* Content */}
-          <div className="max-w-3xl">
+          <div className="max-w-3xl mt-8">
             <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.045] px-4 py-2 backdrop-blur-md">
               <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[#FFD400] text-[#061A2B]">
                 <BatteryCharging size={14} />

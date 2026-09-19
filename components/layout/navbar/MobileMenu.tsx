@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import { X } from "lucide-react";
+
 import MobileMenuHeader from "./MobileMenuHeader";
 import MobileMenuNav from "./MobileMenuNav";
 import { NAVBAR_PHONE_HREF } from "./navbarData";
@@ -9,18 +10,24 @@ import { NAVBAR_PHONE_HREF } from "./navbarData";
 interface MobileMenuProps {
   isOpen: boolean;
   onClose: () => void;
+  services: React.ComponentProps<
+    typeof MobileMenuNav
+  >["services"];
 }
 
 export default function MobileMenu({
   isOpen,
   onClose,
+  services,
 }: MobileMenuProps) {
   useEffect(() => {
     if (!isOpen) {
       return;
     }
 
-    const originalOverflow = document.body.style.overflow;
+    const originalOverflow =
+      document.body.style.overflow;
+
     document.body.style.overflow = "hidden";
 
     function handleKeyDown(event: KeyboardEvent) {
@@ -29,11 +36,19 @@ export default function MobileMenu({
       }
     }
 
-    document.addEventListener("keydown", handleKeyDown);
+    document.addEventListener(
+      "keydown",
+      handleKeyDown
+    );
 
     return () => {
-      document.body.style.overflow = originalOverflow;
-      document.removeEventListener("keydown", handleKeyDown);
+      document.body.style.overflow =
+        originalOverflow;
+
+      document.removeEventListener(
+        "keydown",
+        handleKeyDown
+      );
     };
   }, [isOpen, onClose]);
 
@@ -53,7 +68,9 @@ export default function MobileMenu({
         tabIndex={isOpen ? 0 : -1}
         onClick={onClose}
         className={`absolute inset-0 bg-[#061A2B]/80 backdrop-blur-[3px] transition-opacity duration-200 ${
-          isOpen ? "opacity-100" : "opacity-0"
+          isOpen
+            ? "opacity-100"
+            : "opacity-0"
         }`}
       />
 
@@ -70,7 +87,9 @@ export default function MobileMenu({
       >
         {/* Header */}
         <div className="flex shrink-0 items-center justify-between border-b border-white/[0.07] px-5 py-4">
-          <MobileMenuHeader onClick={onClose} />
+          <MobileMenuHeader
+            onClick={onClose}
+          />
 
           <button
             type="button"
@@ -87,7 +106,10 @@ export default function MobileMenu({
 
         {/* Scrollable navigation */}
         <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 py-6 [scrollbar-width:thin] [scrollbar-color:rgba(168,187,200,0.2)_transparent]">
-          <MobileMenuNav onNavigate={onClose} />
+          <MobileMenuNav
+            onNavigate={onClose}
+            services={services}
+          />
         </div>
 
         {/* Bottom CTA */}

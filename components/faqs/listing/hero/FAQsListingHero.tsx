@@ -54,7 +54,7 @@ export default function FAQsListingHero({
           CONTENT
       ====================================================== */}
 
-      <div className="relative mx-auto max-w-7xl px-5 pb-12 pt-20 sm:px-8 sm:pb-16 lg:px-10 lg:pb-20 lg:pt-28">
+      <div className="relative mx-auto max-w-7xl px-5 pb-12 pt-20 sm:px-8 sm:pb-16 lg:px-10 lg:pb-20 lg:pt-28 mt-4">
         <div className="grid items-end gap-14 lg:grid-cols-[1fr_360px] lg:gap-20">
           {/* =================================================
               LEFT CONTENT

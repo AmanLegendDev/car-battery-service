@@ -54,7 +54,7 @@ export default function ServiceAreasListingHero({
 
       <div className="relative mx-auto max-w-[1420px] px-4 pb-8 pt-16 sm:px-6 sm:pb-10 sm:pt-20 lg:px-8 lg:pb-12 lg:pt-24">
         {/* Top metadata */}
-        <div className="flex items-center justify-between border-b border-[#F8FAFC]/10 pb-5">
+        <div className="flex items-center justify-between border-b border-[#F8FAFC]/10 mt-8">
           <div className="flex items-center gap-3">
             <span className="flex h-8 w-8 items-center justify-center rounded-full border border-[#FFD400]/30 bg-[#FFD400]/10 text-[#FFD400]">
               <MapPin

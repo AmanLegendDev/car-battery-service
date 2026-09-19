@@ -7,13 +7,20 @@ import {
   BatteryCharging,
   ChevronDown,
 } from "lucide-react";
-import { SERVICE_LINKS } from "./navbarData";
+
+export interface NavbarService {
+  id: string;
+  title: string;
+  slug: string;
+}
 
 interface ServicesDropdownProps {
+  services: NavbarService[];
   onOpenChange?: (open: boolean) => void;
 }
 
 export default function ServicesDropdown({
+  services,
   onOpenChange,
 }: ServicesDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
@@ -27,24 +34,16 @@ export default function ServicesDropdown({
     function handlePointerDown(event: PointerEvent) {
       if (
         dropdownRef.current &&
-        !dropdownRef.current.contains(
-          event.target as Node
-        )
+        !dropdownRef.current.contains(event.target as Node)
       ) {
         setIsOpen(false);
       }
     }
 
-    document.addEventListener(
-      "pointerdown",
-      handlePointerDown
-    );
+    document.addEventListener("pointerdown", handlePointerDown);
 
     return () => {
-      document.removeEventListener(
-        "pointerdown",
-        handlePointerDown
-      );
+      document.removeEventListener("pointerdown", handlePointerDown);
     };
   }, []);
 
@@ -55,16 +54,10 @@ export default function ServicesDropdown({
       }
     }
 
-    document.addEventListener(
-      "keydown",
-      handleKeyDown
-    );
+    document.addEventListener("keydown", handleKeyDown);
 
     return () => {
-      document.removeEventListener(
-        "keydown",
-        handleKeyDown
-      );
+      document.removeEventListener("keydown", handleKeyDown);
     };
   }, []);
 
@@ -73,10 +66,7 @@ export default function ServicesDropdown({
   }
 
   return (
-    <div
-      ref={dropdownRef}
-      className="relative"
-    >
+    <div ref={dropdownRef} className="relative">
       {/* Trigger */}
       <button
         type="button"
@@ -85,7 +75,13 @@ export default function ServicesDropdown({
         onClick={toggleDropdown}
         className="group flex h-10 items-center gap-1.5 rounded-[13px] px-3.5 text-[12px] font-semibold tracking-[-0.01em] text-[#A8BBC8] transition-all duration-200 hover:bg-white/[0.055] hover:text-[#F8FAFC] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#FFD400]/50 xl:px-4 xl:text-[13px]"
       >
-        <span>Services</span>
+        <Link
+      href="/services"
+      className="group flex h-10 items-center rounded-l-[13px] px-3.5 text-[12px] font-semibold tracking-[-0.01em] text-[#A8BBC8] transition-all duration-200 hover:bg-white/[0.055] hover:text-[#F8FAFC] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#FFD400]/50 xl:px-4 xl:text-[13px]"
+    >
+      <span>Services</span>
+    </Link>
+
 
         <ChevronDown
           aria-hidden="true"
@@ -132,10 +128,10 @@ export default function ServicesDropdown({
 
           {/* Service links */}
           <div className="space-y-1">
-            {SERVICE_LINKS.map((service) => (
+            {services.map((service) => (
               <Link
-                key={service.href}
-                href={service.href}
+                key={service.id}
+                href={`/services/${service.slug}`}
                 role="menuitem"
                 tabIndex={isOpen ? 0 : -1}
                 onClick={() => setIsOpen(false)}
@@ -143,7 +139,7 @@ export default function ServicesDropdown({
               >
                 <div className="flex min-w-0 flex-col">
                   <span className="text-[13px] font-bold text-[#F8FAFC] transition-colors duration-150 group-hover:text-[#FFD400]">
-                    {service.label}
+                    {service.title}
                   </span>
 
                   <span className="mt-0.5 text-[9px] font-medium uppercase tracking-[0.12em] text-[#718895]">
@@ -159,7 +155,43 @@ export default function ServicesDropdown({
                 </span>
               </Link>
             ))}
+
+            {services.length === 0 && (
+              <div className="px-3 py-4 text-[11px] text-[#718895]">
+                No services currently available.
+              </div>
+            )}
           </div>
+
+          {/* View all */}
+          {services.length > 0 && (
+            <div className="mt-1 border-t border-white/[0.07] pt-1">
+              <Link
+                href="/services"
+                role="menuitem"
+                tabIndex={isOpen ? 0 : -1}
+                onClick={() => setIsOpen(false)}
+                className="group flex items-center justify-between rounded-[15px] px-3 py-3 transition-all duration-150 hover:bg-white/[0.055] focus:bg-white/[0.055] focus:outline-none"
+              >
+                <div className="flex min-w-0 flex-col">
+                  <span className="text-[12px] font-bold text-[#A8BBC8] transition-colors duration-150 group-hover:text-[#FFD400]">
+                    View All Services
+                  </span>
+
+                  <span className="mt-0.5 text-[9px] font-medium uppercase tracking-[0.12em] text-[#718895]">
+                    Explore all services
+                  </span>
+                </div>
+
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-white/[0.07] bg-white/[0.025] transition-all duration-150 group-hover:border-[#FFD400]/20 group-hover:bg-[#FFD400]/[0.08]">
+                  <ArrowUpRight
+                    aria-hidden="true"
+                    className="h-3.5 w-3.5 text-[#718895] transition-all duration-150 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-[#FFD400]"
+                  />
+                </span>
+              </Link>
+            </div>
+          )}
         </div>
       </div>
     </div>

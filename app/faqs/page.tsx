@@ -6,9 +6,7 @@ import Service from "@/models/Service";
 import ServiceArea from "@/models/ServiceArea";
 import SiteSettings from "@/models/SiteSettings";
 
-import Navbar from "@/components/layout/navbar/Navbar";
-import Footer from "@/components/layout/footer/Footer";
-import FloatingCallButton from "@/components/layout/floating-call/FloatingCallButton";
+
 
 import FAQsListingPage from "@/components/faqs/listing/FAQsListingPage";
 
@@ -330,7 +328,7 @@ export default async function FAQsPage() {
 
   return (
     <>
-      <Navbar />
+     
 
       <main>
         <FAQsListingPage
@@ -345,9 +343,7 @@ export default async function FAQsPage() {
         />
       </main>
 
-      <Footer />
-
-      <FloatingCallButton />
+    
     </>
   );
 }

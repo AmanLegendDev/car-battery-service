@@ -153,7 +153,7 @@ export default async function AboutRoute() {
 
   return (
     <>
-      <Navbar />
+  
 
       <main>
         <AboutPage
@@ -162,9 +162,7 @@ export default async function AboutRoute() {
         />
       </main>
 
-      <Footer />
-
-      <FloatingCallButton />
+   
     </>
   );
 }

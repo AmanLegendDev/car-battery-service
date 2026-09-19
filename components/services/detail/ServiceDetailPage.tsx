@@ -1,11 +1,11 @@
 import type { IService } from "@/models/Service";
 
 import ServiceHero from "./hero/ServiceHero";
-
 import ServiceIntro from "./intro/ServiceIntro";
 import ServiceSnapshot from "./snapshot/ServiceSnapshot";
 import ServiceIncluded from "./included/ServiceIncluded";
 import ServiceProcess from "./process/ServiceProcess";
+import ServiceGallery from "./gallery/ServiceGallery";
 
 import ServiceBenefits from "./benefits/ServiceBenefits";
 import ServiceSuitableFor from "./suitable-for/ServiceSuitableFor";
@@ -34,7 +34,11 @@ export default function ServiceDetailPage({
       {/* ─────────────────────────────────────────
           02 — INTRO
       ───────────────────────────────────────── */}
-  
+      <ServiceIntro
+        title={service.title}
+        description={service.shortDescription}
+        
+      />
 
       {/* ─────────────────────────────────────────
           03 — SNAPSHOT
@@ -56,17 +60,25 @@ export default function ServiceDetailPage({
       <ServiceProcess steps={service.processSteps} />
 
       {/* ─────────────────────────────────────────
-          06 — BENEFITS
+          06 — GALLERY
+      ───────────────────────────────────────── */}
+      <ServiceGallery
+        images={service.gallery}
+        serviceTitle={service.title}
+      />
+
+      {/* ─────────────────────────────────────────
+          07 — BENEFITS
       ───────────────────────────────────────── */}
       <ServiceBenefits items={service.benefits} />
 
       {/* ─────────────────────────────────────────
-          07 — SUITABLE FOR
+          08 — SUITABLE FOR
       ───────────────────────────────────────── */}
       <ServiceSuitableFor items={service.suitableFor} />
 
       {/* ─────────────────────────────────────────
-          08 — DETAILS
+          09 — DETAILS
       ───────────────────────────────────────── */}
       <ServiceDetails
         estimatedTime={service.estimatedTime}
@@ -75,12 +87,12 @@ export default function ServiceDetailPage({
       />
 
       {/* ─────────────────────────────────────────
-          09 — RELATED SERVICES
+          10 — RELATED SERVICES
       ───────────────────────────────────────── */}
       <RelatedServices currentServiceId={serviceId} />
 
       {/* ─────────────────────────────────────────
-          10 — FAQ
+          11 — FAQ
       ───────────────────────────────────────── */}
       <ServiceFAQ
         serviceId={serviceId}
@@ -88,7 +100,7 @@ export default function ServiceDetailPage({
       />
 
       {/* ─────────────────────────────────────────
-          11 — FINAL CTA
+          12 — FINAL CTA
       ───────────────────────────────────────── */}
       <ServiceFinalCTA
         serviceTitle={service.title}

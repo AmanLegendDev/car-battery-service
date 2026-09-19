@@ -38,18 +38,3 @@ export const NAVBAR_LINKS = [
     href: "/contact",
   },
 ] as const;
-
-export const SERVICE_LINKS = [
-  {
-    label: "Car Battery Replacement",
-    href: "/mobile-car-battery-replacement/",
-  },
-  {
-    label: "Car Battery Testing",
-    href: "/car-battery-testing/",
-  },
-  {
-    label: "Jump Start Assistance",
-    href: "/car-jump-start/",
-  },
-] as const;

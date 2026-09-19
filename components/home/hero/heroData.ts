@@ -7,7 +7,7 @@ export const HERO_DATA = {
   },
 
   description:
-    "Professional mobile car battery assistance brought directly to your location across Melbourne West.",
+    "Mobile car battery assistance brought directly to your vehicle's location across Melbourne West.",
 
   primaryCta: {
     label: "Call Now",
@@ -15,8 +15,8 @@ export const HERO_DATA = {
   },
 
   secondaryCta: {
-    label: "Explore Services",
-    href: "#services",
+    label: "Book a Battery Service",
+    href: "/book-service",
   },
 
   phone: {
@@ -27,6 +27,6 @@ export const HERO_DATA = {
 
   image: {
     src: "/images/home/hero/hero-main.webp",
-    alt: "Professional mobile car battery service",
+    alt: "Mobile car battery service vehicle",
   },
 } as const;

@@ -7,9 +7,7 @@ import ServiceArea from "@/models/ServiceArea";
 import Service from "@/models/Service";
 import SiteSettings from "@/models/SiteSettings";
 
-import Navbar from "@/components/layout/navbar/Navbar";
-import Footer from "@/components/layout/footer/Footer";
-import FloatingCallButton from "@/components/layout/floating-call/FloatingCallButton";
+
 
 import ServiceAreaDetailPage from "@/components/service-areas/detail/ServiceAreaDetailPage";
 
@@ -346,7 +344,7 @@ export default async function ServiceAreaPage({
   return (
     <>
       <main className="min-h-screen overflow-x-hidden bg-[#061A2B] text-[#F8FAFC]">
-        <Navbar />
+      
 
         <ServiceAreaDetailPage
           serviceArea={serviceArea}
@@ -361,9 +359,7 @@ export default async function ServiceAreaPage({
         />
       </main>
 
-      <Footer />
-
-      <FloatingCallButton />
+      
     </>
   );
 }

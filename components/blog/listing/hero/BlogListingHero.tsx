@@ -63,7 +63,7 @@ export default function BlogListingHero({
           CONTENT
       ====================================================== */}
 
-      <div className="relative mx-auto max-w-[1420px] px-5 pb-14 pt-20 sm:px-6 sm:pb-16 sm:pt-24 lg:px-8 lg:pb-20 lg:pt-28">
+      <div className="relative mx-auto max-w-[1420px] px-5 pb-14 pt-20 sm:px-6 sm:pb-16 sm:pt-24 lg:px-8 lg:pb-20 lg:pt-28 mt-4">
         <div className="grid items-end gap-14 lg:grid-cols-[1fr_360px] lg:gap-20">
           {/* =================================================
               LEFT

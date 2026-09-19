@@ -93,7 +93,7 @@ export default async function ServicesPage() {
   return (
     <>
       <main className="min-h-screen overflow-x-hidden bg-[#061A2B] text-[#F8FAFC]">
-        <Navbar />
+       
 
         <ServicesListingPage
           services={services}
@@ -101,8 +101,7 @@ export default async function ServicesPage() {
         />
       </main>
 
-      <Footer />
-      <FloatingCallButton />
+      
     </>
   );
 }

@@ -3,9 +3,7 @@ import type { Metadata } from "next";
 import { connectDB } from "@/lib/db";
 import ServiceArea from "@/models/ServiceArea";
 
-import Navbar from "@/components/layout/navbar/Navbar";
-import Footer from "@/components/layout/footer/Footer";
-import FloatingCallButton from "@/components/layout/floating-call/FloatingCallButton";
+
 
 import ServiceAreasListingPage from "@/components/service-areas/listing/ServiceAreasListingPage";
 
@@ -90,14 +88,12 @@ export default async function ServiceAreasPage() {
   return (
     <>
       <main className="min-h-screen overflow-x-hidden bg-[#061A2B] text-[#F8FAFC]">
-        <Navbar />
+    
 
         <ServiceAreasListingPage serviceAreas={serviceAreas} />
       </main>
 
-      <Footer />
-
-      <FloatingCallButton />
+     
     </>
   );
 }

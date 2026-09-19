@@ -1,0 +1,340 @@
+import mongoose, {
+  Schema,
+  type Document,
+  type Model,
+  type Types,
+} from "mongoose";
+
+export type BookingStatus =
+  | "pending"
+  | "confirmed"
+  | "in-progress"
+  | "completed"
+  | "cancelled";
+
+export type FuelType =
+  | "Petrol"
+  | "Diesel"
+  | "Hybrid"
+  | "Electric"
+  | "Other";
+
+export type VehicleIssue =
+  | "Car won't start"
+  | "Battery appears flat"
+  | "Needs a jump start"
+  | "Battery testing"
+  | "Battery replacement"
+  | "Not sure / Need help";
+
+export interface IBookingCustomer {
+  fullName: string;
+  phone: string;
+  email: string;
+  notes: string;
+}
+
+export interface IBookingVehicle {
+  registrationNumber: string;
+  make: string;
+  model: string;
+  year: number;
+  fuelType: FuelType | "";
+  issue: VehicleIssue | "";
+  notes: string;
+}
+
+export interface IBookingService {
+  serviceId: Types.ObjectId | null;
+  serviceName: string;
+}
+
+export interface IBookingLocation {
+  address: string;
+  suburb: string;
+  state: string;
+  postcode: string;
+  accessNotes: string;
+}
+
+export interface IBookingAppointment {
+  date: string;
+  startTime: string;
+  endTime: string;
+  timezone: string;
+}
+
+export interface IBooking extends Document {
+  bookingReference: string;
+
+  customer: IBookingCustomer;
+
+  vehicle: IBookingVehicle;
+
+  service: IBookingService;
+
+  location: IBookingLocation;
+
+  appointment: IBookingAppointment;
+
+  status: BookingStatus;
+
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+const BookingCustomerSchema = new Schema<IBookingCustomer>(
+  {
+    fullName: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+
+    phone: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+
+    email: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+
+    notes: {
+      type: String,
+      default: "",
+      trim: true,
+      maxlength: 2000,
+    },
+  },
+  { _id: false }
+);
+
+const BookingVehicleSchema = new Schema<IBookingVehicle>(
+  {
+    registrationNumber: {
+      type: String,
+      required: true,
+      trim: true,
+      uppercase: true,
+    },
+
+    make: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+
+    model: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+
+    year: {
+      type: Number,
+      required: true,
+      min: 1900,
+      max: 2100,
+    },
+
+    fuelType: {
+      type: String,
+      enum: [
+        "",
+        "Petrol",
+        "Diesel",
+        "Hybrid",
+        "Electric",
+        "Other",
+      ],
+      default: "",
+    },
+
+    issue: {
+      type: String,
+      enum: [
+        "",
+        "Car won't start",
+        "Battery appears flat",
+        "Needs a jump start",
+        "Battery testing",
+        "Battery replacement",
+        "Not sure / Need help",
+      ],
+      default: "",
+    },
+
+    notes: {
+      type: String,
+      default: "",
+      trim: true,
+      maxlength: 2000,
+    },
+  },
+  { _id: false }
+);
+
+const BookingServiceSchema = new Schema<IBookingService>(
+  {
+  serviceId: {
+  type: Schema.Types.ObjectId,
+  ref: "Service",
+  default: null,
+},
+
+    serviceName: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+  },
+  { _id: false }
+);
+
+const BookingLocationSchema = new Schema<IBookingLocation>(
+  {
+    address: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+
+    suburb: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+
+    state: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+
+    postcode: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+
+    accessNotes: {
+      type: String,
+      default: "",
+      trim: true,
+      maxlength: 2000,
+    },
+  },
+  { _id: false }
+);
+
+const BookingAppointmentSchema = new Schema<IBookingAppointment>(
+  {
+    date: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+
+    startTime: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+
+    endTime: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+
+    timezone: {
+      type: String,
+      required: true,
+      default: "Australia/Melbourne",
+    },
+  },
+  { _id: false }
+);
+
+const BookingSchema = new Schema<IBooking>(
+  {
+    bookingReference: {
+      type: String,
+      required: true,
+      unique: true,
+      trim: true,
+      index: true,
+    },
+
+    customer: {
+      type: BookingCustomerSchema,
+      required: true,
+    },
+
+    vehicle: {
+      type: BookingVehicleSchema,
+      required: true,
+    },
+
+    service: {
+      type: BookingServiceSchema,
+      required: true,
+    },
+
+    location: {
+      type: BookingLocationSchema,
+      required: true,
+    },
+
+    appointment: {
+      type: BookingAppointmentSchema,
+      required: true,
+    },
+
+    status: {
+      type: String,
+      enum: [
+        "pending",
+        "confirmed",
+        "in-progress",
+        "completed",
+        "cancelled",
+      ],
+      default: "pending",
+      index: true,
+    },
+  },
+  {
+    timestamps: true,
+  }
+);
+
+/*
+ * Used later by the availability / booking system.
+ *
+ * We intentionally do NOT make this unique because cancelled bookings
+ * should not permanently consume a time slot.
+ *
+ * Final booking creation will perform a server-side availability check
+ * before saving.
+ */
+BookingSchema.index({
+  "appointment.date": 1,
+  "appointment.startTime": 1,
+  status: 1,
+});
+
+BookingSchema.index({
+  "appointment.date": 1,
+  status: 1,
+});
+
+const Booking: Model<IBooking> =
+  mongoose.models.Booking ||
+  mongoose.model<IBooking>("Booking", BookingSchema);
+
+export default Booking;

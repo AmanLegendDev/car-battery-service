@@ -85,7 +85,7 @@ export default function BlogArticleHero({
       {/* Top Border Glow */}
       <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#FFD400]/70 to-transparent" />
 
-      <div className="relative mx-auto max-w-7xl px-5 pb-12 pt-7 sm:px-6 sm:pb-16 sm:pt-9 lg:px-8 lg:pb-20 lg:pt-10">
+     <div className="relative mx-auto max-w-7xl px-5 pb-12 pt-32 sm:px-6 sm:pb-16 sm:pt-36 lg:px-8 lg:pb-20 lg:pt-40">
         {/* Back */}
         <div className="mb-10">
           <Link
@@ -103,7 +103,7 @@ export default function BlogArticleHero({
 
         <div className="grid items-end gap-10 lg:grid-cols-[1.05fr_0.95fr] lg:gap-14">
           {/* Content */}
-          <div className="max-w-4xl">
+          <div className="max-w-4xl mt">
             {/* Eyebrow */}
             <div className="mb-5 flex flex-wrap items-center gap-3">
               <span className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.22em] text-[#FFD400]">

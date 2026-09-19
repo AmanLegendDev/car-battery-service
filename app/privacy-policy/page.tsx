@@ -1,9 +1,7 @@
 import type { Metadata } from "next";
 import { connectDB } from "@/lib/db";
 import SiteSettings from "@/models/SiteSettings";
-import Navbar from "@/components/layout/navbar/Navbar";
-import Footer from "@/components/layout/footer/Footer";
-import FloatingCallButton from "@/components/layout/floating-call/FloatingCallButton";
+
 import PrivacyPolicyPage from "@/components/legal/privacy/PrivacyPolicyPage";
 
 export const dynamic = "force-dynamic";
@@ -83,14 +81,13 @@ export default async function PrivacyPolicyRoute() {
 
   return (
     <>
-      <Navbar />
+      
 
       <main>
         <PrivacyPolicyPage business={businessData} />
       </main>
 
-      <Footer />
-      <FloatingCallButton />
+    
     </>
   );
 }

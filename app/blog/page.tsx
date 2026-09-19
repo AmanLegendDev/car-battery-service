@@ -8,9 +8,7 @@ import Blog, {
 
 import SiteSettings from "@/models/SiteSettings";
 
-import Navbar from "@/components/layout/navbar/Navbar";
-import Footer from "@/components/layout/footer/Footer";
-import FloatingCallButton from "@/components/layout/floating-call/FloatingCallButton";
+
 
 import BlogListingPage from "@/components/blog/listing/BlogListingPage";
 
@@ -222,7 +220,7 @@ export default async function BlogPage({
 
   return (
     <>
-      <Navbar />
+     
 
       <main>
         <BlogListingPage
@@ -233,9 +231,7 @@ export default async function BlogPage({
         />
       </main>
 
-      <Footer />
-
-      <FloatingCallButton />
+  
     </>
   );
 }

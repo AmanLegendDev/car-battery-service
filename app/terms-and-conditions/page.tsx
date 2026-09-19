@@ -4,9 +4,7 @@ import { connectDB } from "@/lib/db";
 
 import SiteSettings from "@/models/SiteSettings";
 
-import Navbar from "@/components/layout/navbar/Navbar";
-import Footer from "@/components/layout/footer/Footer";
-import FloatingCallButton from "@/components/layout/floating-call/FloatingCallButton";
+
 
 import TermsAndConditionsPage from "@/components/legal/terms/TermsAndConditionsPage";
 
@@ -107,7 +105,7 @@ export default async function TermsAndConditionsRoute() {
 
   return (
     <>
-      <Navbar />
+
 
       <main>
         <TermsAndConditionsPage
@@ -115,9 +113,7 @@ export default async function TermsAndConditionsRoute() {
         />
       </main>
 
-      <Footer />
-
-      <FloatingCallButton />
+      
     </>
   );
 }

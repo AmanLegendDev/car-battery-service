@@ -20,7 +20,7 @@ import {
   Wrench,
   X,
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
@@ -72,6 +72,42 @@ interface ServiceFormState {
 }
 
 type FieldErrors = Record<string, string[]>;
+
+interface ServiceFormProps {
+  mode?: "create" | "edit";
+  serviceId?: string;
+}
+
+interface ServiceApiResponse {
+  success: boolean;
+  data?: {
+    id: string;
+    title: string;
+    slug: string;
+    shortDescription: string;
+    description: string;
+    icon: string;
+    benefits: string[];
+    included: string[];
+    processSteps: ProcessStep[];
+    suitableFor: string[];
+    estimatedTime: string;
+    emergencyService: boolean;
+    onSiteService: boolean;
+    heroImage: CloudinaryImageAsset | null;
+    gallery: CloudinaryGalleryAsset[];
+    ogImage: CloudinaryImageAsset | null;
+    ctaText: string;
+    ctaLink: string;
+    featured: boolean;
+    displayOrder: number;
+    status: "active" | "inactive";
+    seoTitle: string;
+    seoDescription: string;
+  };
+  message?: string;
+  errors?: FieldErrors;
+}
 
 const initialForm: ServiceFormState = {
   title: "",
@@ -209,19 +245,130 @@ const inputClass =
 const textareaClass =
   "w-full resize-y rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm leading-6 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-[#0D6E91] focus:ring-4 focus:ring-[#0D6E91]/10";
 
-export default function ServiceForm() {
+export default function ServiceForm({
+  mode = "create",
+  serviceId,
+}: ServiceFormProps) {
   const router = useRouter();
+  const isEditMode = mode === "edit";
 
   const [form, setForm] = useState<ServiceFormState>(initialForm);
   const [errors, setErrors] = useState<FieldErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const slugWasEdited = useState(false);
+  const [isLoadingService, setIsLoadingService] = useState(isEditMode);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [slugWasEdited, setSlugWasEdited] = useState(isEditMode);
 
   const canSubmit = useMemo(
-    () => !isSubmitting,
-    [isSubmitting]
+    () => !isSubmitting && !isLoadingService && !loadError,
+    [isSubmitting, isLoadingService, loadError]
   );
+
+  useEffect(() => {
+    if (!isEditMode) {
+      setIsLoadingService(false);
+      return;
+    }
+
+    if (!serviceId) {
+      setLoadError("Service ID is missing.");
+      setIsLoadingService(false);
+      return;
+    }
+
+    const controller = new AbortController();
+
+    async function loadService() {
+      try {
+        setIsLoadingService(true);
+        setLoadError(null);
+        setErrors({});
+
+        const response = await fetch(
+          `/api/admin/services/${serviceId}`,
+          {
+            method: "GET",
+            cache: "no-store",
+            signal: controller.signal,
+          }
+        );
+
+        const result: ServiceApiResponse =
+          await response.json();
+
+        if (!response.ok || !result.success || !result.data) {
+          throw new Error(
+            result.message || "Unable to load service."
+          );
+        }
+
+        const service = result.data;
+
+        setForm({
+          title: service.title ?? "",
+          slug: service.slug ?? "",
+          shortDescription: service.shortDescription ?? "",
+          description: service.description ?? "",
+          icon: service.icon ?? "",
+          benefits:
+            service.benefits?.length > 0
+              ? service.benefits
+              : [""],
+          included:
+            service.included?.length > 0
+              ? service.included
+              : [""],
+          processSteps:
+            service.processSteps?.length > 0
+              ? service.processSteps
+              : [{ title: "", description: "" }],
+          suitableFor:
+            service.suitableFor?.length > 0
+              ? service.suitableFor
+              : [""],
+          estimatedTime: service.estimatedTime ?? "",
+          emergencyService: Boolean(service.emergencyService),
+          onSiteService: Boolean(service.onSiteService),
+          heroImage: service.heroImage ?? null,
+          gallery: service.gallery ?? [],
+          ogImage: service.ogImage ?? null,
+          ctaText: service.ctaText ?? "",
+          ctaLink: service.ctaLink ?? "",
+          featured: Boolean(service.featured),
+          displayOrder: Number(service.displayOrder ?? 0),
+          status: service.status === "active" ? "active" : "inactive",
+          seoTitle: service.seoTitle ?? "",
+          seoDescription: service.seoDescription ?? "",
+        });
+
+        // Existing slugs should remain stable unless the admin
+        // explicitly edits the slug field.
+        setSlugWasEdited(true);
+      } catch (error) {
+        if (error instanceof DOMException && error.name === "AbortError") {
+          return;
+        }
+
+        console.error("Load service form error:", error);
+
+        const message =
+          error instanceof Error
+            ? error.message
+            : "Unable to load service.";
+
+        setLoadError(message);
+        toast.error(message);
+      } finally {
+        if (!controller.signal.aborted) {
+          setIsLoadingService(false);
+        }
+      }
+    }
+
+    loadService();
+
+    return () => controller.abort();
+  }, [isEditMode, serviceId]);
 
   function updateField<K extends keyof ServiceFormState>(
     field: K,
@@ -245,7 +392,7 @@ export default function ServiceForm() {
   function handleTitleChange(value: string) {
     updateField("title", value);
 
-    if (!slugWasEdited[0]) {
+    if (!slugWasEdited) {
       setForm((current) => ({
         ...current,
         title: value,
@@ -255,12 +402,9 @@ export default function ServiceForm() {
   }
 
   function handleSlugChange(value: string) {
-    slugWasEdited[1](true);
+    setSlugWasEdited(true);
 
-    updateField(
-      "slug",
-      slugify(value)
-    );
+    updateField("slug", slugify(value));
   }
 
   function addArrayItem(field: "benefits" | "included" | "suitableFor") {
@@ -437,30 +581,41 @@ export default function ServiceForm() {
 
       setErrors({});
 
-      const response = await fetch("/api/admin/services", {
-        method: "POST",
+      const endpoint = isEditMode
+        ? `/api/admin/services/${serviceId}`
+        : "/api/admin/services";
+
+      const response = await fetch(endpoint, {
+        method: isEditMode ? "PATCH" : "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(validatedData),
       });
 
-      const result = await response.json();
+      const result: ServiceApiResponse =
+        await response.json();
 
-      if (!response.ok) {
+      if (!response.ok || !result.success) {
         if (result.errors) {
           setErrors(result.errors);
         }
 
         toast.error(
           result.message ||
-            "Unable to create service."
+            (isEditMode
+              ? "Unable to update service."
+              : "Unable to create service.")
         );
 
         return;
       }
 
-      toast.success("Service created successfully.");
+      toast.success(
+        isEditMode
+          ? "Service updated successfully."
+          : "Service created successfully."
+      );
 
       router.push("/admin/services");
       router.refresh();
@@ -473,6 +628,58 @@ export default function ServiceForm() {
     } finally {
       setIsSubmitting(false);
     }
+  }
+
+  if (isLoadingService) {
+    return (
+      <div className="mx-auto max-w-6xl space-y-6 pb-10">
+        {Array.from({ length: 5 }).map((_, index) => (
+          <div
+            key={index}
+            className="overflow-hidden rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
+          >
+            <div className="animate-pulse space-y-5">
+              <div className="flex items-center gap-4">
+                <div className="h-10 w-10 rounded-xl bg-slate-100" />
+                <div className="space-y-2">
+                  <div className="h-4 w-40 rounded bg-slate-100" />
+                  <div className="h-3 w-64 rounded bg-slate-100" />
+                </div>
+              </div>
+              <div className="grid gap-5 md:grid-cols-2">
+                <div className="h-12 rounded-xl bg-slate-100" />
+                <div className="h-12 rounded-xl bg-slate-100" />
+                <div className="h-24 rounded-xl bg-slate-100 md:col-span-2" />
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <div className="mx-auto max-w-2xl rounded-2xl border border-red-100 bg-white p-8 text-center shadow-sm">
+        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-red-50 text-red-600">
+          <AlertCircle className="h-6 w-6" />
+        </div>
+        <h2 className="mt-4 text-lg font-black text-slate-950">
+          Unable to load service
+        </h2>
+        <p className="mt-2 text-sm leading-6 text-slate-500">
+          {loadError}
+        </p>
+        <button
+          type="button"
+          onClick={() => router.push("/admin/services")}
+          className="mt-6 inline-flex items-center gap-2 rounded-xl bg-[#061A2B] px-5 py-3 text-sm font-bold text-white transition hover:bg-[#08263D]"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back to Services
+        </button>
+      </div>
+    );
   }
 
   return (
@@ -1192,12 +1399,12 @@ export default function ServiceForm() {
           {isSubmitting ? (
             <>
               <Loader2 className="h-4 w-4 animate-spin" />
-              Creating Service...
+              {isEditMode ? "Saving Changes..." : "Creating Service..."}
             </>
           ) : (
             <>
               <Save className="h-4 w-4" />
-              Create Service
+              {isEditMode ? "Save Changes" : "Create Service"}
             </>
           )}
         </button>
@@ -1227,12 +1434,12 @@ export default function ServiceForm() {
             {isSubmitting ? (
               <>
                 <Loader2 className="h-4 w-4 animate-spin" />
-                Creating...
+                {isEditMode ? "Saving..." : "Creating..."}
               </>
             ) : (
               <>
                 <Check className="h-4 w-4" />
-                Create Service
+                {isEditMode ? "Save Changes" : "Create Service"}
               </>
             )}
           </button>

@@ -4,6 +4,8 @@ import { notFound } from "next/navigation";
 import { connectDB } from "@/lib/db";
 import Service from "@/models/Service";
 import ServiceDetailPage from "@/components/services/detail/ServiceDetailPage";
+import Navbar from "@/components/layout/navbar/Navbar";
+import Footer from "@/components/layout/footer/Footer";
 
 interface ServicePageProps {
   params: Promise<{
@@ -18,27 +20,28 @@ async function getServiceBySlug(slug: string) {
     slug,
     status: "active",
   })
-    .select(
-      [
-        "title",
-        "slug",
-        "shortDescription",
-        "description",
-        "heroImage",
-        "processSteps",
-        "benefits",
-        "included",
-        "suitableFor",
-        "estimatedTime",
-        "emergencyService",
-        "onSiteService",
-        "ctaText",
-        "featured",
-        "displayOrder",
-        "seoTitle",
-        "seoDescription",
-      ].join(" "),
-    )
+.select(
+  [
+    "title",
+    "slug",
+    "shortDescription",
+    "description",
+    "heroImage",
+    "gallery",
+    "processSteps",
+    "benefits",
+    "included",
+    "suitableFor",
+    "estimatedTime",
+    "emergencyService",
+    "onSiteService",
+    "ctaText",
+    "featured",
+    "displayOrder",
+    "seoTitle",
+    "seoDescription",
+  ].join(" "),
+)
     .lean();
 
   return service;
@@ -108,5 +111,5 @@ export default async function ServicePage({
     notFound();
   }
 
-  return <ServiceDetailPage service={service} />;
+  return <><ServiceDetailPage service={service} /></>;
 }

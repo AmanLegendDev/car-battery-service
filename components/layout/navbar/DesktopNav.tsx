@@ -2,7 +2,10 @@
 
 import Link from "next/link";
 import { Phone } from "lucide-react";
-import ServicesDropdown from "./ServicesDropdown";
+import ServicesDropdown, {
+  type NavbarService,
+} from "./ServicesDropdown";
+
 import {
   NAVBAR_LINKS,
   NAVBAR_PHONE,
@@ -10,10 +13,12 @@ import {
 } from "./navbarData";
 
 interface DesktopNavProps {
+  services: NavbarService[];
   onServicesOpenChange?: (open: boolean) => void;
 }
 
 export default function DesktopNav({
+  services,
   onServicesOpenChange,
 }: DesktopNavProps) {
   return (
@@ -33,6 +38,7 @@ export default function DesktopNav({
         ))}
 
         <ServicesDropdown
+          services={services}
           onOpenChange={onServicesOpenChange}
         />
       </div>
