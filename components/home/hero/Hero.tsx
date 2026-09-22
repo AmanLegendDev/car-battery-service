@@ -1,7 +1,22 @@
 import HeroContent from "./HeroContent";
 import HeroVisual from "./HeroVisual";
 
-export default function Hero() {
+interface HeroSettings {
+  businessName: string;
+  tagline: string;
+  description: string;
+  phone: string;
+  serviceRegion: string;
+  bookingCta: string;
+}
+
+interface HeroProps {
+  settings: HeroSettings | null;
+}
+
+export default function Hero({
+  settings,
+}: HeroProps) {
   return (
     <section
       aria-labelledby="hero-heading"
@@ -28,7 +43,7 @@ export default function Hero() {
       {/* Main hero content */}
       <div className="relative z-10 mx-auto flex min-h-[100svh] w-full max-w-[1600px] items-center px-5 pb-16 pt-32 sm:px-8 sm:pb-20 sm:pt-36 lg:px-12 lg:pb-24 lg:pt-32 xl:px-16">
         <div className="w-full">
-          <HeroContent />
+          <HeroContent settings={settings} />
         </div>
       </div>
 

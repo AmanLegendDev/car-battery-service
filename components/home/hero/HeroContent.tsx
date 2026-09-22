@@ -1,8 +1,23 @@
 "use client";
+
 import { motion, type Variants } from "framer-motion";
 import { ArrowRight, Phone } from "lucide-react";
 import Link from "next/link";
+
 import { HERO_DATA } from "./heroData";
+
+interface HeroSettings {
+  businessName: string;
+  tagline: string;
+  description: string;
+  phone: string;
+  serviceRegion: string;
+  bookingCta: string;
+}
+
+interface HeroContentProps {
+  settings: HeroSettings | null;
+}
 
 const contentVariants: Variants = {
   hidden: {
@@ -36,7 +51,25 @@ const itemVariants: Variants = {
   },
 };
 
-export default function HeroContent() {
+export default function HeroContent({
+  settings,
+}: HeroContentProps) {
+  const phoneNumber =
+    settings?.phone || HERO_DATA.phone.number;
+
+  const phoneHref = `tel:${phoneNumber.replace(
+    /[^+\d]/g,
+    ""
+  )}`;
+
+  const description =
+    settings?.description ||
+    HERO_DATA.description;
+
+  const bookingLabel =
+    settings?.bookingCta ||
+    HERO_DATA.primaryCta.label;
+
   return (
     <motion.div
       initial="hidden"
@@ -79,7 +112,7 @@ export default function HeroContent() {
         variants={itemVariants}
         className="mt-6 max-w-[540px] text-[14px] leading-6 text-[#B3C3CE] sm:mt-7 sm:text-[15px] sm:leading-7 lg:mt-8 lg:text-[16px] lg:leading-8"
       >
-        {HERO_DATA.description}
+        {description}
       </motion.p>
 
       {/* CTAs */}
@@ -88,9 +121,9 @@ export default function HeroContent() {
         className="mt-7 flex w-full flex-col gap-3 sm:mt-8 sm:w-auto sm:flex-row sm:items-center"
       >
         {/* Primary */}
-        <a
-          href={HERO_DATA.primaryCta.href}
-          aria-label={`Call ${HERO_DATA.phone.number}`}
+        <Link
+          href="/book-service"
+          aria-label={bookingLabel}
           className="group inline-flex h-[54px] w-full items-center justify-center gap-3 rounded-2xl bg-[#FFD400] px-6 text-[14px] font-extrabold text-[#061A2B] shadow-[0_14px_40px_rgba(255,212,0,0.16)] transition-all duration-200 hover:bg-[#F5B800] hover:shadow-[0_18px_48px_rgba(255,212,0,0.24)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#FFD400] focus-visible:ring-offset-2 focus-visible:ring-offset-[#061A2B] active:scale-[0.985] sm:h-14 sm:w-auto sm:min-w-[145px]"
         >
           <Phone
@@ -98,21 +131,22 @@ export default function HeroContent() {
             className="h-[17px] w-[17px] transition-transform duration-200 group-hover:rotate-[-8deg]"
           />
 
-          <span>{HERO_DATA.primaryCta.label}</span>
-        </a>
+          <span>{bookingLabel}</span>
+        </Link>
 
         {/* Secondary */}
-        <Link
-          href={HERO_DATA.secondaryCta.href}
+        <a
+          href={phoneHref}
+          aria-label={`Call ${phoneNumber}`}
           className="group inline-flex h-[54px] w-full items-center justify-center gap-2.5 rounded-2xl border border-white/[0.15] bg-[#08263D]/45 px-6 text-[14px] font-bold text-[#F8FAFC] shadow-[0_10px_30px_rgba(0,0,0,0.12)] backdrop-blur-md transition-all duration-200 hover:border-white/[0.24] hover:bg-[#08263D]/65 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#FFD400]/50 active:scale-[0.985] sm:h-14 sm:w-auto sm:min-w-[175px]"
         >
-          <span>{HERO_DATA.secondaryCta.label}</span>
+          <span>Call Now</span>
 
           <ArrowRight
             aria-hidden="true"
             className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-1"
           />
-        </Link>
+        </a>
       </motion.div>
 
       {/* Phone detail */}
@@ -121,9 +155,6 @@ export default function HeroContent() {
         className="mt-6 flex items-center sm:mt-7"
       >
         <div className="relative flex items-center">
-          {/* Accent line */}
-        
-
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-white/[0.1] bg-[#08263D]/55 shadow-[0_8px_25px_rgba(0,0,0,0.16)] backdrop-blur-md">
             <Phone
               aria-hidden="true"
@@ -133,15 +164,15 @@ export default function HeroContent() {
         </div>
 
         <div className="ml-3.5">
-          <span className="block text-[9px] font-semibold uppercase tracking-[0.2em] text-[#718895] ">
+          <span className="block text-[9px] font-semibold uppercase tracking-[0.2em] text-[#718895]">
             {HERO_DATA.phone.label}
           </span>
 
           <a
-            href={HERO_DATA.phone.href}
+            href={phoneHref}
             className="mt-1 block text-[13px] font-bold tracking-[0.04em] text-[#F8FAFC] transition-colors duration-200 hover:text-[#FFD400] focus:outline-none focus-visible:text-[#FFD400]"
           >
-            {HERO_DATA.phone.number}
+            {phoneNumber}
           </a>
         </div>
       </motion.div>

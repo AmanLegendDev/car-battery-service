@@ -10,13 +10,14 @@ export const HERO_DATA = {
     "Mobile car battery assistance brought directly to your vehicle's location across Melbourne West.",
 
   primaryCta: {
-    label: "Call Now",
-    href: "tel:+61467037886",
+    label: "Book a Service",
+    href: "/book-service",
   },
 
   secondaryCta: {
-    label: "Book a Battery Service",
-    href: "/book-service",
+    label: "Call Now",
+    href: "tel:+61467037886",
+    
   },
 
   phone: {
