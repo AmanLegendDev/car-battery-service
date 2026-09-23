@@ -57,7 +57,28 @@ export const BOOKING_TIME_SLOTS = [
     end: "17:00",
     label: "4:00 PM – 5:00 PM",
   },
+  {
+    start: "17:00",
+    end: "18:00",
+    label: "5:00 PM – 6:00 PM",
+  },
+  {
+    start: "18:00",
+    end: "19:00",
+    label: "6:00 PM – 7:00 PM",
+  },
+  {
+    start: "19:00",
+    end: "20:00",
+    label: "7:00 PM – 8:00 PM",
+  },
+  {
+    start: "20:00",
+    end: "21:00",
+    label: "8:00 PM – 9:00 PM",
+  },
 ] as const;
+
 
 export const BOOKING_FUEL_TYPES = [
   "Petrol",

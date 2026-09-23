@@ -1,10 +1,10 @@
 import { connectDB } from "@/lib/db";
 import Availability from "@/models/Availability";
 import Booking from "@/models/Booking";
+import SiteSettings from "@/models/SiteSettings";
 
 import {
-  BOOKING_TIMEZONE,
-  BOOKING_TIME_SLOTS,
+  BOOKING_DURATION_MINUTES,
 } from "./booking.constants";
 
 import {
@@ -34,11 +34,22 @@ export interface PublicAvailabilityDay {
   slots: PublicAvailabilitySlot[];
 }
 
+interface BusinessHour {
+  day: string;
+  enabled: boolean;
+  open: string;
+  close: string;
+}
+
 const BOOKING_BLOCKING_STATUSES = [
   "pending",
   "confirmed",
   "in-progress",
 ] as const;
+
+/* ============================================================
+   DATE HELPERS
+============================================================ */
 
 function parseDateParts(date: string) {
   const [year, month, day] = date
@@ -52,11 +63,22 @@ function parseDateParts(date: string) {
   };
 }
 
-function addDays(date: string, amount: number): string {
-  const { year, month, day } = parseDateParts(date);
+function addDays(
+  date: string,
+  amount: number
+): string {
+  const {
+    year,
+    month,
+    day,
+  } = parseDateParts(date);
 
   const result = new Date(
-    Date.UTC(year, month - 1, day)
+    Date.UTC(
+      year,
+      month - 1,
+      day
+    )
   );
 
   result.setUTCDate(
@@ -73,22 +95,33 @@ function compareDates(
   second: string
 ): number {
   if (first < second) return -1;
+
   if (first > second) return 1;
+
   return 0;
 }
 
 function isValidDateFormat(
   value: string
 ): boolean {
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+  if (
+    !/^\d{4}-\d{2}-\d{2}$/.test(value)
+  ) {
     return false;
   }
 
-  const { year, month, day } =
-    parseDateParts(value);
+  const {
+    year,
+    month,
+    day,
+  } = parseDateParts(value);
 
   const date = new Date(
-    Date.UTC(year, month - 1, day)
+    Date.UTC(
+      year,
+      month - 1,
+      day
+    )
   );
 
   return (
@@ -101,39 +134,213 @@ function isValidDateFormat(
 function getDayOfWeek(
   date: string
 ): number {
-  const { year, month, day } =
-    parseDateParts(date);
+  const {
+    year,
+    month,
+    day,
+  } = parseDateParts(date);
 
   return new Date(
-    Date.UTC(year, month - 1, day)
+    Date.UTC(
+      year,
+      month - 1,
+      day
+    )
   ).getUTCDay();
 }
 
-function isWorkingDay(
+/* ============================================================
+   BUSINESS HOURS
+============================================================ */
+
+function getBusinessDayName(
   date: string
-): boolean {
-  /*
-   * Business is currently open Monday-Sunday.
-   *
-   * Sunday = 0
-   * Monday = 1
-   * ...
-   * Saturday = 6
-   */
+): string {
   const day = getDayOfWeek(date);
 
-  return day >= 0 && day <= 6;
+  const dayNames = [
+    "Sunday",
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday",
+    "Saturday",
+  ];
+
+  return dayNames[day];
 }
 
-function createBaseSlots(): PublicAvailabilitySlot[] {
-  return BOOKING_TIME_SLOTS.map((slot) => ({
-    start: slot.start,
-    end: slot.end,
-    label: slot.label,
-    status: "available",
-    reason: null,
-  }));
+function isValidTime(
+  value: string
+): boolean {
+  return /^\d{2}:\d{2}$/.test(value);
 }
+
+function timeToMinutes(
+  value: string
+): number {
+  if (!isValidTime(value)) {
+    return -1;
+  }
+
+  const [
+    hours,
+    minutes,
+  ] = value
+    .split(":")
+    .map(Number);
+
+  if (
+    hours < 0 ||
+    hours > 23 ||
+    minutes < 0 ||
+    minutes > 59
+  ) {
+    return -1;
+  }
+
+  return (
+    hours * 60 +
+    minutes
+  );
+}
+
+function minutesToTime(
+  totalMinutes: number
+): string {
+  const hours =
+    Math.floor(
+      totalMinutes / 60
+    );
+
+  const minutes =
+    totalMinutes % 60;
+
+  return `${String(hours).padStart(
+    2,
+    "0"
+  )}:${String(minutes).padStart(
+    2,
+    "0"
+  )}`;
+}
+
+function formatTimeLabel(
+  time: string
+): string {
+  const minutes =
+    timeToMinutes(time);
+
+  if (minutes < 0) {
+    return time;
+  }
+
+  const hours24 =
+    Math.floor(
+      minutes / 60
+    );
+
+  const minute =
+    minutes % 60;
+
+  const period =
+    hours24 >= 12
+      ? "PM"
+      : "AM";
+
+  const hours12 =
+    hours24 % 12 || 12;
+
+  return `${hours12}:${String(
+    minute
+  ).padStart(2, "0")} ${period}`;
+}
+
+function createSlotLabel(
+  start: string,
+  end: string
+): string {
+  return `${formatTimeLabel(
+    start
+  )} – ${formatTimeLabel(end)}`;
+}
+
+/* ============================================================
+   DYNAMIC SLOT GENERATION
+============================================================ */
+
+function createBaseSlots(
+  businessHours: BusinessHour | null
+): PublicAvailabilitySlot[] {
+  if (!businessHours) {
+    return [];
+  }
+
+  if (
+    businessHours.enabled !== true
+  ) {
+    return [];
+  }
+
+  const openMinutes =
+    timeToMinutes(
+      businessHours.open
+    );
+
+  const closeMinutes =
+    timeToMinutes(
+      businessHours.close
+    );
+
+  if (
+    openMinutes < 0 ||
+    closeMinutes < 0 ||
+    closeMinutes <= openMinutes
+  ) {
+    return [];
+  }
+
+  const slots: PublicAvailabilitySlot[] =
+    [];
+
+  let cursor = openMinutes;
+
+  while (
+    cursor +
+      BOOKING_DURATION_MINUTES <=
+    closeMinutes
+  ) {
+    const start =
+      minutesToTime(cursor);
+
+    const end =
+      minutesToTime(
+        cursor +
+          BOOKING_DURATION_MINUTES
+      );
+
+    slots.push({
+      start,
+      end,
+      label: createSlotLabel(
+        start,
+        end
+      ),
+      status: "available",
+      reason: null,
+    });
+
+    cursor +=
+      BOOKING_DURATION_MINUTES;
+  }
+
+  return slots;
+}
+
+/* ============================================================
+   PUBLIC AVAILABILITY
+============================================================ */
 
 export async function getPublicAvailability(
   from: string,
@@ -148,7 +355,9 @@ export async function getPublicAvailability(
     );
   }
 
-  if (compareDates(from, to) > 0) {
+  if (
+    compareDates(from, to) > 0
+  ) {
     throw new Error(
       "Availability start date cannot be after end date."
     );
@@ -158,6 +367,67 @@ export async function getPublicAvailability(
 
   const today =
     getMelbourneDateString();
+
+  /* ==========================================================
+     SITE SETTINGS
+  ========================================================== */
+
+  const settings =
+    await SiteSettings.findOne()
+      .select({
+        businessHours: 1,
+      })
+      .lean();
+
+  const businessHours =
+    Array.isArray(
+      settings?.businessHours
+    )
+      ? (
+          settings.businessHours as BusinessHour[]
+        )
+      : [];
+
+  const businessHoursByDay =
+    new Map<
+      string,
+      BusinessHour
+    >();
+
+  for (
+    const hours of businessHours
+  ) {
+    if (
+      !hours ||
+      typeof hours.day !==
+        "string"
+    ) {
+      continue;
+    }
+
+    businessHoursByDay.set(
+      hours.day,
+      {
+        day: hours.day,
+        enabled:
+          hours.enabled === true,
+        open:
+          typeof hours.open ===
+          "string"
+            ? hours.open
+            : "",
+        close:
+          typeof hours.close ===
+          "string"
+            ? hours.close
+            : "",
+      }
+    );
+  }
+
+  /* ==========================================================
+     ADMIN AVAILABILITY BLOCKS
+  ========================================================== */
 
   const availabilityRecords =
     await Availability.find({
@@ -174,6 +444,10 @@ export async function getPublicAvailability(
       })
       .lean();
 
+  /* ==========================================================
+     EXISTING BOOKINGS
+  ========================================================== */
+
   const bookings =
     await Booking.find({
       "appointment.date": {
@@ -182,7 +456,8 @@ export async function getPublicAvailability(
       },
 
       status: {
-        $in: BOOKING_BLOCKING_STATUSES,
+        $in:
+          BOOKING_BLOCKING_STATUSES,
       },
     })
       .select({
@@ -192,6 +467,10 @@ export async function getPublicAvailability(
         status: 1,
       })
       .lean();
+
+  /* ==========================================================
+     INDEX ADMIN AVAILABILITY
+  ========================================================== */
 
   const availabilityByDate =
     new Map<
@@ -206,12 +485,15 @@ export async function getPublicAvailability(
       }
     >();
 
-  for (const record of availabilityRecords) {
+  for (
+    const record of availabilityRecords
+  ) {
     availabilityByDate.set(
       record.date,
       {
         allDayBlocked:
-          record.allDayBlocked === true,
+          record.allDayBlocked ===
+          true,
 
         timeBlocks:
           record.timeBlocks ?? [],
@@ -222,21 +504,29 @@ export async function getPublicAvailability(
     );
   }
 
+  /* ==========================================================
+     INDEX BOOKED SLOTS
+  ========================================================== */
+
   const bookedSlotsByDate =
     new Map<
       string,
       Set<string>
     >();
 
-  for (const booking of bookings) {
+  for (
+    const booking of bookings
+  ) {
     const date =
       booking.appointment?.date;
 
     const startTime =
-      booking.appointment?.startTime;
+      booking.appointment
+        ?.startTime;
 
     const endTime =
-      booking.appointment?.endTime;
+      booking.appointment
+        ?.endTime;
 
     if (
       !date ||
@@ -250,7 +540,9 @@ export async function getPublicAvailability(
       `${startTime}-${endTime}`;
 
     if (
-      !bookedSlotsByDate.has(date)
+      !bookedSlotsByDate.has(
+        date
+      )
     ) {
       bookedSlotsByDate.set(
         date,
@@ -263,38 +555,104 @@ export async function getPublicAvailability(
       .add(slotKey);
   }
 
-  const days: PublicAvailabilityDay[] = [];
+  /* ==========================================================
+     BUILD DAYS
+  ========================================================== */
+
+  const days: PublicAvailabilityDay[] =
+    [];
 
   let cursor = from;
 
   while (
-    compareDates(cursor, to) <= 0
+    compareDates(
+      cursor,
+      to
+    ) <= 0
   ) {
     const isToday =
       cursor === today;
 
     const isPast =
-      compareDates(cursor, today) < 0;
+      compareDates(
+        cursor,
+        today
+      ) < 0;
+
+    const dayName =
+      getBusinessDayName(
+        cursor
+      );
+
+    const configuredBusinessHours =
+      businessHoursByDay.get(
+        dayName
+      ) ?? null;
 
     const workingDay =
-      isWorkingDay(cursor);
+      configuredBusinessHours
+        ?.enabled === true;
 
     const record =
-      availabilityByDate.get(cursor);
+      availabilityByDate.get(
+        cursor
+      );
 
     const allDayBlocked =
-      record?.allDayBlocked === true;
+      record?.allDayBlocked ===
+      true;
 
     const bookedSlots =
-      bookedSlotsByDate.get(cursor) ??
+      bookedSlotsByDate.get(
+        cursor
+      ) ??
       new Set<string>();
 
     const slots =
-      createBaseSlots();
+      createBaseSlots(
+        configuredBusinessHours
+      );
 
-    for (const slot of slots) {
-      if (isPast || isToday) {
-        slot.status = "blocked";
+    /* ========================================================
+       INVALID / MISSING BUSINESS HOURS
+    ======================================================== */
+
+    if (
+      !workingDay &&
+      slots.length === 0
+    ) {
+      days.push({
+        date: cursor,
+        isToday,
+        isPast,
+        isWorkingDay: false,
+        allDayBlocked,
+        available: false,
+        slots: [],
+      });
+
+      cursor = addDays(
+        cursor,
+        1
+      );
+
+      continue;
+    }
+
+    /* ========================================================
+       PROCESS EACH SLOT
+    ======================================================== */
+
+    for (
+      const slot of slots
+    ) {
+      if (
+        isPast ||
+        isToday
+      ) {
+        slot.status =
+          "blocked";
+
         slot.reason = isToday
           ? "Bookings are not available for today."
           : "This date has already passed.";
@@ -303,7 +661,9 @@ export async function getPublicAvailability(
       }
 
       if (!workingDay) {
-        slot.status = "blocked";
+        slot.status =
+          "blocked";
+
         slot.reason =
           "Bookings are not available on this day.";
 
@@ -311,7 +671,9 @@ export async function getPublicAvailability(
       }
 
       if (allDayBlocked) {
-        slot.status = "blocked";
+        slot.status =
+          "blocked";
+
         slot.reason =
           record?.reason ||
           "This date has been blocked.";
@@ -322,12 +684,16 @@ export async function getPublicAvailability(
       const adminBlocked =
         record?.timeBlocks?.some(
           (block) =>
-            block.start === slot.start &&
-            block.end === slot.end
+            block.start ===
+              slot.start &&
+            block.end ===
+              slot.end
         ) ?? false;
 
       if (adminBlocked) {
-        slot.status = "blocked";
+        slot.status =
+          "blocked";
+
         slot.reason =
           record?.reason ||
           "This time has been blocked.";
@@ -339,30 +705,38 @@ export async function getPublicAvailability(
         `${slot.start}-${slot.end}`;
 
       if (
-        bookedSlots.has(slotKey)
+        bookedSlots.has(
+          slotKey
+        )
       ) {
-        slot.status = "booked";
+        slot.status =
+          "booked";
+
         slot.reason =
           "This time has already been booked.";
 
         continue;
       }
 
-      slot.status = "available";
+      slot.status =
+        "available";
+
       slot.reason = null;
     }
 
     const available =
       slots.some(
         (slot) =>
-          slot.status === "available"
+          slot.status ===
+          "available"
       );
 
     days.push({
       date: cursor,
       isToday,
       isPast,
-      isWorkingDay: workingDay,
+      isWorkingDay:
+        workingDay,
       allDayBlocked,
       available,
       slots,
@@ -377,6 +751,10 @@ export async function getPublicAvailability(
   return days;
 }
 
+/* ============================================================
+   SINGLE SLOT CHECK
+============================================================ */
+
 export async function isBookingSlotAvailable(
   date: string,
   startTime: string,
@@ -388,7 +766,8 @@ export async function isBookingSlotAvailable(
       date
     );
 
-  const day = result[0];
+  const day =
+    result[0];
 
   if (!day) {
     return false;
@@ -397,11 +776,14 @@ export async function isBookingSlotAvailable(
   const slot =
     day.slots.find(
       (item) =>
-        item.start === startTime &&
-        item.end === endTime
+        item.start ===
+          startTime &&
+        item.end ===
+          endTime
     );
 
   return (
-    slot?.status === "available"
+    slot?.status ===
+    "available"
   );
 }

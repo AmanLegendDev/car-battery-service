@@ -739,8 +739,8 @@ export default function SiteSettingsForm() {
 
   if (loading) {
     return (
-      <div className="flex min-h-[420px] items-center justify-center rounded-2xl border border-slate-200 bg-white">
-        <div className="flex items-center gap-3 text-sm font-medium text-slate-500">
+      <div className="flex min-h-[420px] items-center justify-center rounded-2xl border border-white/[0.08] bg-[#08263D]">
+        <div className="flex items-center gap-3 text-sm font-medium text-[#718895]">
           <Loader2
             size={18}
             className="animate-spin"
@@ -753,13 +753,13 @@ export default function SiteSettingsForm() {
 
   if (loadError) {
     return (
-      <div className="rounded-2xl border border-red-200 bg-white p-6">
-        <div className="rounded-xl bg-red-50 p-4">
-          <p className="text-sm font-semibold text-red-800">
+      <div className="rounded-2xl border border-red-400/20 bg-[#08263D] p-6">
+        <div className="rounded-xl bg-red-400/10 p-4">
+          <p className="text-sm font-semibold text-red-300">
             Unable to load site settings
           </p>
 
-          <p className="mt-1 text-sm text-red-600">
+          <p className="mt-1 text-sm text-red-300">
             {loadError}
           </p>
 
@@ -768,7 +768,7 @@ export default function SiteSettingsForm() {
             onClick={() =>
               window.location.reload()
             }
-            className="mt-4 rounded-lg bg-slate-950 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800"
+            className="mt-4 rounded-lg bg-[#FFD400] px-4 py-2 text-sm font-semibold text-[#061A2B] hover:bg-[#F5B800]"
           >
             Try Again
           </button>
@@ -786,18 +786,18 @@ export default function SiteSettingsForm() {
       {/* INTRO                                                            */}
       {/* ---------------------------------------------------------------- */}
 
-      <div className="rounded-2xl border border-blue-100 bg-blue-50/70 p-4">
+      <div className="rounded-2xl border border-[#0D6E91]/20 bg-[#0D6E91]/10 p-4">
         <div className="flex gap-3">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white text-blue-700 shadow-sm">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#FFD400] text-[#061A2B] shadow-sm">
             <Settings2 size={18} />
           </div>
 
           <div>
-            <p className="text-sm font-semibold text-slate-900">
+            <p className="text-sm font-semibold text-[#F8FAFC]">
               Global website settings
             </p>
 
-            <p className="mt-1 text-xs leading-5 text-slate-600">
+            <p className="mt-1 text-xs leading-5 text-[#A8BBC8]">
               Information saved here can be
               used throughout the website.
               Keep business details accurate
@@ -812,7 +812,7 @@ export default function SiteSettingsForm() {
       {/* BUSINESS                                                         */}
       {/* ---------------------------------------------------------------- */}
 
-      <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+      <section className="overflow-hidden rounded-2xl border border-white/[0.08] bg-[#08263D] shadow-sm">
         <SectionHeader
           icon={<Settings2 size={18} />}
           title="Business"
@@ -913,7 +913,7 @@ export default function SiteSettingsForm() {
       {/* CONTACT                                                          */}
       {/* ---------------------------------------------------------------- */}
 
-      <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+      <section className="overflow-hidden rounded-2xl border border-white/[0.08] bg-[#08263D] shadow-sm">
         <SectionHeader
           icon={<Phone size={18} />}
           title="Contact"
@@ -1024,7 +1024,7 @@ export default function SiteSettingsForm() {
       {/* LOCATION                                                         */}
       {/* ---------------------------------------------------------------- */}
 
-      <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+      <section className="overflow-hidden rounded-2xl border border-white/[0.08] bg-[#08263D] shadow-sm">
         <SectionHeader
           icon={<MapPin size={18} />}
           title="Location"
@@ -1117,7 +1117,7 @@ export default function SiteSettingsForm() {
       {/* BUSINESS HOURS                                                   */}
       {/* ---------------------------------------------------------------- */}
 
-      <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+      <section className="overflow-hidden rounded-2xl border border-white/[0.08] bg-[#08263D] shadow-sm">
         <SectionHeader
           icon={<Clock3 size={18} />}
           title="Business Hours"
@@ -1125,7 +1125,7 @@ export default function SiteSettingsForm() {
         />
 
         <div className="p-5 md:p-6">
-          <div className="overflow-hidden rounded-xl border border-slate-200">
+          <div className="overflow-hidden rounded-xl border border-white/[0.08]">
             {settings.businessHours.map(
               (hour, index) => (
                 <div
@@ -1135,16 +1135,16 @@ export default function SiteSettingsForm() {
                     settings.businessHours
                       .length -
                       1
-                      ? "border-b border-slate-100"
+                      ? "border-b border-white/[0.07]"
                       : ""
                   }`}
                 >
                   <div>
-                    <p className="text-sm font-semibold text-slate-900">
+                    <p className="text-sm font-semibold text-[#F8FAFC]">
                       {hour.day}
                     </p>
 
-                    <p className="text-[11px] text-slate-500">
+                    <p className="text-[11px] text-[#718895]">
                       {hour.enabled
                         ? "Open"
                         : "Closed / not supplied"}
@@ -1198,8 +1198,8 @@ export default function SiteSettingsForm() {
                     }
                     className={`inline-flex h-10 items-center justify-center gap-2 rounded-lg px-3 text-xs font-semibold transition ${
                       hour.enabled
-                        ? "bg-slate-950 text-white hover:bg-slate-800"
-                        : "border border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
+                        ? "bg-[#FFD400] text-[#061A2B] hover:bg-[#F5B800]"
+                        : "border border-white/[0.08] bg-[#08263D] text-[#A8BBC8] hover:bg-[#061A2B]"
                     }`}
                   >
                     {hour.enabled ? (
@@ -1217,7 +1217,7 @@ export default function SiteSettingsForm() {
                   {errors[
                     `hours.${index}`
                   ] && (
-                    <p className="text-xs font-medium text-red-600 sm:col-span-4">
+                    <p className="text-xs font-medium text-red-300 sm:col-span-4">
                       {
                         errors[
                           `hours.${index}`
@@ -1266,7 +1266,7 @@ export default function SiteSettingsForm() {
       {/* SOCIAL                                                           */}
       {/* ---------------------------------------------------------------- */}
 
-      <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+      <section className="overflow-hidden rounded-2xl border border-white/[0.08] bg-[#08263D] shadow-sm">
         <SectionHeader
           icon={<Globe2 size={18} />}
           title="Social Links"
@@ -1350,7 +1350,7 @@ export default function SiteSettingsForm() {
       {/* CTA                                                              */}
       {/* ---------------------------------------------------------------- */}
 
-      <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+      <section className="overflow-hidden rounded-2xl border border-white/[0.08] bg-[#08263D] shadow-sm">
         <SectionHeader
           icon={<Phone size={18} />}
           title="Call To Action"
@@ -1410,7 +1410,7 @@ export default function SiteSettingsForm() {
       {/* SEO                                                              */}
       {/* ---------------------------------------------------------------- */}
 
-      <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+      <section className="overflow-hidden rounded-2xl border border-white/[0.08] bg-[#08263D] shadow-sm">
         <SectionHeader
           icon={<Globe2 size={18} />}
           title="SEO Defaults"
@@ -1504,9 +1504,9 @@ export default function SiteSettingsForm() {
       {/* SAVE BAR                                                         */}
       {/* ---------------------------------------------------------------- */}
 
-      <div className="fixed inset-x-0 bottom-0 z-30 border-t border-slate-200 bg-white/95 px-4 py-3 backdrop-blur">
+      <div className="fixed inset-x-0 bottom-0 z-30 border-t border-white/[0.08] bg-[#061A2B]/95 px-4 py-3 backdrop-blur">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-4">
-          <div className="hidden items-center gap-2 text-xs text-slate-500 sm:flex">
+          <div className="hidden items-center gap-2 text-xs text-[#718895] sm:flex">
             <span
               className={`h-2 w-2 rounded-full ${
                 hasChanges
@@ -1522,7 +1522,7 @@ export default function SiteSettingsForm() {
           <button
             type="submit"
             disabled={saving}
-            className="ml-auto inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-slate-950 px-6 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
+            className="ml-auto inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-[#FFD400] px-6 text-sm font-bold text-[#061A2B] shadow-sm transition hover:bg-[#F5B800] disabled:cursor-not-allowed disabled:opacity-60"
           >
             {saving ? (
               <>
@@ -1559,17 +1559,17 @@ function SectionHeader({
   description: string;
 }) {
   return (
-    <div className="flex gap-3 border-b border-slate-100 px-5 py-4 md:px-6">
-      <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-700">
+    <div className="flex gap-3 border-b border-white/[0.07] px-5 py-4 md:px-6">
+      <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#061A2B] text-[#A8BBC8]">
         {icon}
       </div>
 
       <div>
-        <h2 className="text-sm font-bold text-slate-950">
+        <h2 className="text-sm font-bold text-[#F8FAFC]">
           {title}
         </h2>
 
-        <p className="mt-0.5 max-w-2xl text-xs leading-5 text-slate-500">
+        <p className="mt-0.5 max-w-2xl text-xs leading-5 text-[#718895]">
           {description}
         </p>
       </div>
@@ -1593,7 +1593,7 @@ function Field({
   return (
     <div>
       <div className="mb-2">
-        <label className="block text-sm font-semibold text-slate-800">
+        <label className="block text-sm font-semibold text-[#F8FAFC]">
           {label}
 
           {required && (
@@ -1604,7 +1604,7 @@ function Field({
         </label>
 
         {hint && (
-          <p className="mt-1 text-xs leading-5 text-slate-500">
+          <p className="mt-1 text-xs leading-5 text-[#718895]">
             {hint}
           </p>
         )}
@@ -1613,7 +1613,7 @@ function Field({
       {children}
 
       {error && (
-        <p className="mt-1.5 text-xs font-medium text-red-600">
+        <p className="mt-1.5 text-xs font-medium text-red-300">
           {error}
         </p>
       )}
@@ -1629,7 +1629,7 @@ function FieldCounter({
   max: number;
 }) {
   return (
-    <div className="mt-1 text-right text-[11px] font-medium text-slate-400">
+    <div className="mt-1 text-right text-[11px] font-medium text-[#718895]">
       {value.length} / {max}
     </div>
   );
@@ -1654,7 +1654,7 @@ function InputWithIcon({
 }) {
   return (
     <div className="relative">
-      <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400">
+      <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-[#718895]">
         {icon}
       </span>
 
@@ -1693,8 +1693,8 @@ function TimeInput({
       }
       className={`h-10 w-full rounded-lg border px-3 text-sm outline-none transition ${
         disabled
-          ? "cursor-not-allowed border-slate-100 bg-slate-50 text-slate-300"
-          : "border-slate-200 bg-white text-slate-800 focus:border-slate-400 focus:ring-2 focus:ring-slate-100"
+          ? "cursor-not-allowed border-white/[0.07] bg-[#061A2B] text-[#607887]"
+          : "border-white/[0.08] bg-[#061A2B] text-[#F8FAFC] focus:border-[#0D6E91] focus:ring-2 focus:ring-[#0D6E91]/20"
       }`}
     />
   );
@@ -1722,7 +1722,7 @@ function SocialField({
       <div className="relative">
         <Globe2
           size={17}
-          className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"
+          className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-[#718895]"
         />
 
         <input
@@ -1745,9 +1745,9 @@ function SocialField({
 function inputClass(
   hasError: boolean
 ) {
-  return `w-full rounded-xl border bg-white px-3.5 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:ring-2 ${
+  return `w-full rounded-xl border bg-[#08263D] px-3.5 py-3 text-sm text-[#F8FAFC] outline-none transition placeholder:text-[#718895] focus:ring-2 ${
     hasError
-      ? "border-red-300 focus:border-red-400 focus:ring-red-50"
-      : "border-slate-200 focus:border-slate-400 focus:ring-slate-100"
+      ? "border-red-400/40 focus:border-red-300 focus:ring-red-400/10"
+      : "border-white/[0.08] focus:border-[#0D6E91] focus:ring-[#0D6E91]/20"
   }`;
 }

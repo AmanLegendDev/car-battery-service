@@ -4,6 +4,8 @@ import {
   useEffect,
   useMemo,
   useState,
+  type FormEvent,
+  type ReactNode,
 } from "react";
 
 import {
@@ -12,13 +14,10 @@ import {
   Check,
   ChevronDown,
   FileText,
-  Globe,
   Image as ImageIcon,
   Link2,
   Loader2,
-  Plus,
   Search,
-  Settings2,
   Tag,
   User,
   X,
@@ -33,18 +32,60 @@ import CloudinaryImageUpload, {
   type CloudinaryImageAsset,
 } from "@/components/admin/media/CloudinaryImageUpload";
 
-import {
-  createBlogSchema,
-} from "@/validations/blog";
+import { createBlogSchema } from "@/validations/blog";
 
 /* =========================================================
    TYPES
 ========================================================= */
 
-type BlogStatus =
+export type BlogStatus =
   | "draft"
   | "published"
   | "scheduled";
+
+export interface BlogFormData {
+  title: string;
+  slug: string;
+  excerpt: string;
+  content: string;
+
+  coverImage: CloudinaryImageAsset | null;
+  coverAlt: string;
+
+  authorName: string;
+  authorRole: string;
+  authorImage: CloudinaryImageAsset | null;
+  authorImageAlt: string;
+
+  category: string;
+  tags: string[];
+
+  status: BlogStatus;
+  featured: boolean;
+
+  publishedAt: string;
+  scheduledAt: string;
+  displayOrder: string;
+
+  seoTitle: string;
+  seoDescription: string;
+  canonicalUrl: string;
+  noIndex: boolean;
+
+  ogTitle: string;
+  ogDescription: string;
+  ogImage: CloudinaryImageAsset | null;
+  ogImageAlt: string;
+
+  relatedServices: string[];
+  relatedServiceAreas: string[];
+}
+
+export interface BlogFormProps {
+  mode?: "create" | "edit";
+  blogId?: string;
+  initialData?: Partial<BlogFormData>;
+}
 
 type ServiceOption = {
   id: string;
@@ -58,25 +99,41 @@ type ServiceAreaOption = {
   slug: string;
 };
 
-type FormErrors = Record<
-  string,
-  string
->;
+type FormErrors = Record<string, string>;
 
 /* =========================================================
    HELPERS
 ========================================================= */
 
+const EMPTY_CONTENT = "<p></p>";
+
+const DEFAULT_AUTHOR_NAME = "Car Battery Service";
+const DEFAULT_AUTHOR_ROLE = "Mobile Car Battery Service";
+
 function slugify(value: string) {
   return value
     .toLowerCase()
     .trim()
+    .replace(/['"]/g, "")
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
 }
 
+function normalizeTags(tags: string[]) {
+  return Array.from(
+    new Set(
+      tags
+        .map((tag) =>
+          tag.trim().replace(/\s+/g, " ")
+        )
+        .filter(Boolean)
+        .map((tag) => tag.toLowerCase())
+    )
+  );
+}
+
 function formatDateTimeForInput(
-  value: string | Date | null
+  value: string | Date | null | undefined
 ) {
   if (!value) return "";
 
@@ -89,12 +146,10 @@ function formatDateTimeForInput(
     return "";
   }
 
-  const offset =
-    date.getTimezoneOffset();
+  const offset = date.getTimezoneOffset();
 
   const localDate = new Date(
-    date.getTime() -
-      offset * 60 * 1000
+    date.getTime() - offset * 60 * 1000
   );
 
   return localDate
@@ -102,9 +157,7 @@ function formatDateTimeForInput(
     .slice(0, 16);
 }
 
-function dateTimeLocalToISO(
-  value: string
-) {
+function dateTimeLocalToISO(value: string) {
   if (!value) return null;
 
   const date = new Date(value);
@@ -116,93 +169,101 @@ function dateTimeLocalToISO(
   return date.toISOString();
 }
 
-function normalizeTags(
-  value: string[]
-) {
-  return Array.from(
-    new Set(
-      value
-        .map((tag) =>
-          tag
-            .trim()
-            .replace(/\s+/g, " ")
-        )
-        .filter(Boolean)
-        .map((tag) =>
-          tag.toLowerCase()
-        )
-    )
-  );
-}
-
-function getErrorMessage(
-  error: unknown
-) {
-  if (
-    typeof error === "object" &&
-    error !== null &&
-    "message" in error
-  ) {
-    return String(
-      (error as { message?: unknown })
-        .message ?? ""
-    );
+function assetFromInitial(
+  value: unknown
+): CloudinaryImageAsset | null {
+  if (!value || typeof value !== "object") {
+    return null;
   }
 
-  return "";
+  const image = value as Record<string, unknown>;
+
+  if (
+    typeof image.publicId !== "string" ||
+    typeof image.secureUrl !== "string"
+  ) {
+    return null;
+  }
+
+  return {
+    publicId: image.publicId,
+    secureUrl: image.secureUrl,
+    width: Number(image.width ?? 0),
+    height: Number(image.height ?? 0),
+    format: String(image.format ?? ""),
+    bytes: Number(image.bytes ?? 0),
+    resourceType: "image",
+    alt: String(image.alt ?? ""),
+  };
 }
+function buildMedia(
+  image: CloudinaryImageAsset | null,
+  alt: string
+) {
+  if (!image) return null;
 
-/* =========================================================
-   DEFAULTS
-========================================================= */
-
-const EMPTY_CONTENT =
-  "<p></p>";
-
-const DEFAULT_AUTHOR_NAME =
-  "Car Battery Service";
-
-const DEFAULT_AUTHOR_ROLE =
-  "Mobile Car Battery Service";
+  return {
+    publicId: image.publicId,
+    secureUrl: image.secureUrl,
+    width: image.width,
+    height: image.height,
+    format: image.format,
+    bytes: image.bytes,
+    resourceType: image.resourceType,
+    alt: alt.trim(),
+  };
+}
 
 /* =========================================================
    COMPONENT
 ========================================================= */
 
-export default function BlogForm() {
+export default function BlogForm({
+  mode = "create",
+  blogId,
+  initialData,
+}: BlogFormProps) {
   const router = useRouter();
+
+  const isEdit = mode === "edit";
 
   /* -------------------------------------------------------
      BASIC
   ------------------------------------------------------- */
 
-  const [title, setTitle] =
-    useState("");
+  const [title, setTitle] = useState(
+    initialData?.title ?? ""
+  );
 
-  const [slug, setSlug] =
-    useState("");
+  const [slug, setSlug] = useState(
+    initialData?.slug ?? ""
+  );
 
-  const [slugEdited, setSlugEdited] =
-    useState(false);
+  const [slugEdited, setSlugEdited] = useState(
+    Boolean(initialData?.slug)
+  );
 
-  const [excerpt, setExcerpt] =
-    useState("");
+  const [excerpt, setExcerpt] = useState(
+    initialData?.excerpt ?? ""
+  );
 
-  const [category, setCategory] =
-    useState("");
+  const [category, setCategory] = useState(
+    initialData?.category ?? ""
+  );
 
-  const [tags, setTags] =
-    useState<string[]>([]);
+  const [tags, setTags] = useState<string[]>(
+    initialData?.tags ?? []
+  );
 
-  const [tagInput, setTagInput] =
-    useState("");
+  const [tagInput, setTagInput] = useState("");
 
   /* -------------------------------------------------------
      CONTENT
   ------------------------------------------------------- */
 
-  const [content, setContent] =
-    useState(EMPTY_CONTENT);
+  const [content, setContent] = useState(
+    initialData?.content || EMPTY_CONTENT
+  );
 
   /* -------------------------------------------------------
      COVER
@@ -210,54 +271,89 @@ export default function BlogForm() {
 
   const [coverImage, setCoverImage] =
     useState<CloudinaryImageAsset | null>(
-      null
+      assetFromInitial(initialData?.coverImage)
     );
 
-  const [coverAlt, setCoverAlt] =
-    useState("");
+  const [coverAlt, setCoverAlt] = useState(
+    initialData?.coverImage &&
+    typeof initialData.coverImage === "object"
+      ? String(
+          (
+            initialData.coverImage as {
+              alt?: string;
+            }
+          ).alt ?? ""
+        )
+      : ""
+  );
 
   /* -------------------------------------------------------
      AUTHOR
   ------------------------------------------------------- */
 
-  const [authorName, setAuthorName] =
-    useState(DEFAULT_AUTHOR_NAME);
+  const [authorName, setAuthorName] = useState(
+    initialData?.authorName ||
+      DEFAULT_AUTHOR_NAME
+  );
 
-  const [authorRole, setAuthorRole] =
-    useState(DEFAULT_AUTHOR_ROLE);
+  const [authorRole, setAuthorRole] = useState(
+    initialData?.authorRole ||
+      DEFAULT_AUTHOR_ROLE
+  );
 
   const [authorImage, setAuthorImage] =
     useState<CloudinaryImageAsset | null>(
-      null
+      assetFromInitial(initialData?.authorImage)
     );
 
   const [authorImageAlt, setAuthorImageAlt] =
-    useState("");
+    useState(
+      initialData?.authorImage &&
+      typeof initialData.authorImage === "object"
+        ? String(
+            (
+              initialData.authorImage as {
+                alt?: string;
+              }
+            ).alt ?? ""
+          )
+        : ""
+    );
 
   /* -------------------------------------------------------
      RELATIONSHIPS
   ------------------------------------------------------- */
 
-  const [services, setServices] =
-    useState<ServiceOption[]>([]);
+  const [services, setServices] = useState<
+    ServiceOption[]
+  >([]);
 
   const [serviceAreas, setServiceAreas] =
     useState<ServiceAreaOption[]>([]);
 
-  const [
-    selectedServices,
-    setSelectedServices,
-  ] = useState<string[]>([]);
+  const [selectedServices, setSelectedServices] =
+    useState<string[]>(
+      initialData?.relatedServices ?? []
+    );
 
   const [
     selectedServiceAreas,
     setSelectedServiceAreas,
-  ] = useState<string[]>([]);
+  ] = useState<string[]>(
+    initialData?.relatedServiceAreas ?? []
+  );
 
   const [
     relationshipSearch,
     setRelationshipSearch,
   ] = useState("");
+
+  const [
+    activeRelationshipTab,
+    setActiveRelationshipTab,
+  ] = useState<"services" | "areas">(
+    "services"
+  );
 
   const [
     relationshipsLoading,
@@ -269,55 +365,81 @@ export default function BlogForm() {
   ------------------------------------------------------- */
 
   const [status, setStatus] =
-    useState<BlogStatus>("draft");
+    useState<BlogStatus>(
+      initialData?.status ?? "draft"
+    );
 
   const [featured, setFeatured] =
-    useState(false);
+    useState(Boolean(initialData?.featured));
 
   const [publishedAt, setPublishedAt] =
-    useState("");
+    useState(
+      formatDateTimeForInput(
+        initialData?.publishedAt
+      )
+    );
 
   const [scheduledAt, setScheduledAt] =
-    useState("");
+    useState(
+      formatDateTimeForInput(
+        initialData?.scheduledAt
+      )
+    );
 
   const [displayOrder, setDisplayOrder] =
-    useState("0");
+    useState(
+      String(initialData?.displayOrder ?? 0)
+    );
 
   /* -------------------------------------------------------
      SEO
   ------------------------------------------------------- */
 
-  const [seoTitle, setSeoTitle] =
-    useState("");
+  const [seoTitle, setSeoTitle] = useState(
+    initialData?.seoTitle ?? ""
+  );
 
-  const [
-    seoDescription,
-    setSeoDescription,
-  ] = useState("");
+  const [seoDescription, setSeoDescription] =
+    useState(
+      initialData?.seoDescription ?? ""
+    );
 
-  const [
-    canonicalUrl,
-    setCanonicalUrl,
-  ] = useState("");
+  const [canonicalUrl, setCanonicalUrl] =
+    useState(
+      initialData?.canonicalUrl ?? ""
+    );
 
-  const [noIndex, setNoIndex] =
-    useState(false);
+  const [noIndex, setNoIndex] = useState(
+    Boolean(initialData?.noIndex)
+  );
 
-  const [ogTitle, setOgTitle] =
-    useState("");
+  const [ogTitle, setOgTitle] = useState(
+    initialData?.ogTitle ?? ""
+  );
 
-  const [
-    ogDescription,
-    setOgDescription,
-  ] = useState("");
+  const [ogDescription, setOgDescription] =
+    useState(
+      initialData?.ogDescription ?? ""
+    );
 
   const [ogImage, setOgImage] =
     useState<CloudinaryImageAsset | null>(
-      null
+      assetFromInitial(initialData?.ogImage)
     );
 
   const [ogImageAlt, setOgImageAlt] =
-    useState("");
+    useState(
+      initialData?.ogImage &&
+      typeof initialData.ogImage === "object"
+        ? String(
+            (
+              initialData.ogImage as {
+                alt?: string;
+              }
+            ).alt ?? ""
+          )
+        : ""
+    );
 
   /* -------------------------------------------------------
      UI
@@ -328,11 +450,6 @@ export default function BlogForm() {
 
   const [isSubmitting, setIsSubmitting] =
     useState(false);
-
-  const [activeRelationshipTab, setActiveRelationshipTab] =
-    useState<
-      "services" | "areas"
-    >("services");
 
   /* =======================================================
      AUTO SLUG
@@ -365,7 +482,6 @@ export default function BlogForm() {
               cache: "no-store",
             }
           ),
-
           fetch(
             "/api/admin/service-areas?limit=100",
             {
@@ -374,15 +490,12 @@ export default function BlogForm() {
           ),
         ]);
 
-        if (!servicesResponse.ok) {
+        if (
+          !servicesResponse.ok ||
+          !areasResponse.ok
+        ) {
           throw new Error(
-            "Failed to load services."
-          );
-        }
-
-        if (!areasResponse.ok) {
-          throw new Error(
-            "Failed to load service areas."
+            "Failed to load relationships."
           );
         }
 
@@ -410,30 +523,32 @@ export default function BlogForm() {
 
         setServices(
           serviceData.map(
-            (item: any) => ({
+            (item: Record<string, unknown>) => ({
               id: String(
-                item.id ??
-                  item._id
+                item.id ?? item._id
               ),
-              title:
-                item.title ?? "",
-              slug:
-                item.slug ?? "",
+              title: String(
+                item.title ?? ""
+              ),
+              slug: String(
+                item.slug ?? ""
+              ),
             })
           )
         );
 
         setServiceAreas(
           areaData.map(
-            (item: any) => ({
+            (item: Record<string, unknown>) => ({
               id: String(
-                item.id ??
-                  item._id
+                item.id ?? item._id
               ),
-              name:
-                item.name ?? "",
-              slug:
-                item.slug ?? "",
+              name: String(
+                item.name ?? ""
+              ),
+              slug: String(
+                item.slug ?? ""
+              ),
             })
           )
         );
@@ -445,9 +560,7 @@ export default function BlogForm() {
         }
       } finally {
         if (!cancelled) {
-          setRelationshipsLoading(
-            false
-          );
+          setRelationshipsLoading(false);
         }
       }
     }
@@ -460,68 +573,61 @@ export default function BlogForm() {
   }, []);
 
   /* =======================================================
-     RELATIONSHIP SEARCH
+     FILTERED RELATIONSHIPS
   ======================================================= */
 
-  const filteredServices =
-    useMemo(() => {
-      const query =
-        relationshipSearch
-          .trim()
-          .toLowerCase();
+  const filteredServices = useMemo(() => {
+    const query =
+      relationshipSearch
+        .trim()
+        .toLowerCase();
 
-      if (!query) {
-        return services;
-      }
+    if (!query) return services;
 
-      return services.filter(
-        (service) =>
-          service.title
-            .toLowerCase()
-            .includes(query) ||
-          service.slug
-            .toLowerCase()
-            .includes(query)
-      );
-    }, [
-      services,
-      relationshipSearch,
-    ]);
+    return services.filter(
+      (service) =>
+        service.title
+          .toLowerCase()
+          .includes(query) ||
+        service.slug
+          .toLowerCase()
+          .includes(query)
+    );
+  }, [
+    services,
+    relationshipSearch,
+  ]);
 
-  const filteredAreas =
-    useMemo(() => {
-      const query =
-        relationshipSearch
-          .trim()
-          .toLowerCase();
+  const filteredAreas = useMemo(() => {
+    const query =
+      relationshipSearch
+        .trim()
+        .toLowerCase();
 
-      if (!query) {
-        return serviceAreas;
-      }
+    if (!query) return serviceAreas;
 
-      return serviceAreas.filter(
-        (area) =>
-          area.name
-            .toLowerCase()
-            .includes(query) ||
-          area.slug
-            .toLowerCase()
-            .includes(query)
-      );
-    }, [
-      serviceAreas,
-      relationshipSearch,
-    ]);
+    return serviceAreas.filter(
+      (area) =>
+        area.name
+          .toLowerCase()
+          .includes(query) ||
+        area.slug
+          .toLowerCase()
+          .includes(query)
+    );
+  }, [
+    serviceAreas,
+    relationshipSearch,
+  ]);
 
   /* =======================================================
      TAGS
   ======================================================= */
 
   function addTag() {
-    const value =
-      tagInput
-        .trim()
-        .replace(/\s+/g, " ");
+    const value = tagInput
+      .trim()
+      .replace(/\s+/g, " ");
 
     if (!value) return;
 
@@ -543,17 +649,11 @@ export default function BlogForm() {
       return;
     }
 
-    setTags([
-      ...tags,
-      value,
-    ]);
-
+    setTags([...tags, value]);
     setTagInput("");
   }
 
-  function removeTag(
-    index: number
-  ) {
+  function removeTag(index: number) {
     setTags(
       tags.filter(
         (_, itemIndex) =>
@@ -578,119 +678,59 @@ export default function BlogForm() {
       !tagInput &&
       tags.length
     ) {
-      setTags(
-        tags.slice(
-          0,
-          -1
-        )
-      );
+      setTags(tags.slice(0, -1));
     }
   }
 
   /* =======================================================
-     RELATIONSHIP TOGGLE
+     RELATIONSHIP TOGGLES
   ======================================================= */
 
-  function toggleService(
-    id: string
-  ) {
-    setSelectedServices(
-      (current) =>
-        current.includes(id)
-          ? current.filter(
-              (item) =>
-                item !== id
-            )
-          : [
-              ...current,
-              id,
-            ]
+  function toggleService(id: string) {
+    setSelectedServices((current) =>
+      current.includes(id)
+        ? current.filter(
+            (item) => item !== id
+          )
+        : [...current, id]
     );
   }
 
-  function toggleServiceArea(
-    id: string
-  ) {
-    setSelectedServiceAreas(
-      (current) =>
-        current.includes(id)
-          ? current.filter(
-              (item) =>
-                item !== id
-            )
-          : [
-              ...current,
-              id,
-            ]
+  function toggleServiceArea(id: string) {
+    setSelectedServiceAreas((current) =>
+      current.includes(id)
+        ? current.filter(
+            (item) => item !== id
+          )
+        : [...current, id]
     );
   }
 
   /* =======================================================
-     BUILD MEDIA
+     VALIDATION + PAYLOAD
   ======================================================= */
 
-  function buildMedia(
-    image:
-      | CloudinaryImageAsset
-      | null,
-    alt: string
-  ) {
-    if (!image) return null;
-
-    return {
-      publicId:
-        image.publicId,
-
-      secureUrl:
-        image.secureUrl,
-
-      width:
-        image.width,
-
-      height:
-        image.height,
-
-      format:
-        image.format,
-
-      bytes:
-        image.bytes,
-
-      resourceType:
-        image.resourceType,
-
-      alt:
-        alt.trim(),
-    };
-  }
-
-  /* =======================================================
-     VALIDATION
-  ======================================================= */
-
-  function validateForm() {
+  function buildPayload() {
     const payload = {
-      title,
-      slug,
-      excerpt,
+      title: title.trim(),
+      slug: slugify(slug),
+      excerpt: excerpt.trim(),
       content,
 
-      coverImage:
-        buildMedia(
-          coverImage,
-          coverAlt
-        ),
+      coverImage: buildMedia(
+        coverImage,
+        coverAlt
+      ),
 
-      authorName,
-      authorRole,
+      authorName: authorName.trim(),
+      authorRole: authorRole.trim(),
 
-      authorImage:
-        buildMedia(
-          authorImage,
-          authorImageAlt
-        ),
+      authorImage: buildMedia(
+        authorImage,
+        authorImageAlt
+      ),
 
-      category,
+      category: category.trim(),
       tags: normalizeTags(tags),
 
       status,
@@ -710,22 +750,25 @@ export default function BlogForm() {
             )
           : null,
 
-      displayOrder:
-        Number(displayOrder),
+      displayOrder: Number(
+        displayOrder
+      ),
 
-      seoTitle,
-      seoDescription,
-      canonicalUrl,
+      seoTitle: seoTitle.trim(),
+      seoDescription:
+        seoDescription.trim(),
+      canonicalUrl:
+        canonicalUrl.trim(),
       noIndex,
 
-      ogTitle,
-      ogDescription,
+      ogTitle: ogTitle.trim(),
+      ogDescription:
+        ogDescription.trim(),
 
-      ogImage:
-        buildMedia(
-          ogImage,
-          ogImageAlt
-        ),
+      ogImage: buildMedia(
+        ogImage,
+        ogImageAlt
+      ),
 
       relatedServices:
         selectedServices,
@@ -743,8 +786,8 @@ export default function BlogForm() {
       const nextErrors: FormErrors =
         {};
 
-      for (const issue of result.error
-        .issues) {
+      for (const issue of result
+        .error.issues) {
         const path =
           issue.path.join(".");
 
@@ -762,9 +805,7 @@ export default function BlogForm() {
         )[0];
 
       if (firstError) {
-        toast.error(
-          firstError
-        );
+        toast.error(firstError);
       }
 
       return null;
@@ -780,67 +821,66 @@ export default function BlogForm() {
   ======================================================= */
 
   async function handleSubmit(
-    event?: React.FormEvent
+    event: FormEvent
   ) {
-    event?.preventDefault();
+    event.preventDefault();
 
-    if (isSubmitting) {
+    if (isSubmitting) return;
+
+    if (isEdit && !blogId) {
+      toast.error(
+        "Blog ID is missing."
+      );
       return;
     }
 
-    const payload =
-      validateForm();
+    const payload = buildPayload();
 
-    if (!payload) {
-      return;
-    }
+    if (!payload) return;
 
     try {
       setIsSubmitting(true);
 
-      const response =
-        await fetch(
-          "/api/admin/blog",
-          {
-            method: "POST",
-            headers: {
-              "Content-Type":
-                "application/json",
-            },
-            body: JSON.stringify(
-              payload
-            ),
-          }
-        );
+      const endpoint = isEdit
+        ? `/api/admin/blog/${blogId}`
+        : "/api/admin/blog";
+
+      const response = await fetch(
+        endpoint,
+        {
+          method: isEdit
+            ? "PATCH"
+            : "POST",
+          headers: {
+            "Content-Type":
+              "application/json",
+          },
+          body: JSON.stringify(
+            payload
+          ),
+        }
+      );
 
       const result =
         await response.json();
 
       if (!response.ok) {
-        if (
-          result?.errors
-        ) {
+        if (result?.errors) {
           const serverErrors: FormErrors =
             {};
 
           Object.entries(
             result.errors
           ).forEach(
-            ([
-              key,
-              value,
-            ]) => {
+            ([key, value]) => {
               if (
                 Array.isArray(
                   value
                 ) &&
                 value[0]
               ) {
-                serverErrors[
-                  key
-                ] = String(
-                  value[0]
-                );
+                serverErrors[key] =
+                  String(value[0]);
               }
             }
           );
@@ -852,14 +892,20 @@ export default function BlogForm() {
 
         toast.error(
           result?.message ??
-            "Failed to create blog post."
+            `Failed to ${
+              isEdit
+                ? "update"
+                : "create"
+            } blog post.`
         );
 
         return;
       }
 
       toast.success(
-        "Blog post created successfully."
+        isEdit
+          ? "Blog post updated successfully."
+          : "Blog post created successfully."
       );
 
       router.push(
@@ -869,7 +915,11 @@ export default function BlogForm() {
       router.refresh();
     } catch {
       toast.error(
-        "Something went wrong while creating the blog post."
+        `Something went wrong while ${
+          isEdit
+            ? "updating"
+            : "creating"
+        } the blog post.`
       );
     } finally {
       setIsSubmitting(false);
@@ -883,20 +933,22 @@ export default function BlogForm() {
   return (
     <form
       onSubmit={handleSubmit}
-      className="pb-32 lg:pb-10"
+      className="min-h-screen bg-[#061A2B] pb-32 text-[#F8FAFC] lg:pb-10"
     >
-      <div className="mx-auto w-full max-w-6xl space-y-6">
+      <div className="mx-auto w-full max-w-6xl space-y-6 px-1">
+
         {/* =================================================
-            BASIC INFORMATION
+            BASIC
         ================================================= */}
 
         <Section
           icon={FileText}
           number="01"
           title="Basic Information"
-          description="Define the blog identity, category and URL."
+          description="Define the article identity, URL, category and tags."
         >
           <div className="grid gap-5 lg:grid-cols-2">
+
             <Field
               label="Blog Title"
               required
@@ -904,16 +956,17 @@ export default function BlogForm() {
             >
               <input
                 value={title}
-                onChange={(event) =>
+                onChange={(e) =>
                   setTitle(
-                    event.target.value
+                    e.target.value
                   )
                 }
-                placeholder="e.g. How Much Does a Full Car Service Cost?"
+                placeholder="Enter blog title..."
                 className={inputClass(
                   !!errors.title
                 )}
               />
+
               <CharacterHint
                 value={title}
                 max={160}
@@ -927,12 +980,12 @@ export default function BlogForm() {
             >
               <input
                 value={category}
-                onChange={(event) =>
+                onChange={(e) =>
                   setCategory(
-                    event.target.value
+                    e.target.value
                   )
                 }
-                placeholder="e.g. Car Battery Care"
+                placeholder="e.g. Battery Care"
                 className={inputClass(
                   !!errors.category
                 )}
@@ -944,29 +997,27 @@ export default function BlogForm() {
                 label="Slug"
                 required
                 error={errors.slug}
-                hint="Lowercase URL-safe slug. It becomes /blog/[slug]."
+                hint="This becomes /blog/[slug]"
               >
-                <div className="flex overflow-hidden rounded-xl border border-slate-200 bg-white focus-within:border-[#0D6E91] focus-within:ring-2 focus-within:ring-[#0D6E91]/10">
-                  <span className="hidden items-center border-r border-slate-200 bg-slate-50 px-4 text-sm text-slate-400 sm:flex">
+                <div className="flex overflow-hidden rounded-xl border border-white/[0.10] bg-[#061A2B] focus-within:border-[#0D6E91] focus-within:ring-2 focus-within:ring-[#0D6E91]/10">
+                  <span className="hidden items-center border-r border-white/[0.08] bg-[#061A2B] px-4 text-xs font-semibold text-[#718895] sm:flex">
                     /blog/
                   </span>
 
                   <input
                     value={slug}
-                    onChange={(event) => {
+                    onChange={(e) => {
                       setSlug(
                         slugify(
-                          event.target
-                            .value
+                          e.target.value
                         )
                       );
-
                       setSlugEdited(
                         true
                       );
                     }}
                     placeholder="your-blog-slug"
-                    className="min-w-0 flex-1 border-0 bg-transparent px-4 py-3 text-sm text-slate-900 outline-none"
+                    className="min-w-0 flex-1 border-0 bg-transparent px-4 py-3 text-sm text-[#F8FAFC] outline-none placeholder:text-[#718895]"
                   />
                 </div>
               </Field>
@@ -977,17 +1028,16 @@ export default function BlogForm() {
                 label="Excerpt"
                 required
                 error={errors.excerpt}
-                hint="Short summary used on blog cards and previews."
               >
                 <textarea
                   value={excerpt}
-                  onChange={(event) =>
+                  onChange={(e) =>
                     setExcerpt(
-                      event.target.value
+                      e.target.value
                     )
                   }
                   rows={4}
-                  placeholder="Write a concise summary of what this article covers..."
+                  placeholder="Write a concise article summary..."
                   className={textareaClass(
                     !!errors.excerpt
                   )}
@@ -1003,19 +1053,21 @@ export default function BlogForm() {
             <div className="lg:col-span-2">
               <Field
                 label="Tags"
-                hint="Press Enter or comma after each tag."
+                hint="Press Enter or comma to add a tag."
               >
-                <div className="rounded-xl border border-slate-200 bg-white p-3 focus-within:border-[#0D6E91] focus-within:ring-2 focus-within:ring-[#0D6E91]/10">
+                <div className="rounded-xl border border-white/[0.10] bg-[#061A2B] p-3 focus-within:border-[#0D6E91] focus-within:ring-2 focus-within:ring-[#0D6E91]/10">
                   <div className="flex flex-wrap gap-2">
+
                     {tags.map(
-                      (
-                        tag,
-                        index
-                      ) => (
+                      (tag, index) => (
                         <span
                           key={`${tag}-${index}`}
-                          className="inline-flex items-center gap-1.5 rounded-full bg-[#061A2B] px-3 py-1.5 text-xs font-medium text-white"
+                          className="inline-flex items-center gap-1.5 rounded-full bg-[#061A2B] px-3 py-1.5 text-xs font-semibold text-white"
                         >
+                          <Tag
+                            size={12}
+                          />
+
                           {tag}
 
                           <button
@@ -1025,13 +1077,10 @@ export default function BlogForm() {
                                 index
                               )
                             }
-                            className="rounded-full p-0.5 text-slate-300 transition hover:bg-white/10 hover:text-white"
-                            aria-label={`Remove ${tag}`}
+                            className="rounded-full p-0.5 text-[#A8BBC8] hover:bg-[#061A2B]/10 hover:text-white"
                           >
                             <X
-                              size={
-                                13
-                              }
+                              size={13}
                             />
                           </button>
                         </span>
@@ -1042,33 +1091,27 @@ export default function BlogForm() {
                       value={
                         tagInput
                       }
-                      onChange={(
-                        event
-                      ) =>
+                      onChange={(e) =>
                         setTagInput(
-                          event.target
-                            .value
+                          e.target.value
                         )
                       }
                       onKeyDown={
                         handleTagKeyDown
                       }
-                      onBlur={
-                        addTag
-                      }
+                      onBlur={addTag}
                       placeholder={
                         tags.length
                           ? "Add another tag..."
                           : "e.g. battery replacement"
                       }
-                      className="min-w-[180px] flex-1 border-0 bg-transparent px-1 py-2 text-sm outline-none"
+                      className="min-w-[180px] flex-1 border-0 bg-transparent px-1 py-2 text-sm text-[#F8FAFC] outline-none placeholder:text-[#718895]"
                     />
                   </div>
                 </div>
 
-                <div className="mt-2 text-xs text-slate-400">
-                  {tags.length}/20
-                  tags
+                <div className="text-right text-[11px] text-[#718895]">
+                  {tags.length}/20 tags
                 </div>
               </Field>
             </div>
@@ -1082,87 +1125,66 @@ export default function BlogForm() {
         <Section
           icon={FileText}
           number="02"
-          title="Content"
-          description="Write the article using the existing Tiptap rich text editor."
+          title="Article Content"
+          description="Write the complete article using the rich text editor."
         >
           <Field
-            label="Article Content"
+            label="Content"
             required
             error={errors.content}
           >
             <TiptapEditor
               value={content}
-              onChange={
-                setContent
-              }
+              onChange={setContent}
             />
           </Field>
         </Section>
 
         {/* =================================================
-            COVER MEDIA
+            COVER
         ================================================= */}
 
         <Section
           icon={ImageIcon}
           number="03"
           title="Cover Media"
-          description="Upload the primary image shown with the blog post."
+          description="Primary image displayed on article cards and the article page."
         >
           <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
+
             <Field
               label="Cover Image"
-              error={
-                errors.coverImage
-              }
-              hint="Recommended: landscape image suitable for blog cards and article headers."
+              error={errors.coverImage}
             >
               <CloudinaryImageUpload
-                value={
-                  coverImage
-                }
+                value={coverImage}
                 onChange={
                   setCoverImage
                 }
-                folder="car-battery-service/blog/covers"
+                folder="car-battery-service/blog/cover"
               />
             </Field>
 
             <Field
-              label="Cover Image Alt Text"
+              label="Cover Alt Text"
               error={
-                errors[
-                  "coverImage.alt"
-                ]
+                errors["coverImage.alt"]
               }
-              hint="Describe the image naturally for accessibility."
             >
               <textarea
-                value={
-                  coverAlt
-                }
-                onChange={(
-                  event
-                ) =>
+                value={coverAlt}
+                onChange={(e) =>
                   setCoverAlt(
-                    event.target
-                      .value
+                    e.target.value
                   )
                 }
                 rows={5}
-                placeholder="e.g. Mobile technician testing a car battery beside a vehicle"
+                placeholder="Describe the cover image..."
                 className={textareaClass(
                   !!errors[
                     "coverImage.alt"
                   ]
                 )}
-              />
-
-              <CharacterHint
-                value={
-                  coverAlt
-                }
-                max={200}
               />
             </Field>
           </div>
@@ -1176,29 +1198,22 @@ export default function BlogForm() {
           icon={User}
           number="04"
           title="Author"
-          description="Keep author information structured without creating a separate Author CMS."
+          description="Structured author information without creating a separate author CMS."
         >
           <div className="grid gap-5 lg:grid-cols-2">
+
             <Field
               label="Author Name"
               required
-              error={
-                errors.authorName
-              }
+              error={errors.authorName}
             >
               <input
-                value={
-                  authorName
-                }
-                onChange={(
-                  event
-                ) =>
+                value={authorName}
+                onChange={(e) =>
                   setAuthorName(
-                    event.target
-                      .value
+                    e.target.value
                   )
                 }
-                placeholder="Car Battery Service"
                 className={inputClass(
                   !!errors.authorName
                 )}
@@ -1207,23 +1222,15 @@ export default function BlogForm() {
 
             <Field
               label="Author Role"
-              error={
-                errors.authorRole
-              }
+              error={errors.authorRole}
             >
               <input
-                value={
-                  authorRole
-                }
-                onChange={(
-                  event
-                ) =>
+                value={authorRole}
+                onChange={(e) =>
                   setAuthorRole(
-                    event.target
-                      .value
+                    e.target.value
                   )
                 }
-                placeholder="Mobile Car Battery Service"
                 className={inputClass(
                   !!errors.authorRole
                 )}
@@ -1232,6 +1239,7 @@ export default function BlogForm() {
 
             <div className="lg:col-span-2">
               <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
+
                 <Field
                   label="Author Image"
                   error={
@@ -1239,13 +1247,11 @@ export default function BlogForm() {
                   }
                 >
                   <CloudinaryImageUpload
-                    value={
-                      authorImage
-                    }
+                    value={authorImage}
                     onChange={
                       setAuthorImage
                     }
-                    folder="car-battery-service/blog/authors"
+                    folder="car-battery-service/blog/author"
                   />
                 </Field>
 
@@ -1261,12 +1267,9 @@ export default function BlogForm() {
                     value={
                       authorImageAlt
                     }
-                    onChange={(
-                      event
-                    ) =>
+                    onChange={(e) =>
                       setAuthorImageAlt(
-                        event.target
-                          .value
+                        e.target.value
                       )
                     }
                     rows={5}
@@ -1290,22 +1293,25 @@ export default function BlogForm() {
         <Section
           icon={Link2}
           number="05"
-          title="Relationships"
-          description="Connect the article with relevant services and genuine service areas."
+          title="Related Content"
+          description="Connect this article with genuinely relevant services and service areas."
         >
-          <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4 sm:p-5">
+          <div className="rounded-2xl border border-white/[0.08] bg-[#061A2B]/70 p-4 sm:p-5">
+
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+
               <div>
-                <h3 className="text-sm font-semibold text-[#061A2B]">
-                  Related Content
+                <h3 className="text-sm font-bold text-[#F8FAFC]">
+                  Relationships
                 </h3>
 
-                <p className="mt-1 text-xs leading-5 text-slate-500">
-                  Only select relationships that are genuinely relevant to this article.
+                <p className="mt-1 text-xs text-[#A8BBC8]">
+                  Select only content that is actually relevant.
                 </p>
               </div>
 
-              <div className="flex w-full rounded-xl border border-slate-200 bg-white p-1 sm:w-auto">
+              <div className="flex rounded-xl border border-white/[0.08] bg-[#061A2B] p-1">
+
                 <button
                   type="button"
                   onClick={() => {
@@ -1316,11 +1322,11 @@ export default function BlogForm() {
                       ""
                     );
                   }}
-                  className={`flex-1 rounded-lg px-4 py-2 text-xs font-semibold transition sm:flex-none ${
+                  className={`rounded-lg px-4 py-2 text-xs font-bold ${
                     activeRelationshipTab ===
                     "services"
                       ? "bg-[#061A2B] text-white"
-                      : "text-slate-500 hover:text-[#061A2B]"
+                      : "text-[#A8BBC8]"
                   }`}
                 >
                   Services (
@@ -1340,14 +1346,14 @@ export default function BlogForm() {
                       ""
                     );
                   }}
-                  className={`flex-1 rounded-lg px-4 py-2 text-xs font-semibold transition sm:flex-none ${
+                  className={`rounded-lg px-4 py-2 text-xs font-bold ${
                     activeRelationshipTab ===
                     "areas"
                       ? "bg-[#061A2B] text-white"
-                      : "text-slate-500 hover:text-[#061A2B]"
+                      : "text-[#A8BBC8]"
                   }`}
                 >
-                  Service Areas (
+                  Areas (
                   {
                     selectedServiceAreas.length
                   }
@@ -1359,19 +1365,16 @@ export default function BlogForm() {
             <div className="relative mt-5">
               <Search
                 size={17}
-                className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+                className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#718895]"
               />
 
               <input
                 value={
                   relationshipSearch
                 }
-                onChange={(
-                  event
-                ) =>
+                onChange={(e) =>
                   setRelationshipSearch(
-                    event.target
-                      .value
+                    e.target.value
                   )
                 }
                 placeholder={
@@ -1380,29 +1383,27 @@ export default function BlogForm() {
                     ? "Search services..."
                     : "Search service areas..."
                 }
-                className="w-full rounded-xl border border-slate-200 bg-white py-3 pl-10 pr-4 text-sm outline-none transition focus:border-[#0D6E91] focus:ring-2 focus:ring-[#0D6E91]/10"
+                className="w-full rounded-xl border border-white/[0.08] bg-[#061A2B] py-3 pl-10 pr-4 text-sm outline-none focus:border-[#0D6E91] focus:ring-2 focus:ring-[#0D6E91]/10"
               />
             </div>
 
             <div className="mt-4">
+
               {relationshipsLoading ? (
-                <div className="flex min-h-32 items-center justify-center rounded-xl border border-dashed border-slate-200 bg-white">
-                  <div className="flex items-center gap-2 text-sm text-slate-500">
+                <div className="flex min-h-32 items-center justify-center rounded-xl border border-dashed border-white/[0.08] bg-[#061A2B]">
+                  <div className="flex items-center gap-2 text-sm text-[#A8BBC8]">
                     <Loader2
                       size={16}
                       className="animate-spin"
                     />
-                    Loading relationships...
+                    Loading...
                   </div>
                 </div>
               ) : activeRelationshipTab ===
                 "services" ? (
                 <RelationshipList
-                  emptyText="No services found."
                   items={filteredServices.map(
-                    (
-                      service
-                    ) => ({
+                    (service) => ({
                       id: service.id,
                       label:
                         service.title,
@@ -1412,21 +1413,18 @@ export default function BlogForm() {
                         selectedServices.includes(
                           service.id
                         ),
-                      onToggle:
-                        () =>
-                          toggleService(
-                            service.id
-                          ),
+                      onToggle: () =>
+                        toggleService(
+                          service.id
+                        ),
                     })
                   )}
+                  emptyText="No services found."
                 />
               ) : (
                 <RelationshipList
-                  emptyText="No service areas found."
                   items={filteredAreas.map(
-                    (
-                      area
-                    ) => ({
+                    (area) => ({
                       id: area.id,
                       label:
                         area.name,
@@ -1436,13 +1434,13 @@ export default function BlogForm() {
                         selectedServiceAreas.includes(
                           area.id
                         ),
-                      onToggle:
-                        () =>
-                          toggleServiceArea(
-                            area.id
-                          ),
+                      onToggle: () =>
+                        toggleServiceArea(
+                          area.id
+                        ),
                     })
                   )}
+                  emptyText="No service areas found."
                 />
               )}
             </div>
@@ -1457,9 +1455,10 @@ export default function BlogForm() {
           icon={CalendarDays}
           number="06"
           title="Publishing"
-          description="Control the article lifecycle independently from featured status."
+          description="Manage draft, published and scheduled states independently from featured status."
         >
           <div className="grid gap-5 lg:grid-cols-2">
+
             <Field
               label="Status"
               required
@@ -1467,22 +1466,16 @@ export default function BlogForm() {
             >
               <div className="relative">
                 <select
-                  value={
-                    status
-                  }
-                  onChange={(
-                    event
-                  ) => {
-                    const nextStatus =
-                      event.target
+                  value={status}
+                  onChange={(e) => {
+                    const next =
+                      e.target
                         .value as BlogStatus;
 
-                    setStatus(
-                      nextStatus
-                    );
+                    setStatus(next);
 
                     if (
-                      nextStatus !==
+                      next !==
                       "scheduled"
                     ) {
                       setScheduledAt(
@@ -1490,16 +1483,14 @@ export default function BlogForm() {
                       );
                     }
                   }}
-                  className="w-full appearance-none rounded-xl border border-slate-200 bg-white px-4 py-3 pr-10 text-sm font-medium text-slate-800 outline-none transition focus:border-[#0D6E91] focus:ring-2 focus:ring-[#0D6E91]/10"
+                  className="w-full appearance-none rounded-xl border border-white/[0.10] bg-[#061A2B] px-4 py-3 pr-10 text-sm font-semibold text-[#F8FAFC] outline-none focus:border-[#0D6E91] focus:ring-2 focus:ring-[#0D6E91]/10"
                 >
                   <option value="draft">
                     Draft
                   </option>
-
                   <option value="published">
                     Published
                   </option>
-
                   <option value="scheduled">
                     Scheduled
                   </option>
@@ -1507,31 +1498,23 @@ export default function BlogForm() {
 
                 <ChevronDown
                   size={17}
-                  className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-400"
+                  className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[#718895]"
                 />
               </div>
             </Field>
 
             <Field
               label="Display Order"
-              error={
-                errors.displayOrder
-              }
-              hint="Lower numbers appear first where ordering is used."
+              error={errors.displayOrder}
             >
               <input
                 type="number"
                 min="0"
                 max="100000"
-                value={
-                  displayOrder
-                }
-                onChange={(
-                  event
-                ) =>
+                value={displayOrder}
+                onChange={(e) =>
                   setDisplayOrder(
-                    event.target
-                      .value
+                    e.target.value
                   )
                 }
                 className={inputClass(
@@ -1547,19 +1530,16 @@ export default function BlogForm() {
                 error={
                   errors.publishedAt
                 }
-                hint="Leave empty to publish immediately."
+                hint="Leave empty if publishing now."
               >
                 <input
                   type="datetime-local"
                   value={
                     publishedAt
                   }
-                  onChange={(
-                    event
-                  ) =>
+                  onChange={(e) =>
                     setPublishedAt(
-                      event.target
-                        .value
+                      e.target.value
                     )
                   }
                   className={inputClass(
@@ -1577,26 +1557,15 @@ export default function BlogForm() {
                 error={
                   errors.scheduledAt
                 }
-                hint="Must be a future date and time."
               >
                 <input
                   type="datetime-local"
                   value={
                     scheduledAt
                   }
-                  min={formatDateTimeForInput(
-                    new Date(
-                      Date.now() +
-                        60 *
-                          1000
-                    )
-                  )}
-                  onChange={(
-                    event
-                  ) =>
+                  onChange={(e) =>
                     setScheduledAt(
-                      event.target
-                        .value
+                      e.target.value
                     )
                   }
                   className={inputClass(
@@ -1608,14 +1577,12 @@ export default function BlogForm() {
 
             <div className="lg:col-span-2">
               <Toggle
-                checked={
-                  featured
-                }
+                checked={featured}
                 onChange={
                   setFeatured
                 }
-                title="Featured Post"
-                description="Show this article in featured/latest content areas when the public frontend uses featured content."
+                title="Featured Article"
+                description="Marks this article as featured. Featured is separate from publishing status."
               />
             </div>
           </div>
@@ -1626,272 +1593,189 @@ export default function BlogForm() {
         ================================================= */}
 
         <Section
-          icon={Globe}
+          icon={Search}
           number="07"
-          title="SEO"
-          description="Control search metadata, canonical URL and indexing."
+          title="SEO & Social"
+          description="Control search metadata, canonical URL and social sharing metadata."
         >
-          <div className="space-y-5">
-            <div className="grid gap-5 lg:grid-cols-2">
-              <Field
-                label="SEO Title"
-                error={
-                  errors.seoTitle
+          <div className="grid gap-5 lg:grid-cols-2">
+
+            <Field
+              label="SEO Title"
+              error={errors.seoTitle}
+            >
+              <input
+                value={seoTitle}
+                onChange={(e) =>
+                  setSeoTitle(
+                    e.target.value
+                  )
                 }
-                hint="Recommended maximum: 60–70 characters."
-              >
-                <input
-                  value={
-                    seoTitle
-                  }
-                  onChange={(
-                    event
-                  ) =>
-                    setSeoTitle(
-                      event.target
-                        .value
-                    )
-                  }
-                  placeholder="SEO title for search engines"
-                  className={inputClass(
-                    !!errors.seoTitle
-                  )}
-                />
+                placeholder="SEO title..."
+                className={inputClass(
+                  !!errors.seoTitle
+                )}
+              />
 
-                <CharacterHint
-                  value={
-                    seoTitle
-                  }
-                  max={70}
-                />
-              </Field>
+              <CharacterHint
+                value={seoTitle}
+                max={180}
+              />
+            </Field>
 
-              <Field
-                label="Canonical URL"
-                error={
-                  errors.canonicalUrl
+            <Field
+              label="Canonical URL"
+              error={errors.canonicalUrl}
+            >
+              <input
+                type="url"
+                value={canonicalUrl}
+                onChange={(e) =>
+                  setCanonicalUrl(
+                    e.target.value
+                  )
                 }
-                hint="Optional. Use a complete HTTP/HTTPS URL."
-              >
-                <input
-                  type="url"
-                  value={
-                    canonicalUrl
-                  }
-                  onChange={(
-                    event
-                  ) =>
-                    setCanonicalUrl(
-                      event.target
-                        .value
-                    )
-                  }
-                  placeholder="https://www.example.com/blog/example"
-                  className={inputClass(
-                    !!errors.canonicalUrl
-                  )}
-                />
-              </Field>
+                placeholder="https://example.com/blog/..."
+                className={inputClass(
+                  !!errors.canonicalUrl
+                )}
+              />
+            </Field>
 
-              <div className="lg:col-span-2">
-                <Field
-                  label="SEO Description"
-                  error={
-                    errors.seoDescription
-                  }
-                  hint="Recommended maximum: 150–170 characters."
-                >
-                  <textarea
-                    value={
-                      seoDescription
-                    }
-                    onChange={(
-                      event
-                    ) =>
-                      setSeoDescription(
-                        event.target
-                          .value
-                      )
-                    }
-                    rows={4}
-                    placeholder="Write a concise search-engine description..."
-                    className={textareaClass(
-                      !!errors.seoDescription
-                    )}
-                  />
+            <Field
+              label="SEO Description"
+              error={
+                errors.seoDescription
+              }
+            >
+              <textarea
+                value={seoDescription}
+                onChange={(e) =>
+                  setSeoDescription(
+                    e.target.value
+                  )
+                }
+                rows={4}
+                placeholder="Search engine description..."
+                className={textareaClass(
+                  !!errors.seoDescription
+                )}
+              />
 
-                  <CharacterHint
-                    value={
-                      seoDescription
-                    }
-                    max={170}
-                  />
-                </Field>
-              </div>
+              <CharacterHint
+                value={
+                  seoDescription
+                }
+                max={300}
+              />
+            </Field>
 
-              <div className="lg:col-span-2">
-                <Toggle
-                  checked={
-                    noIndex
-                  }
-                  onChange={
-                    setNoIndex
-                  }
-                  title="No Index"
-                  description="Prevent search engines from indexing this post. Keep disabled for normal published SEO content."
-                  warning={
-                    noIndex
-                  }
-                />
-              </div>
+            <div>
+              <Toggle
+                checked={noIndex}
+                onChange={setNoIndex}
+                title="No Index"
+                description="Prevent search engines from indexing this article."
+                warning
+              />
             </div>
 
-            <div className="border-t border-slate-200 pt-6">
-              <div className="mb-5 flex items-center gap-3">
-                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#061A2B] text-[#FFD400]">
-                  <Settings2
-                    size={17}
-                  />
-                </div>
+            <Field
+              label="OG Title"
+              error={errors.ogTitle}
+            >
+              <input
+                value={ogTitle}
+                onChange={(e) =>
+                  setOgTitle(
+                    e.target.value
+                  )
+                }
+                placeholder="Social sharing title..."
+                className={inputClass(
+                  !!errors.ogTitle
+                )}
+              />
+            </Field>
 
-                <div>
-                  <h3 className="text-sm font-semibold text-[#061A2B]">
-                    Open Graph
-                  </h3>
+            <Field
+              label="OG Description"
+              error={
+                errors.ogDescription
+              }
+            >
+              <textarea
+                value={
+                  ogDescription
+                }
+                onChange={(e) =>
+                  setOgDescription(
+                    e.target.value
+                  )
+                }
+                rows={4}
+                placeholder="Social sharing description..."
+                className={textareaClass(
+                  !!errors.ogDescription
+                )}
+              />
+            </Field>
 
-                  <p className="text-xs text-slate-500">
-                    Social sharing metadata.
-                  </p>
-                </div>
-              </div>
+            <div className="lg:col-span-2">
+              <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
 
-              <div className="grid gap-5 lg:grid-cols-2">
                 <Field
-                  label="OG Title"
+                  label="OG Image"
                   error={
-                    errors.ogTitle
+                    errors.ogImage
                   }
                 >
-                  <input
-                    value={
-                      ogTitle
+                  <CloudinaryImageUpload
+                    value={ogImage}
+                    onChange={
+                      setOgImage
                     }
-                    onChange={(
-                      event
-                    ) =>
-                      setOgTitle(
-                        event.target
-                          .value
-                      )
-                    }
-                    placeholder="Social sharing title"
-                    className={inputClass(
-                      !!errors.ogTitle
-                    )}
-                  />
-
-                  <CharacterHint
-                    value={
-                      ogTitle
-                    }
-                    max={120}
+                    folder="car-battery-service/blog/og"
                   />
                 </Field>
 
                 <Field
-                  label="OG Description"
+                  label="OG Image Alt Text"
                   error={
-                    errors.ogDescription
+                    errors[
+                      "ogImage.alt"
+                    ]
                   }
                 >
                   <textarea
                     value={
-                      ogDescription
+                      ogImageAlt
                     }
-                    onChange={(
-                      event
-                    ) =>
-                      setOgDescription(
-                        event.target
-                          .value
+                    onChange={(e) =>
+                      setOgImageAlt(
+                        e.target.value
                       )
                     }
-                    rows={3}
-                    placeholder="Social sharing description"
+                    rows={5}
+                    placeholder="Describe the OG image..."
                     className={textareaClass(
-                      !!errors.ogDescription
+                      !!errors[
+                        "ogImage.alt"
+                      ]
                     )}
                   />
-
-                  <CharacterHint
-                    value={
-                      ogDescription
-                    }
-                    max={300}
-                  />
                 </Field>
-
-                <div className="lg:col-span-2">
-                  <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
-                    <Field
-                      label="OG Image"
-                      error={
-                        errors.ogImage
-                      }
-                      hint="Optional social sharing image."
-                    >
-                      <CloudinaryImageUpload
-                        value={
-                          ogImage
-                        }
-                        onChange={
-                          setOgImage
-                        }
-                        folder="car-battery-service/blog/og"
-                      />
-                    </Field>
-
-                    <Field
-                      label="OG Image Alt Text"
-                      error={
-                        errors[
-                          "ogImage.alt"
-                        ]
-                      }
-                    >
-                      <textarea
-                        value={
-                          ogImageAlt
-                        }
-                        onChange={(
-                          event
-                        ) =>
-                          setOgImageAlt(
-                            event.target
-                              .value
-                          )
-                        }
-                        rows={5}
-                        placeholder="Describe the OG image..."
-                        className={textareaClass(
-                          !!errors[
-                            "ogImage.alt"
-                          ]
-                        )}
-                      />
-                    </Field>
-                  </div>
-                </div>
               </div>
             </div>
           </div>
         </Section>
 
         {/* =================================================
-            DESKTOP ACTION BAR
+            ACTIONS
         ================================================= */}
 
-        <div className="hidden items-center justify-between rounded-2xl border border-slate-200 bg-white p-4 shadow-sm lg:flex">
+        <div className="hidden items-center justify-between rounded-2xl border border-white/[0.08] bg-[#08263D] p-4 shadow-xl shadow-black/10 lg:flex">
+
           <button
             type="button"
             onClick={() =>
@@ -1902,7 +1786,7 @@ export default function BlogForm() {
             disabled={
               isSubmitting
             }
-            className="inline-flex items-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold text-slate-600 transition hover:bg-slate-100 hover:text-[#061A2B] disabled:cursor-not-allowed disabled:opacity-50"
+            className="inline-flex items-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold text-[#A8BBC8] transition hover:bg-[#061A2B]/[0.06] hover:text-[#F8FAFC]"
           >
             <ArrowLeft
               size={17}
@@ -1911,16 +1795,27 @@ export default function BlogForm() {
           </button>
 
           <div className="flex items-center gap-3">
-            <SaveStatus
-              status={status}
-            />
+
+            <span className="text-xs font-medium text-[#A8BBC8]">
+              {status ===
+                "draft" &&
+                "Will save as Draft"}
+
+              {status ===
+                "published" &&
+                "Will publish"}
+
+              {status ===
+                "scheduled" &&
+                "Will be scheduled"}
+            </span>
 
             <button
               type="submit"
               disabled={
                 isSubmitting
               }
-              className="inline-flex min-w-44 items-center justify-center gap-2 rounded-xl bg-[#061A2B] px-5 py-3 text-sm font-bold text-white shadow-lg shadow-[#061A2B]/10 transition hover:bg-[#08263D] disabled:cursor-not-allowed disabled:opacity-60"
+              className="inline-flex min-w-48 items-center justify-center gap-2 rounded-xl bg-[#FFD400] px-5 py-3 text-sm font-bold text-[#061A2B] shadow-lg shadow-[#FFD400]/10 transition hover:bg-[#F5B800] disabled:cursor-not-allowed disabled:opacity-60"
             >
               {isSubmitting ? (
                 <>
@@ -1928,14 +1823,19 @@ export default function BlogForm() {
                     size={17}
                     className="animate-spin"
                   />
-                  Creating...
+                  {isEdit
+                    ? "Updating..."
+                    : "Creating..."}
                 </>
               ) : (
                 <>
                   <Check
                     size={17}
                   />
-                  Create Blog Post
+
+                  {isEdit
+                    ? "Update Blog Post"
+                    : "Create Blog Post"}
                 </>
               )}
             </button>
@@ -1943,12 +1843,13 @@ export default function BlogForm() {
         </div>
       </div>
 
-      {/* ===================================================
-          MOBILE STICKY ACTION BAR
-      =================================================== */}
+      {/* =================================================
+          MOBILE ACTION BAR
+      ================================================= */}
 
-      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-slate-200 bg-white/95 p-3 shadow-[0_-10px_30px_rgba(6,26,43,0.10)] backdrop-blur lg:hidden">
+      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-white/[0.08] bg-[#061A2B]/95 p-3 shadow-[0_-10px_30px_rgba(0,0,0,0.35)] backdrop-blur lg:hidden">
         <div className="mx-auto flex max-w-6xl gap-2">
+
           <button
             type="button"
             onClick={() =>
@@ -1959,7 +1860,7 @@ export default function BlogForm() {
             disabled={
               isSubmitting
             }
-            className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-3 text-sm font-semibold text-slate-600 disabled:opacity-50"
+            className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl border border-white/[0.10] bg-[#08263D] px-3 py-3 text-sm font-semibold text-[#A8BBC8] disabled:opacity-50"
           >
             <ArrowLeft
               size={16}
@@ -1972,7 +1873,7 @@ export default function BlogForm() {
             disabled={
               isSubmitting
             }
-            className="inline-flex flex-[1.5] items-center justify-center gap-2 rounded-xl bg-[#061A2B] px-3 py-3 text-sm font-bold text-white disabled:opacity-60"
+            className="inline-flex flex-[1.5] items-center justify-center gap-2 rounded-xl bg-[#FFD400] px-3 py-3 text-sm font-bold text-[#061A2B] disabled:opacity-60"
           >
             {isSubmitting ? (
               <>
@@ -1987,7 +1888,10 @@ export default function BlogForm() {
                 <Check
                   size={16}
                 />
-                Create Post
+
+                {isEdit
+                  ? "Update"
+                  : "Create"}
               </>
             )}
           </button>
@@ -2012,30 +1916,28 @@ function Section({
   number: string;
   title: string;
   description: string;
-  children: React.ReactNode;
+  children: ReactNode;
 }) {
   return (
-    <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-      <div className="border-b border-slate-100 bg-gradient-to-r from-slate-50 to-white px-5 py-5 sm:px-6">
+    <section className="overflow-hidden rounded-2xl border border-white/[0.08] bg-[#08263D] shadow-2xl shadow-black/10">
+      <div className="border-b border-white/[0.07] bg-[#061A2B]/70 px-5 py-5 sm:px-6">
         <div className="flex items-start gap-4">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#061A2B] text-[#FFD400]">
-            <Icon
-              size={18}
-            />
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#FFD400] text-[#061A2B] shadow-lg shadow-[#FFD400]/10">
+            <Icon size={18} />
           </div>
 
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#0D6E91]">
+              <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#FFD400]">
                 {number}
               </span>
 
-              <h2 className="text-base font-bold text-[#061A2B] sm:text-lg">
+              <h2 className="text-base font-bold text-[#F8FAFC] sm:text-lg">
                 {title}
               </h2>
             </div>
 
-            <p className="mt-1 text-xs leading-5 text-slate-500 sm:text-sm">
+            <p className="mt-1 text-xs leading-5 text-[#A8BBC8] sm:text-sm">
               {description}
             </p>
           </div>
@@ -2064,23 +1966,20 @@ function Field({
   required?: boolean;
   error?: string;
   hint?: string;
-  children: React.ReactNode;
+  children: ReactNode;
 }) {
   return (
     <div className="space-y-2">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <label className="text-sm font-semibold text-[#061A2B]">
+        <label className="text-sm font-semibold text-[#F8FAFC]">
           {label}
-
           {required && (
-            <span className="ml-1 text-[#0D6E91]">
-              *
-            </span>
+            <span className="ml-1 text-[#FFD400]">*</span>
           )}
         </label>
 
         {hint && (
-          <span className="text-[11px] leading-4 text-slate-400">
+          <span className="text-[11px] text-[#718895]">
             {hint}
           </span>
         )}
@@ -2089,7 +1988,7 @@ function Field({
       {children}
 
       {error && (
-        <p className="text-xs font-medium text-red-600">
+        <p className="text-xs font-medium text-red-400">
           {error}
         </p>
       )}
@@ -2098,37 +1997,33 @@ function Field({
 }
 
 /* =========================================================
-   INPUT CLASSES
+   INPUTS
 ========================================================= */
 
-function inputClass(
-  hasError = false
-) {
+function inputClass(hasError = false) {
   return [
-    "w-full rounded-xl border bg-white px-4 py-3 text-sm text-slate-900 outline-none transition",
-    "placeholder:text-slate-400",
+    "w-full rounded-xl border bg-[#061A2B] px-4 py-3 text-sm text-[#F8FAFC] outline-none transition",
+    "placeholder:text-[#718895]",
     "focus:ring-2",
     hasError
-      ? "border-red-300 focus:border-red-500 focus:ring-red-500/10"
-      : "border-slate-200 focus:border-[#0D6E91] focus:ring-[#0D6E91]/10",
+      ? "border-red-400/60 focus:border-red-400 focus:ring-red-400/10"
+      : "border-white/[0.10] focus:border-[#0D6E91] focus:ring-[#0D6E91]/10",
   ].join(" ");
 }
 
-function textareaClass(
-  hasError = false
-) {
+function textareaClass(hasError = false) {
   return [
-    "w-full resize-y rounded-xl border bg-white px-4 py-3 text-sm leading-6 text-slate-900 outline-none transition",
-    "placeholder:text-slate-400",
+    "w-full resize-y rounded-xl border bg-[#061A2B] px-4 py-3 text-sm leading-6 text-[#F8FAFC] outline-none transition",
+    "placeholder:text-[#718895]",
     "focus:ring-2",
     hasError
-      ? "border-red-300 focus:border-red-500 focus:ring-red-500/10"
-      : "border-slate-200 focus:border-[#0D6E91] focus:ring-[#0D6E91]/10",
+      ? "border-red-400/60 focus:border-red-400 focus:ring-red-400/10"
+      : "border-white/[0.10] focus:border-[#0D6E91] focus:ring-[#0D6E91]/10",
   ].join(" ");
 }
 
 /* =========================================================
-   CHARACTER HINT
+   CHARACTER COUNT
 ========================================================= */
 
 function CharacterHint({
@@ -2138,18 +2033,14 @@ function CharacterHint({
   value: string;
   max: number;
 }) {
-  const count =
-    value.length;
-
-  const exceeded =
-    count > max;
+  const count = value.length;
 
   return (
     <div
       className={`text-right text-[11px] ${
-        exceeded
-          ? "text-red-600"
-          : "text-slate-400"
+        count > max
+          ? "text-red-400"
+          : "text-[#718895]"
       }`}
     >
       {count}/{max}
@@ -2166,12 +2057,10 @@ function Toggle({
   onChange,
   title,
   description,
-  warning,
+  warning = false,
 }: {
   checked: boolean;
-  onChange: (
-    value: boolean
-  ) => void;
+  onChange: (value: boolean) => void;
   title: string;
   description: string;
   warning?: boolean;
@@ -2179,39 +2068,33 @@ function Toggle({
   return (
     <button
       type="button"
-      onClick={() =>
-        onChange(!checked)
-      }
+      onClick={() => onChange(!checked)}
       className={`flex w-full items-start gap-4 rounded-2xl border p-4 text-left transition ${
         checked
           ? warning
-            ? "border-amber-300 bg-amber-50"
-            : "border-[#0D6E91]/30 bg-[#0D6E91]/5"
-          : "border-slate-200 bg-white hover:border-slate-300"
+            ? "border-amber-400/40 bg-amber-400/10"
+            : "border-[#0D6E91]/40 bg-[#0D6E91]/10"
+          : "border-white/[0.08] bg-[#061A2B] hover:border-white/[0.15]"
       }`}
     >
       <span
         className={`relative mt-0.5 h-6 w-11 shrink-0 rounded-full transition ${
-          checked
-            ? "bg-[#0D6E91]"
-            : "bg-slate-300"
+          checked ? "bg-[#FFD400]" : "bg-[#061A2B]/20"
         }`}
       >
         <span
-          className={`absolute top-1 h-4 w-4 rounded-full bg-white shadow-sm transition ${
-            checked
-              ? "left-6"
-              : "left-1"
+          className={`absolute top-1 h-4 w-4 rounded-full bg-[#F8FAFC] shadow-sm transition ${
+            checked ? "left-6" : "left-1"
           }`}
         />
       </span>
 
-      <span className="min-w-0">
-        <span className="block text-sm font-semibold text-[#061A2B]">
+      <span>
+        <span className="block text-sm font-semibold text-[#F8FAFC]">
           {title}
         </span>
 
-        <span className="mt-1 block text-xs leading-5 text-slate-500">
+        <span className="mt-1 block text-xs leading-5 text-[#A8BBC8]">
           {description}
         </span>
       </span>
@@ -2238,7 +2121,7 @@ function RelationshipList({
 }) {
   if (!items.length) {
     return (
-      <div className="flex min-h-28 items-center justify-center rounded-xl border border-dashed border-slate-200 bg-white px-5 text-center text-sm text-slate-400">
+      <div className="flex min-h-28 items-center justify-center rounded-xl border border-dashed border-white/[0.10] bg-[#061A2B] px-5 text-center text-sm text-[#718895]">
         {emptyText}
       </div>
     );
@@ -2246,74 +2129,40 @@ function RelationshipList({
 
   return (
     <div className="grid max-h-80 gap-2 overflow-y-auto pr-1 sm:grid-cols-2">
-      {items.map(
-        (item) => (
-          <button
-            key={item.id}
-            type="button"
-            onClick={
-              item.onToggle
-            }
-            className={`flex items-center gap-3 rounded-xl border p-3 text-left transition ${
+      {items.map((item) => (
+        <button
+          key={item.id}
+          type="button"
+          onClick={item.onToggle}
+          className={`flex items-center gap-3 rounded-xl border p-3 text-left transition ${
+            item.selected
+              ? "border-[#0D6E91]/50 bg-[#0D6E91]/10"
+              : "border-white/[0.08] bg-[#061A2B] hover:border-white/[0.16] hover:bg-[#061A2B]/80"
+          }`}
+        >
+          <span
+            className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-md border ${
               item.selected
-                ? "border-[#0D6E91]/40 bg-[#0D6E91]/5"
-                : "border-slate-200 bg-white hover:border-slate-300"
+                ? "border-[#FFD400] bg-[#FFD400] text-[#061A2B]"
+                : "border-white/[0.16] bg-transparent"
             }`}
           >
-            <span
-              className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-md border ${
-                item.selected
-                  ? "border-[#0D6E91] bg-[#0D6E91] text-white"
-                  : "border-slate-300 bg-white"
-              }`}
-            >
-              {item.selected && (
-                <Check
-                  size={13}
-                  strokeWidth={
-                    3
-                  }
-                />
-              )}
+            {item.selected && (
+              <Check size={13} strokeWidth={3} />
+            )}
+          </span>
+
+          <span className="min-w-0">
+            <span className="block truncate text-sm font-semibold text-[#F8FAFC]">
+              {item.label}
             </span>
 
-            <span className="min-w-0">
-              <span className="block truncate text-sm font-semibold text-[#061A2B]">
-                {item.label}
-              </span>
-
-              <span className="mt-0.5 block truncate text-[11px] text-slate-400">
-                {item.sublabel}
-              </span>
+            <span className="mt-0.5 block truncate text-[11px] text-[#718895]">
+              {item.sublabel}
             </span>
-          </button>
-        )
-      )}
+          </span>
+        </button>
+      ))}
     </div>
-  );
-}
-
-/* =========================================================
-   STATUS
-========================================================= */
-
-function SaveStatus({
-  status,
-}: {
-  status: BlogStatus;
-}) {
-  const labels = {
-    draft: "Will save as Draft",
-    published:
-      "Will publish immediately",
-    scheduled:
-      "Will be scheduled",
-  };
-
-  return (
-    <span className="hidden items-center gap-2 text-xs font-medium text-slate-500 xl:flex">
-      <span className="h-2 w-2 rounded-full bg-[#0D6E91]" />
-      {labels[status]}
-    </span>
   );
 }

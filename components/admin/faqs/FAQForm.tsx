@@ -3,6 +3,7 @@
 import {
   AlertCircle,
   Check,
+  CheckCircle2,
   ChevronDown,
   ChevronUp,
   CircleHelp,
@@ -16,8 +17,9 @@ import {
   Tags,
   X,
 } from "lucide-react";
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { FormEvent, ReactNode, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 type FAQStatus = "active" | "inactive";
 
@@ -35,13 +37,7 @@ interface ServiceAreaOption {
   status: "active" | "draft";
 }
 
-interface FAQFormProps {
-  mode?: "create" | "edit";
-  faqId?: string;
-  initialData?: Partial<FAQFormState>;
-}
-
-interface FAQFormState {
+export interface FAQFormState {
   question: string;
   answer: string;
   category: string;
@@ -50,6 +46,12 @@ interface FAQFormState {
   featured: boolean;
   displayOrder: number;
   status: FAQStatus;
+}
+
+interface FAQFormProps {
+  mode?: "create" | "edit";
+  faqId?: string;
+  initialData?: Partial<FAQFormState>;
 }
 
 interface ApiListResponse<T> {
@@ -87,80 +89,51 @@ const FAQ_CATEGORIES = [
   "Booking",
 ];
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null;
-}
-
-function getString(
-  value: unknown,
-  fallback = ""
-): string {
-  return typeof value === "string" ? value : fallback;
-}
-
-function getBoolean(
-  value: unknown,
-  fallback = false
-): boolean {
-  return typeof value === "boolean" ? value : fallback;
-}
-
-function getNumber(
-  value: unknown,
-  fallback = 0
-): number {
-  return typeof value === "number" &&
-    Number.isFinite(value)
-    ? value
-    : fallback;
-}
-
-function getStringArray(value: unknown): string[] {
-  if (!Array.isArray(value)) {
-    return [];
-  }
-
-  return value.filter(
-    (item): item is string =>
-      typeof item === "string"
-  );
-}
-
 function normalizeFAQData(
-  data: unknown
+  data?: Partial<FAQFormState>
 ): FAQFormState {
-  if (!isRecord(data)) {
-    return INITIAL_FORM;
-  }
-
-  const status =
-    data.status === "active" ||
-    data.status === "inactive"
-      ? data.status
-      : "inactive";
-
   return {
-    question: getString(data.question),
-    answer: getString(data.answer),
-    category: getString(data.category),
-
-    relatedServices: getStringArray(
-      data.relatedServices
-    ),
-
-    relatedServiceAreas: getStringArray(
-      data.relatedServiceAreas
-    ),
-
-    featured: getBoolean(
-      data.featured
-    ),
-
-    displayOrder: getNumber(
-      data.displayOrder
-    ),
-
-    status,
+    question:
+      typeof data?.question === "string"
+        ? data.question
+        : "",
+    answer:
+      typeof data?.answer === "string"
+        ? data.answer
+        : "",
+    category:
+      typeof data?.category === "string"
+        ? data.category
+        : "",
+    relatedServices: Array.isArray(
+      data?.relatedServices
+    )
+      ? data.relatedServices.filter(
+          (value): value is string =>
+            typeof value === "string"
+        )
+      : [],
+    relatedServiceAreas: Array.isArray(
+      data?.relatedServiceAreas
+    )
+      ? data.relatedServiceAreas.filter(
+          (value): value is string =>
+            typeof value === "string"
+        )
+      : [],
+    featured:
+      typeof data?.featured === "boolean"
+        ? data.featured
+        : false,
+    displayOrder:
+      typeof data?.displayOrder === "number" &&
+      Number.isFinite(data.displayOrder)
+        ? data.displayOrder
+        : 0,
+    status:
+      data?.status === "active"
+        ? "active"
+        : "inactive",
   };
 }
 
@@ -169,10 +142,13 @@ export default function FAQForm({
   faqId,
   initialData,
 }: FAQFormProps) {
-  const [form, setForm] = useState<FAQFormState>(() => ({
-    ...INITIAL_FORM,
-    ...normalizeFAQData(initialData),
-  }));
+  const router = useRouter();
+  const isEdit = mode === "edit";
+
+  const [form, setForm] =
+    useState<FAQFormState>(() =>
+      normalizeFAQData(initialData)
+    );
 
   const [services, setServices] =
     useState<ServiceOption[]>([]);
@@ -180,10 +156,10 @@ export default function FAQForm({
   const [serviceAreas, setServiceAreas] =
     useState<ServiceAreaOption[]>([]);
 
-  const [isLoadingRelationships, setIsLoadingRelationships] =
+  const [loadingRelations, setLoadingRelations] =
     useState(true);
 
-  const [isSubmitting, setIsSubmitting] =
+  const [submitting, setSubmitting] =
     useState(false);
 
   const [serviceSearch, setServiceSearch] =
@@ -193,35 +169,39 @@ export default function FAQForm({
     useState("");
 
   const [openSection, setOpenSection] =
-    useState<string | null>(null);
+    useState<string | null>("basic");
 
   const [errors, setErrors] =
     useState<Record<string, string>>({});
 
-  const isEdit = mode === "edit";
+  /* =====================================================
+     LOAD RELATIONSHIPS
+  ===================================================== */
 
   useEffect(() => {
     let cancelled = false;
 
     async function loadRelationships() {
-      setIsLoadingRelationships(true);
+      setLoadingRelations(true);
 
       try {
-        const [servicesResponse, areasResponse] =
-          await Promise.all([
-            fetch(
-              "/api/admin/services?limit=100",
-              {
-                cache: "no-store",
-              }
-            ),
-            fetch(
-              "/api/admin/service-areas?limit=100",
-              {
-                cache: "no-store",
-              }
-            ),
-          ]);
+        const [
+          servicesResponse,
+          areasResponse,
+        ] = await Promise.all([
+          fetch(
+            "/api/admin/services?limit=100",
+            {
+              cache: "no-store",
+            }
+          ),
+          fetch(
+            "/api/admin/service-areas?limit=100",
+            {
+              cache: "no-store",
+            }
+          ),
+        ]);
 
         const servicesJson =
           (await servicesResponse.json()) as ApiListResponse<ServiceOption>;
@@ -229,9 +209,7 @@ export default function FAQForm({
         const areasJson =
           (await areasResponse.json()) as ApiListResponse<ServiceAreaOption>;
 
-        if (cancelled) {
-          return;
-        }
+        if (cancelled) return;
 
         if (
           servicesResponse.ok &&
@@ -239,8 +217,6 @@ export default function FAQForm({
           Array.isArray(servicesJson.data)
         ) {
           setServices(servicesJson.data);
-        } else {
-          setServices([]);
         }
 
         if (
@@ -248,21 +224,24 @@ export default function FAQForm({
           areasJson.success &&
           Array.isArray(areasJson.data)
         ) {
-          setServiceAreas(areasJson.data);
-        } else {
-          setServiceAreas([]);
+          setServiceAreas(
+            areasJson.data
+          );
         }
-      } catch {
+      } catch (error) {
+        console.error(
+          "Relationship loading error:",
+          error
+        );
+
         if (!cancelled) {
-          setServices([]);
-          setServiceAreas([]);
           toast.error(
-            "Unable to load relationships."
+            "Unable to load services and service areas."
           );
         }
       } finally {
         if (!cancelled) {
-          setIsLoadingRelationships(false);
+          setLoadingRelations(false);
         }
       }
     }
@@ -274,13 +253,15 @@ export default function FAQForm({
     };
   }, []);
 
+  /* =====================================================
+     FILTERED RELATIONSHIPS
+  ===================================================== */
+
   const filteredServices = useMemo(() => {
     const query =
       serviceSearch.trim().toLowerCase();
 
-    if (!query) {
-      return services;
-    }
+    if (!query) return services;
 
     return services.filter(
       (service) =>
@@ -297,9 +278,7 @@ export default function FAQForm({
     const query =
       areaSearch.trim().toLowerCase();
 
-    if (!query) {
-      return serviceAreas;
-    }
+    if (!query) return serviceAreas;
 
     return serviceAreas.filter(
       (area) =>
@@ -312,7 +291,7 @@ export default function FAQForm({
     );
   }, [serviceAreas, areaSearch]);
 
-  const selectedServiceObjects = useMemo(
+  const selectedServices = useMemo(
     () =>
       services.filter((service) =>
         form.relatedServices.includes(
@@ -322,7 +301,7 @@ export default function FAQForm({
     [services, form.relatedServices]
   );
 
-  const selectedAreaObjects = useMemo(
+  const selectedAreas = useMemo(
     () =>
       serviceAreas.filter((area) =>
         form.relatedServiceAreas.includes(
@@ -331,6 +310,10 @@ export default function FAQForm({
       ),
     [serviceAreas, form.relatedServiceAreas]
   );
+
+  /* =====================================================
+     FIELD HELPERS
+  ===================================================== */
 
   function updateField<K extends keyof FAQFormState>(
     field: K,
@@ -342,12 +325,14 @@ export default function FAQForm({
     }));
 
     setErrors((current) => {
-      if (!current[field]) {
-        return current;
-      }
+      if (!current[field]) return current;
 
-      const next = { ...current };
+      const next = {
+        ...current,
+      };
+
       delete next[field];
+
       return next;
     });
   }
@@ -361,7 +346,7 @@ export default function FAQForm({
         ...current,
         relatedServices: exists
           ? current.relatedServices.filter(
-              (serviceId) => serviceId !== id
+              (item) => item !== id
             )
           : [
               ...current.relatedServices,
@@ -382,7 +367,7 @@ export default function FAQForm({
         ...current,
         relatedServiceAreas: exists
           ? current.relatedServiceAreas.filter(
-              (areaId) => areaId !== id
+              (item) => item !== id
             )
           : [
               ...current.relatedServiceAreas,
@@ -397,7 +382,7 @@ export default function FAQForm({
       ...current,
       relatedServices:
         current.relatedServices.filter(
-          (serviceId) => serviceId !== id
+          (item) => item !== id
         ),
     }));
   }
@@ -407,14 +392,20 @@ export default function FAQForm({
       ...current,
       relatedServiceAreas:
         current.relatedServiceAreas.filter(
-          (areaId) => areaId !== id
+          (item) => item !== id
         ),
     }));
   }
 
-  function validateForm(): boolean {
-    const nextErrors: Record<string, string> =
-      {};
+  /* =====================================================
+     VALIDATION
+  ===================================================== */
+
+  function validateForm() {
+    const nextErrors: Record<
+      string,
+      string
+    > = {};
 
     const question =
       form.question.trim();
@@ -459,28 +450,29 @@ export default function FAQForm({
     }
 
     if (
-      !Number.isInteger(form.displayOrder) ||
+      !Number.isInteger(
+        form.displayOrder
+      ) ||
       form.displayOrder < 0
     ) {
       nextErrors.displayOrder =
-        "Display order must be a whole number greater than or equal to 0.";
+        "Display order must be 0 or greater.";
     }
 
     setErrors(nextErrors);
 
-    if (Object.keys(nextErrors).length > 0) {
+    if (Object.keys(nextErrors).length) {
       const firstError =
         Object.keys(nextErrors)[0];
 
-      const element =
-        document.getElementById(
+      document
+        .getElementById(
           `faq-${firstError}`
-        );
-
-      element?.scrollIntoView({
-        behavior: "smooth",
-        block: "center",
-      });
+        )
+        ?.scrollIntoView({
+          behavior: "smooth",
+          block: "center",
+        });
 
       return false;
     }
@@ -488,14 +480,16 @@ export default function FAQForm({
     return true;
   }
 
+  /* =====================================================
+     SUBMIT
+  ===================================================== */
+
   async function handleSubmit(
     event: FormEvent<HTMLFormElement>
   ) {
     event.preventDefault();
 
-    if (isSubmitting) {
-      return;
-    }
+    if (submitting) return;
 
     if (!validateForm()) {
       toast.error(
@@ -504,13 +498,25 @@ export default function FAQForm({
       return;
     }
 
-    setIsSubmitting(true);
+    if (isEdit && !faqId) {
+      toast.error(
+        "FAQ ID is missing."
+      );
+      return;
+    }
+
+    setSubmitting(true);
 
     try {
       const payload: FAQFormState = {
-        question: form.question.trim(),
-        answer: form.answer.trim(),
-        category: form.category.trim(),
+        question:
+          form.question.trim(),
+
+        answer:
+          form.answer.trim(),
+
+        category:
+          form.category.trim(),
 
         relatedServices: [
           ...new Set(
@@ -546,40 +552,46 @@ export default function FAQForm({
             "Content-Type":
               "application/json",
           },
-          body: JSON.stringify(payload),
+          body: JSON.stringify(
+            payload
+          ),
         }
       );
 
       const result =
         (await response.json()) as ApiFAQResponse;
 
-      if (!response.ok || !result.success) {
+      if (
+        !response.ok ||
+        !result.success
+      ) {
         if (result.errors) {
           const serverErrors: Record<
             string,
             string
           > = {};
 
-          for (const [
-            field,
-            messages,
-          ] of Object.entries(
+          Object.entries(
             result.errors
-          )) {
-            if (
-              Array.isArray(messages) &&
-              messages.length > 0
-            ) {
-              serverErrors[field] =
-                messages[0] ?? "";
+          ).forEach(
+            ([field, messages]) => {
+              if (
+                Array.isArray(
+                  messages
+                ) &&
+                messages[0]
+              ) {
+                serverErrors[field] =
+                  messages[0];
+              }
             }
-          }
+          );
 
           setErrors(serverErrors);
         }
 
         throw new Error(
-          result.message ??
+          result.message ||
             "Unable to save FAQ."
         );
       }
@@ -590,21 +602,31 @@ export default function FAQForm({
           : "FAQ created successfully."
       );
 
-      window.location.href =
-        "/admin/faqs";
+      router.push("/admin/faqs");
+      router.refresh();
     } catch (error) {
-      const message =
+      console.error(
+        "FAQ save error:",
+        error
+      );
+
+      toast.error(
         error instanceof Error
           ? error.message
-          : "Something went wrong.";
-
-      toast.error(message);
+          : "Unable to save FAQ."
+      );
     } finally {
-      setIsSubmitting(false);
+      setSubmitting(false);
     }
   }
 
-  function toggleSection(section: string) {
+  /* =====================================================
+     SECTION TOGGLE
+  ===================================================== */
+
+  function toggleSection(
+    section: string
+  ) {
     setOpenSection((current) =>
       current === section
         ? null
@@ -612,585 +634,565 @@ export default function FAQForm({
     );
   }
 
+  /* =====================================================
+     RENDER
+  ===================================================== */
+
   return (
     <form
       onSubmit={handleSubmit}
-      className="pb-28"
+      className="pb-32"
     >
-      <div className="space-y-6">
-        {/* =====================================================
-            01 — BASIC INFORMATION
-        ====================================================== */}
+      <div className="space-y-5 sm:space-y-6">
 
-        <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
-          <SectionHeader
-            number="01"
-            icon={
-              <FileQuestion className="h-5 w-5" />
-            }
-            title="Basic Information"
-            description="Create a clear, useful question and answer for customers."
-            open={openSection === "basic"}
-            onToggle={() =>
-              toggleSection("basic")
-            }
-          />
+        {/* =================================================
+            BASIC
+        ================================================= */}
 
-          <div className="border-t border-slate-100 p-5 sm:p-7">
-            <div className="space-y-6">
+        <AdminSection
+          number="01"
+          icon={
+            <FileQuestion className="h-5 w-5" />
+          }
+          title="Basic Information"
+          description="Write the customer question and its answer."
+          open={
+            openSection === "basic"
+          }
+          onToggle={() =>
+            toggleSection("basic")
+          }
+        >
+          <div className="space-y-6">
+
+            <div>
               <FieldLabel
                 label="Question"
                 required
-                hint="Write the question exactly as a customer might ask it."
+                hint="Write it naturally, exactly how a customer might ask."
               />
 
-              <div>
-                <input
-                  id="faq-question"
-                  type="text"
-                  value={form.question}
-                  onChange={(event) =>
-                    updateField(
-                      "question",
-                      event.target.value
-                    )
-                  }
-                  maxLength={300}
-                  placeholder="e.g. How do I know if my car battery is failing?"
-                  className={inputClass(
-                    Boolean(errors.question)
-                  )}
-                  disabled={isSubmitting}
-                />
-
-                <FieldMeta
-                  count={form.question.length}
-                  max={300}
-                  error={errors.question}
-                />
-              </div>
-
-              <div>
-                <FieldLabel
-                  label="Answer"
-                  required
-                  hint="Give a concise, useful answer. Avoid unsupported guarantees or claims."
-                />
-
-                <textarea
-                  id="faq-answer"
-                  value={form.answer}
-                  onChange={(event) =>
-                    updateField(
-                      "answer",
-                      event.target.value
-                    )
-                  }
-                  maxLength={5000}
-                  rows={8}
-                  placeholder="Write a clear answer that directly helps the customer..."
-                  className={`${inputClass(
-                    Boolean(errors.answer)
-                  )} min-h-[220px] resize-y py-4`}
-                  disabled={isSubmitting}
-                />
-
-                <FieldMeta
-                  count={form.answer.length}
-                  max={5000}
-                  error={errors.answer}
-                />
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* =====================================================
-            02 — ORGANIZATION
-        ====================================================== */}
-
-        <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
-          <SectionHeader
-            number="02"
-            icon={
-              <Tags className="h-5 w-5" />
-            }
-            title="Organization"
-            description="Organize the FAQ so it can be displayed intelligently across the website."
-            open={
-              openSection ===
-              "organization"
-            }
-            onToggle={() =>
-              toggleSection(
-                "organization"
-              )
-            }
-          />
-
-          <div className="border-t border-slate-100 p-5 sm:p-7">
-            <div className="grid gap-6 md:grid-cols-2">
-              <div>
-                <FieldLabel
-                  label="Category"
-                  required
-                  hint="Choose an existing category or type a new one."
-                />
-
-                <div className="relative">
-                  <select
-                    id="faq-category"
-                    value={form.category}
-                    onChange={(event) =>
-                      updateField(
-                        "category",
-                        event.target.value
-                      )
-                    }
-                    className={`${inputClass(
-                      Boolean(
-                        errors.category
-                      )
-                    )} appearance-none pr-11`}
-                    disabled={isSubmitting}
-                  >
-                    <option value="">
-                      Select a category
-                    </option>
-
-                    {FAQ_CATEGORIES.map(
-                      (category) => (
-                        <option
-                          key={category}
-                          value={category}
-                        >
-                          {category}
-                        </option>
-                      )
-                    )}
-
-                    {form.category &&
-                      !FAQ_CATEGORIES.includes(
-                        form.category
-                      ) && (
-                        <option
-                          value={form.category}
-                        >
-                          {form.category}
-                        </option>
-                      )}
-                  </select>
-
-                  <ChevronDown className="pointer-events-none absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
-                </div>
-
-                {errors.category && (
-                  <ErrorText
-                    message={
-                      errors.category
-                    }
-                  />
+              <input
+                id="faq-question"
+                type="text"
+                value={form.question}
+                onChange={(event) =>
+                  updateField(
+                    "question",
+                    event.target.value
+                  )
+                }
+                maxLength={300}
+                disabled={submitting}
+                placeholder="e.g. How do I know if my car battery is failing?"
+                className={inputClass(
+                  Boolean(
+                    errors.question
+                  )
                 )}
+              />
 
-                <p className="mt-2 text-xs text-slate-500">
-                  Categories help organize FAQs
-                  on the main FAQ page.
-                </p>
-              </div>
+              <FieldMeta
+                count={
+                  form.question.length
+                }
+                max={300}
+                error={
+                  errors.question
+                }
+              />
+            </div>
 
-              <div>
-                <FieldLabel
-                  label="Display Order"
-                  required
-                  hint="Lower numbers appear first."
-                />
+            <div>
+              <FieldLabel
+                label="Answer"
+                required
+                hint="Give a clear and useful answer without unsupported claims."
+              />
 
+              <textarea
+                id="faq-answer"
+                value={form.answer}
+                onChange={(event) =>
+                  updateField(
+                    "answer",
+                    event.target.value
+                  )
+                }
+                maxLength={5000}
+                rows={9}
+                disabled={submitting}
+                placeholder="Write a clear answer that directly helps the customer..."
+                className={`${inputClass(
+                  Boolean(
+                    errors.answer
+                  )
+                )} min-h-[220px] resize-y`}
+              />
+
+              <FieldMeta
+                count={
+                  form.answer.length
+                }
+                max={5000}
+                error={errors.answer}
+              />
+            </div>
+
+          </div>
+        </AdminSection>
+
+        {/* =================================================
+            ORGANIZATION
+        ================================================= */}
+
+        <AdminSection
+          number="02"
+          icon={
+            <Tags className="h-5 w-5" />
+          }
+          title="Organization"
+          description="Control category, ordering and featured visibility."
+          open={
+            openSection ===
+            "organization"
+          }
+          onToggle={() =>
+            toggleSection(
+              "organization"
+            )
+          }
+        >
+          <div className="grid gap-5 lg:grid-cols-2">
+
+            <div>
+              <FieldLabel
+                label="Category"
+                required
+                hint="Choose an existing category or enter your own."
+              />
+
+              <div className="relative">
                 <input
-                  id="faq-displayOrder"
-                  type="number"
-                  min={0}
-                  step={1}
-                  value={form.displayOrder}
+                  id="faq-category"
+                  list="faq-category-list"
+                  value={form.category}
                   onChange={(event) =>
                     updateField(
-                      "displayOrder",
-                      Number(
-                        event.target.value
-                      )
+                      "category",
+                      event.target.value
                     )
                   }
+                  maxLength={100}
+                  disabled={submitting}
+                  placeholder="Select or type category..."
                   className={inputClass(
                     Boolean(
-                      errors.displayOrder
+                      errors.category
                     )
                   )}
-                  disabled={isSubmitting}
                 />
 
-                {errors.displayOrder && (
-                  <ErrorText
-                    message={
-                      errors.displayOrder
-                    }
+                <datalist id="faq-category-list">
+                  {FAQ_CATEGORIES.map(
+                    (category) => (
+                      <option
+                        key={category}
+                        value={category}
+                      />
+                    )
+                  )}
+                </datalist>
+              </div>
+
+              {errors.category && (
+                <ErrorText
+                  message={
+                    errors.category
+                  }
+                />
+              )}
+            </div>
+
+            <div>
+              <FieldLabel
+                label="Display Order"
+                required
+                hint="Lower numbers appear first."
+              />
+
+              <input
+                id="faq-displayOrder"
+                type="number"
+                min={0}
+                step={1}
+                value={
+                  form.displayOrder
+                }
+                onChange={(event) =>
+                  updateField(
+                    "displayOrder",
+                    Number(
+                      event.target.value
+                    )
+                  )
+                }
+                disabled={submitting}
+                className={inputClass(
+                  Boolean(
+                    errors.displayOrder
+                  )
+                )}
+              />
+
+              {errors.displayOrder && (
+                <ErrorText
+                  message={
+                    errors.displayOrder
+                  }
+                />
+              )}
+            </div>
+
+          </div>
+
+          <div className="mt-5 rounded-2xl border border-white/[0.08] bg-[#061A2B] p-4 sm:p-5">
+            <ToggleRow
+              icon={
+                <Sparkles className="h-5 w-5" />
+              }
+              title="Featured FAQ"
+              description="Allow this FAQ to appear in featured FAQ sections."
+              checked={
+                form.featured
+              }
+              disabled={submitting}
+              onChange={(checked) =>
+                updateField(
+                  "featured",
+                  checked
+                )
+              }
+            />
+          </div>
+        </AdminSection>
+
+        {/* =================================================
+            RELATIONSHIPS
+        ================================================= */}
+
+        <AdminSection
+          number="03"
+          icon={
+            <Link2 className="h-5 w-5" />
+          }
+          title="Relationships"
+          description="Connect this FAQ to relevant services and service areas."
+          open={
+            openSection ===
+            "relationships"
+          }
+          onToggle={() =>
+            toggleSection(
+              "relationships"
+            )
+          }
+        >
+          {loadingRelations ? (
+            <div className="flex min-h-[260px] items-center justify-center rounded-2xl border border-dashed border-white/[0.12] bg-[#061A2B]">
+              <div className="flex items-center gap-3 text-sm font-bold text-[#A8BBC8]">
+                <Loader2 className="h-5 w-5 animate-spin text-[#FFD400]" />
+                Loading relationships...
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-6">
+
+              <RelationshipBox
+                icon={
+                  <MessageSquareText className="h-5 w-5" />
+                }
+                title="Related Services"
+                description="Select only genuinely relevant services."
+                count={
+                  form.relatedServices
+                    .length
+                }
+                searchValue={
+                  serviceSearch
+                }
+                onSearchChange={
+                  setServiceSearch
+                }
+                placeholder="Search services..."
+              >
+                {selectedServices.length >
+                  0 && (
+                  <SelectedItems
+                    items={selectedServices.map(
+                      (service) => ({
+                        id: service.id,
+                        label:
+                          service.title,
+                        onRemove: () =>
+                          removeService(
+                            service.id
+                          ),
+                      })
+                    )}
                   />
                 )}
-              </div>
-            </div>
 
-            <div className="mt-6 rounded-2xl border border-slate-200 bg-slate-50 p-4 sm:p-5">
-              <ToggleRow
-                icon={
-                  <Sparkles className="h-5 w-5" />
-                }
-                title="Featured FAQ"
-                description="Allow this FAQ to be used in featured FAQ sections such as the homepage."
-                checked={form.featured}
-                disabled={isSubmitting}
-                onChange={(checked) =>
-                  updateField(
-                    "featured",
-                    checked
-                  )
-                }
-              />
-            </div>
-          </div>
-        </section>
-
-        {/* =====================================================
-            03 — RELATIONSHIPS
-        ====================================================== */}
-
-        <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
-          <SectionHeader
-            number="03"
-            icon={
-              <Link2 className="h-5 w-5" />
-            }
-            title="Relationships"
-            description="Connect this FAQ with the services and genuine service areas where it is relevant."
-            open={
-              openSection ===
-              "relationships"
-            }
-            onToggle={() =>
-              toggleSection(
-                "relationships"
-              )
-            }
-          />
-
-          <div className="border-t border-slate-100 p-5 sm:p-7">
-            {isLoadingRelationships ? (
-              <div className="flex min-h-[220px] items-center justify-center rounded-2xl border border-dashed border-slate-300 bg-slate-50">
-                <div className="flex items-center gap-3 text-sm font-medium text-slate-500">
-                  <Loader2 className="h-5 w-5 animate-spin" />
-                  Loading services and service
-                  areas...
-                </div>
-              </div>
-            ) : (
-              <div className="space-y-8">
-                {/* SERVICES */}
-
-                <RelationshipBox
-                  icon={
-                    <MessageSquareText className="h-5 w-5" />
-                  }
-                  title="Related Services"
-                  description="Only select services where this FAQ is genuinely relevant."
-                  count={
-                    form.relatedServices
-                      .length
-                  }
-                  searchValue={
-                    serviceSearch
-                  }
-                  onSearchChange={
-                    setServiceSearch
-                  }
-                  searchPlaceholder="Search services..."
-                >
-                  {selectedServiceObjects.length >
-                    0 && (
-                    <SelectedItems
-                      items={selectedServiceObjects.map(
-                        (service) => ({
-                          id: service.id,
-                          label: service.title,
-                          onRemove: () =>
-                            removeService(
+                <RelationshipList>
+                  {filteredServices.length ===
+                  0 ? (
+                    <EmptyRelationship
+                      icon={
+                        <MessageSquareText className="h-5 w-5" />
+                      }
+                      message={
+                        services.length ===
+                        0
+                          ? "No services found."
+                          : "No services match your search."
+                      }
+                    />
+                  ) : (
+                    filteredServices.map(
+                      (service) => (
+                        <RelationshipItem
+                          key={
+                            service.id
+                          }
+                          checked={form.relatedServices.includes(
+                            service.id
+                          )}
+                          title={
+                            service.title
+                          }
+                          subtitle={
+                            service.slug
+                          }
+                          disabled={
+                            submitting
+                          }
+                          onClick={() =>
+                            toggleService(
                               service.id
-                            ),
-                        })
-                      )}
-                    />
-                  )}
-
-                  <div className="max-h-[320px] overflow-y-auto rounded-2xl border border-slate-200 bg-white">
-                    {filteredServices.length ===
-                    0 ? (
-                      <EmptyRelationshipState
-                        icon={
-                          <MessageSquareText className="h-5 w-5" />
-                        }
-                        message={
-                          services.length ===
-                          0
-                            ? "No services found."
-                            : "No services match your search."
-                        }
-                      />
-                    ) : (
-                      <div className="divide-y divide-slate-100">
-                        {filteredServices.map(
-                          (service) => {
-                            const checked =
-                              form.relatedServices.includes(
-                                service.id
-                              );
-
-                            return (
-                              <RelationshipItem
-                                key={
-                                  service.id
-                                }
-                                checked={
-                                  checked
-                                }
-                                title={
-                                  service.title
-                                }
-                                subtitle={
-                                  service.slug
-                                }
-                                disabled={
-                                  isSubmitting
-                                }
-                                onClick={() =>
-                                  toggleService(
-                                    service.id
-                                  )
-                                }
-                              />
-                            );
+                            )
                           }
-                        )}
-                      </div>
+                        />
+                      )
+                    )
+                  )}
+                </RelationshipList>
+              </RelationshipBox>
+
+              <RelationshipBox
+                icon={
+                  <MapPin className="h-5 w-5" />
+                }
+                title="Related Service Areas"
+                description="Connect only areas where this FAQ is genuinely relevant."
+                count={
+                  form.relatedServiceAreas
+                    .length
+                }
+                searchValue={
+                  areaSearch
+                }
+                onSearchChange={
+                  setAreaSearch
+                }
+                placeholder="Search service areas..."
+              >
+                {selectedAreas.length >
+                  0 && (
+                  <SelectedItems
+                    items={selectedAreas.map(
+                      (area) => ({
+                        id: area.id,
+                        label:
+                          area.name,
+                        onRemove: () =>
+                          removeServiceArea(
+                            area.id
+                          ),
+                      })
                     )}
-                  </div>
-                </RelationshipBox>
+                  />
+                )}
 
-                {/* SERVICE AREAS */}
-
-                <RelationshipBox
-                  icon={
-                    <MapPin className="h-5 w-5" />
-                  }
-                  title="Related Service Areas"
-                  description="Only connect genuine supported areas relevant to this FAQ."
-                  count={
-                    form.relatedServiceAreas
-                      .length
-                  }
-                  searchValue={areaSearch}
-                  onSearchChange={
-                    setAreaSearch
-                  }
-                  searchPlaceholder="Search service areas..."
-                >
-                  {selectedAreaObjects.length >
-                    0 && (
-                    <SelectedItems
-                      items={selectedAreaObjects.map(
-                        (area) => ({
-                          id: area.id,
-                          label: area.name,
-                          onRemove: () =>
-                            removeServiceArea(
+                <RelationshipList>
+                  {filteredAreas.length ===
+                  0 ? (
+                    <EmptyRelationship
+                      icon={
+                        <MapPin className="h-5 w-5" />
+                      }
+                      message={
+                        serviceAreas.length ===
+                        0
+                          ? "No service areas found."
+                          : "No service areas match your search."
+                      }
+                    />
+                  ) : (
+                    filteredAreas.map(
+                      (area) => (
+                        <RelationshipItem
+                          key={
+                            area.id
+                          }
+                          checked={form.relatedServiceAreas.includes(
+                            area.id
+                          )}
+                          title={
+                            area.name
+                          }
+                          subtitle={
+                            area.slug
+                          }
+                          disabled={
+                            submitting
+                          }
+                          onClick={() =>
+                            toggleServiceArea(
                               area.id
-                            ),
-                        })
-                      )}
-                    />
-                  )}
-
-                  <div className="max-h-[320px] overflow-y-auto rounded-2xl border border-slate-200 bg-white">
-                    {filteredAreas.length ===
-                    0 ? (
-                      <EmptyRelationshipState
-                        icon={
-                          <MapPin className="h-5 w-5" />
-                        }
-                        message={
-                          serviceAreas.length ===
-                          0
-                            ? "No service areas found."
-                            : "No service areas match your search."
-                        }
-                      />
-                    ) : (
-                      <div className="divide-y divide-slate-100">
-                        {filteredAreas.map(
-                          (area) => {
-                            const checked =
-                              form.relatedServiceAreas.includes(
-                                area.id
-                              );
-
-                            return (
-                              <RelationshipItem
-                                key={area.id}
-                                checked={
-                                  checked
-                                }
-                                title={
-                                  area.name
-                                }
-                                subtitle={
-                                  area.slug
-                                }
-                                disabled={
-                                  isSubmitting
-                                }
-                                onClick={() =>
-                                  toggleServiceArea(
-                                    area.id
-                                  )
-                                }
-                              />
-                            );
+                            )
                           }
-                        )}
-                      </div>
-                    )}
-                  </div>
-                </RelationshipBox>
-              </div>
-            )}
-          </div>
-        </section>
+                        />
+                      )
+                    )
+                  )}
+                </RelationshipList>
+              </RelationshipBox>
 
-        {/* =====================================================
-            04 — PUBLISHING
-        ====================================================== */}
+            </div>
+          )}
+        </AdminSection>
 
-        <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
-          <SectionHeader
-            number="04"
-            icon={
-              <CircleHelp className="h-5 w-5" />
-            }
-            title="Publishing"
-            description="Control whether this FAQ is available to the public website."
-            open={
-              openSection ===
+        {/* =================================================
+            PUBLISHING
+        ================================================= */}
+
+        <AdminSection
+          number="04"
+          icon={
+            <CircleHelp className="h-5 w-5" />
+          }
+          title="Publishing"
+          description="Control whether the FAQ is visible on the public website."
+          open={
+            openSection ===
+            "publishing"
+          }
+          onToggle={() =>
+            toggleSection(
               "publishing"
-            }
-            onToggle={() =>
-              toggleSection(
-                "publishing"
-              )
-            }
-          />
+            )
+          }
+        >
+          <div className="grid gap-4 sm:grid-cols-2">
 
-          <div className="border-t border-slate-100 p-5 sm:p-7">
-            <div className="grid gap-4 md:grid-cols-2">
-              <StatusCard
-                active={
-                  form.status ===
+            <StatusCard
+              active={
+                form.status ===
+                "inactive"
+              }
+              title="Inactive"
+              description="Keep this FAQ hidden from the public website."
+              onClick={() =>
+                updateField(
+                  "status",
                   "inactive"
-                }
-                title="Inactive"
-                description="Keep this FAQ hidden from the public website."
-                onClick={() =>
-                  updateField(
-                    "status",
-                    "inactive"
-                  )
-                }
-                disabled={isSubmitting}
-              />
+                )
+              }
+              disabled={submitting}
+            />
 
-              <StatusCard
-                active={
-                  form.status ===
+            <StatusCard
+              active={
+                form.status ===
+                "active"
+              }
+              title="Active"
+              description="Make this FAQ available to eligible public sections."
+              onClick={() =>
+                updateField(
+                  "status",
                   "active"
-                }
-                title="Active"
-                description="Make this FAQ available to eligible public sections."
-                onClick={() =>
-                  updateField(
-                    "status",
-                    "active"
-                  )
-                }
-                disabled={isSubmitting}
-              />
-            </div>
+                )
+              }
+              disabled={submitting}
+            />
 
-            <div className="mt-5 rounded-2xl border border-slate-200 bg-slate-50 p-4">
-              <div className="flex gap-3">
-                <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-slate-500" />
+          </div>
 
-                <div>
-                  <p className="text-sm font-semibold text-slate-800">
-                    Publishing rule
-                  </p>
+          <div className="mt-5 rounded-2xl border border-[#0D6E91]/20 bg-[#061A2B] p-4 sm:p-5">
+            <div className="flex gap-3">
+              <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-[#FFD400]" />
 
-                  <p className="mt-1 text-sm leading-6 text-slate-600">
-                    Only active FAQs should be
-                    displayed on the public
-                    website. Inactive FAQs remain
-                    available inside the admin CMS
-                    for future use or editing.
-                  </p>
-                </div>
+              <div>
+                <p className="text-sm font-black text-white">
+                  Publishing rule
+                </p>
+
+                <p className="mt-1 text-xs leading-6 text-[#A8BBC8]">
+                  Only active FAQs should be
+                  displayed publicly. Inactive
+                  FAQs remain available inside
+                  the CMS for future editing.
+                </p>
               </div>
             </div>
           </div>
-        </section>
+        </AdminSection>
       </div>
 
-      {/* =====================================================
+      {/* =================================================
           STICKY ACTION BAR
-      ====================================================== */}
+      ================================================= */}
 
-      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-slate-200 bg-white/95 px-4 py-3 shadow-[0_-8px_30px_rgba(6,26,43,0.08)] backdrop-blur sm:px-6">
-        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4">
+      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-white/[0.08] bg-[#061A2B]/95 px-3 py-3 shadow-[0_-15px_40px_rgba(0,0,0,0.3)] backdrop-blur-xl sm:px-6">
+        <div className="mx-auto flex max-w-[1600px] items-center justify-between gap-3">
+
           <div className="hidden min-w-0 sm:block">
-            <p className="truncate text-sm font-semibold text-slate-800">
+            <p className="truncate text-sm font-black text-white">
               {isEdit
                 ? "Edit FAQ"
                 : "Create new FAQ"}
             </p>
 
-            <p className="text-xs text-slate-500">
-              {form.status === "active"
-                ? "This FAQ will be active."
-                : "This FAQ will remain inactive."}
+            <p className="text-xs text-[#718895]">
+              {form.status ===
+              "active"
+                ? "FAQ will be active."
+                : "FAQ will remain inactive."}
             </p>
           </div>
 
-          <div className="ml-auto flex items-center gap-3">
+          <div className="ml-auto flex w-full gap-2 sm:w-auto">
+
             <button
               type="button"
+              disabled={submitting}
               onClick={() =>
-                (window.location.href =
-                  "/admin/faqs")
+                router.push(
+                  "/admin/faqs"
+                )
               }
-              disabled={isSubmitting}
-              className="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+              className="flex-1 rounded-xl border border-white/[0.10] bg-[#08263D] px-4 py-3 text-sm font-black text-[#A8BBC8] transition hover:border-white/[0.18] hover:text-white disabled:opacity-50 sm:flex-none"
             >
               Cancel
             </button>
 
             <button
               type="submit"
-              disabled={isSubmitting}
-              className="inline-flex min-w-[140px] items-center justify-center gap-2 rounded-xl bg-[#061A2B] px-5 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-[#08263D] disabled:cursor-not-allowed disabled:opacity-60"
+              disabled={submitting}
+              className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-[#FFD400] px-5 py-3 text-sm font-black text-[#061A2B] shadow-[0_8px_25px_rgba(255,212,0,0.12)] transition hover:bg-[#FFE04D] disabled:cursor-not-allowed disabled:opacity-60 sm:min-w-[150px] sm:flex-none"
             >
-              {isSubmitting ? (
+              {submitting ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin" />
                   Saving...
@@ -1204,6 +1206,7 @@ export default function FAQForm({
                 </>
               )}
             </button>
+
           </div>
         </div>
       </div>
@@ -1211,94 +1214,97 @@ export default function FAQForm({
   );
 }
 
-/* ============================================================
-   SECTION HEADER
-============================================================ */
+/* =========================================================
+   ADMIN SECTION
+========================================================= */
 
-interface SectionHeaderProps {
-  number: string;
-  icon: React.ReactNode;
-  title: string;
-  description: string;
-  open: boolean;
-  onToggle: () => void;
-}
-
-function SectionHeader({
+function AdminSection({
   number,
   icon,
   title,
   description,
   open,
   onToggle,
-}: SectionHeaderProps) {
+  children,
+}: {
+  number: string;
+  icon: ReactNode;
+  title: string;
+  description: string;
+  open: boolean;
+  onToggle: () => void;
+  children: ReactNode;
+}) {
   return (
-    <button
-      type="button"
-      onClick={onToggle}
-      className="flex w-full items-center gap-4 px-5 py-5 text-left sm:px-7"
-    >
-      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#061A2B] text-[#FFD400]">
-        {icon}
-      </div>
+    <section className="overflow-hidden rounded-3xl border border-white/[0.08] bg-[#08263D] shadow-[0_18px_55px_rgba(0,0,0,0.14)]">
 
-      <div className="min-w-0 flex-1">
-        <div className="flex items-center gap-3">
-          <span className="font-mono text-xs font-bold tracking-[0.2em] text-[#0D6E91]">
-            {number}
-          </span>
-
-          <h2 className="text-base font-bold text-[#061A2B] sm:text-lg">
-            {title}
-          </h2>
+      <button
+        type="button"
+        onClick={onToggle}
+        className="flex w-full items-center gap-3 p-4 text-left transition hover:bg-white/[0.02] sm:gap-4 sm:p-6"
+      >
+        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#061A2B] text-[#FFD400] ring-1 ring-white/[0.05]">
+          {icon}
         </div>
 
-        <p className="mt-1 text-sm leading-6 text-slate-500">
-          {description}
-        </p>
-      </div>
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="font-mono text-[10px] font-black tracking-[0.2em] text-[#0D6E91]">
+              {number}
+            </span>
 
-      <div className="hidden shrink-0 text-slate-400 sm:block">
+            <h2 className="text-sm font-black text-white sm:text-base">
+              {title}
+            </h2>
+          </div>
+
+          <p className="mt-1 text-xs leading-5 text-[#718895] sm:text-sm">
+            {description}
+          </p>
+        </div>
+
         {open ? (
-          <ChevronUp className="h-5 w-5" />
+          <ChevronUp className="h-5 w-5 shrink-0 text-[#718895]" />
         ) : (
-          <ChevronDown className="h-5 w-5" />
+          <ChevronDown className="h-5 w-5 shrink-0 text-[#718895]" />
         )}
-      </div>
-    </button>
+      </button>
+
+      {open && (
+        <div className="border-t border-white/[0.07] p-4 sm:p-6 lg:p-7">
+          {children}
+        </div>
+      )}
+    </section>
   );
 }
 
-/* ============================================================
+/* =========================================================
    FIELD LABEL
-============================================================ */
-
-interface FieldLabelProps {
-  label: string;
-  required?: boolean;
-  hint?: string;
-}
+========================================================= */
 
 function FieldLabel({
   label,
-  required = false,
+  required,
   hint,
-}: FieldLabelProps) {
+}: {
+  label: string;
+  required?: boolean;
+  hint?: string;
+}) {
   return (
     <div className="mb-2.5">
-      <div className="flex items-center gap-2">
-        <label className="text-sm font-bold text-[#061A2B]">
-          {label}
-          {required && (
-            <span className="ml-1 text-red-500">
-              *
-            </span>
-          )}
-        </label>
-      </div>
+      <label className="text-sm font-black text-white">
+        {label}
+        {required && (
+          <span className="ml-1 text-[#FFD400]">
+            *
+          </span>
+        )}
+      </label>
 
       {hint && (
-        <p className="mt-1 text-xs leading-5 text-slate-500">
+        <p className="mt-1 text-xs leading-5 text-[#718895]">
           {hint}
         </p>
       )}
@@ -1306,21 +1312,37 @@ function FieldLabel({
   );
 }
 
-/* ============================================================
-   FIELD META
-============================================================ */
+/* =========================================================
+   INPUT
+========================================================= */
 
-interface FieldMetaProps {
-  count: number;
-  max: number;
-  error?: string;
+function inputClass(
+  hasError: boolean
+) {
+  return [
+    "w-full rounded-xl border bg-[#061A2B] px-4 py-3 text-sm font-medium text-white outline-none transition",
+    "placeholder:text-[#536A78]",
+    "focus:ring-4",
+    hasError
+      ? "border-red-400/50 focus:border-red-400 focus:ring-red-400/10"
+      : "border-white/[0.10] focus:border-[#0D6E91] focus:ring-[#0D6E91]/10",
+    "disabled:cursor-not-allowed disabled:opacity-50",
+  ].join(" ");
 }
+
+/* =========================================================
+   FIELD META
+========================================================= */
 
 function FieldMeta({
   count,
   max,
   error,
-}: FieldMetaProps) {
+}: {
+  count: number;
+  max: number;
+  error?: string;
+}) {
   return (
     <div className="mt-2 flex items-start justify-between gap-4">
       {error ? (
@@ -1330,11 +1352,12 @@ function FieldMeta({
       )}
 
       <span
-        className={`shrink-0 text-xs ${
+        className={[
+          "shrink-0 text-xs",
           count > max * 0.9
-            ? "font-semibold text-amber-600"
-            : "text-slate-400"
-        }`}
+            ? "font-black text-amber-400"
+            : "text-[#718895]",
+        ].join(" ")}
       >
         {count}/{max}
       </span>
@@ -1342,9 +1365,9 @@ function FieldMeta({
   );
 }
 
-/* ============================================================
+/* =========================================================
    ERROR
-============================================================ */
+========================================================= */
 
 function ErrorText({
   message,
@@ -1352,37 +1375,16 @@ function ErrorText({
   message: string;
 }) {
   return (
-    <p className="flex items-center gap-1.5 text-xs font-medium text-red-600">
+    <p className="flex items-center gap-1.5 text-xs font-bold text-red-400">
       <AlertCircle className="h-3.5 w-3.5" />
       {message}
     </p>
   );
 }
 
-/* ============================================================
-   INPUT CLASS
-============================================================ */
-
-function inputClass(hasError: boolean) {
-  return `w-full rounded-xl border bg-white px-4 py-3 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:ring-4 ${
-    hasError
-      ? "border-red-300 focus:border-red-400 focus:ring-red-100"
-      : "border-slate-200 focus:border-[#0D6E91] focus:ring-[#0D6E91]/10"
-  }`;
-}
-
-/* ============================================================
+/* =========================================================
    TOGGLE
-============================================================ */
-
-interface ToggleRowProps {
-  icon: React.ReactNode;
-  title: string;
-  description: string;
-  checked: boolean;
-  disabled?: boolean;
-  onChange: (checked: boolean) => void;
-}
+========================================================= */
 
 function ToggleRow({
   icon,
@@ -1391,20 +1393,28 @@ function ToggleRow({
   checked,
   disabled,
   onChange,
-}: ToggleRowProps) {
+}: {
+  icon: ReactNode;
+  title: string;
+  description: string;
+  checked: boolean;
+  disabled?: boolean;
+  onChange: (value: boolean) => void;
+}) {
   return (
-    <div className="flex items-center justify-between gap-5">
-      <div className="flex min-w-0 items-start gap-3">
-        <div className="mt-0.5 text-[#0D6E91]">
+    <div className="flex items-center justify-between gap-4">
+
+      <div className="flex min-w-0 gap-3">
+        <div className="mt-0.5 text-[#FFD400]">
           {icon}
         </div>
 
         <div>
-          <p className="text-sm font-bold text-[#061A2B]">
+          <p className="text-sm font-black text-white">
             {title}
           </p>
 
-          <p className="mt-1 text-xs leading-5 text-slate-500">
+          <p className="mt-1 text-xs leading-5 text-[#718895]">
             {description}
           </p>
         </div>
@@ -1418,42 +1428,32 @@ function ToggleRow({
         onClick={() =>
           onChange(!checked)
         }
-        className={`relative h-7 w-12 shrink-0 rounded-full transition ${
+        className={[
+          "relative h-7 w-12 shrink-0 rounded-full transition",
           checked
             ? "bg-[#0D6E91]"
-            : "bg-slate-300"
-        } ${
+            : "bg-[#334A59]",
           disabled
             ? "cursor-not-allowed opacity-50"
-            : ""
-        }`}
+            : "",
+        ].join(" ")}
       >
         <span
-          className={`absolute top-1 h-5 w-5 rounded-full bg-white shadow-sm transition ${
+          className={[
+            "absolute top-1 h-5 w-5 rounded-full bg-white shadow transition",
             checked
               ? "left-6"
-              : "left-1"
-          }`}
+              : "left-1",
+          ].join(" ")}
         />
       </button>
     </div>
   );
 }
 
-/* ============================================================
+/* =========================================================
    RELATIONSHIP BOX
-============================================================ */
-
-interface RelationshipBoxProps {
-  icon: React.ReactNode;
-  title: string;
-  description: string;
-  count: number;
-  searchValue: string;
-  onSearchChange: (value: string) => void;
-  searchPlaceholder: string;
-  children: React.ReactNode;
-}
+========================================================= */
 
 function RelationshipBox({
   icon,
@@ -1462,36 +1462,49 @@ function RelationshipBox({
   count,
   searchValue,
   onSearchChange,
-  searchPlaceholder,
+  placeholder,
   children,
-}: RelationshipBoxProps) {
+}: {
+  icon: ReactNode;
+  title: string;
+  description: string;
+  count: number;
+  searchValue: string;
+  onSearchChange: (
+    value: string
+  ) => void;
+  placeholder: string;
+  children: ReactNode;
+}) {
   return (
-    <div className="rounded-3xl border border-slate-200 bg-slate-50/70 p-4 sm:p-5">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+    <div className="rounded-3xl border border-white/[0.08] bg-[#061A2B] p-4 sm:p-5">
+
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+
         <div className="flex gap-3">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#061A2B] text-[#FFD400]">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#08263D] text-[#FFD400]">
             {icon}
           </div>
 
           <div>
             <div className="flex flex-wrap items-center gap-2">
-              <h3 className="text-sm font-bold text-[#061A2B]">
+              <h3 className="text-sm font-black text-white">
                 {title}
               </h3>
 
-              <span className="rounded-full bg-[#061A2B] px-2.5 py-1 text-[11px] font-bold text-white">
-                {count}
+              <span className="rounded-full border border-[#0D6E91]/30 bg-[#0D6E91]/10 px-2.5 py-1 text-[10px] font-black text-[#6FB9FF]">
+                {count} selected
               </span>
             </div>
 
-            <p className="mt-1 text-xs leading-5 text-slate-500">
+            <p className="mt-1 text-xs leading-5 text-[#718895]">
               {description}
             </p>
           </div>
         </div>
 
-        <div className="relative w-full sm:w-64">
-          <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+        <div className="relative w-full lg:w-72">
+          <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[#536A78]" />
 
           <input
             type="search"
@@ -1501,10 +1514,11 @@ function RelationshipBox({
                 event.target.value
               )
             }
-            placeholder={searchPlaceholder}
-            className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-10 pr-4 text-sm outline-none transition focus:border-[#0D6E91] focus:ring-4 focus:ring-[#0D6E91]/10"
+            placeholder={placeholder}
+            className="w-full rounded-xl border border-white/[0.10] bg-[#08263D] py-2.5 pl-10 pr-4 text-sm font-medium text-white outline-none transition placeholder:text-[#536A78] focus:border-[#0D6E91] focus:ring-4 focus:ring-[#0D6E91]/10"
           />
         </div>
+
       </div>
 
       <div className="mt-4">
@@ -1514,34 +1528,110 @@ function RelationshipBox({
   );
 }
 
-/* ============================================================
-   SELECTED ITEMS
-============================================================ */
+/* =========================================================
+   RELATIONSHIP LIST
+========================================================= */
 
-interface SelectedItem {
-  id: string;
-  label: string;
-  onRemove: () => void;
+function RelationshipList({
+  children,
+}: {
+  children: ReactNode;
+}) {
+  return (
+    <div className="max-h-[300px] overflow-y-auto rounded-2xl border border-white/[0.08] bg-[#08263D]">
+      <div className="divide-y divide-white/[0.06]">
+        {children}
+      </div>
+    </div>
+  );
 }
+
+/* =========================================================
+   RELATIONSHIP ITEM
+========================================================= */
+
+function RelationshipItem({
+  checked,
+  title,
+  subtitle,
+  disabled,
+  onClick,
+}: {
+  checked: boolean;
+  title: string;
+  subtitle: string;
+  disabled?: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      disabled={disabled}
+      onClick={onClick}
+      className={[
+        "flex w-full items-center gap-3 px-4 py-3.5 text-left transition",
+        checked
+          ? "bg-[#0D6E91]/10"
+          : "hover:bg-white/[0.03]",
+        disabled
+          ? "cursor-not-allowed opacity-50"
+          : "",
+      ].join(" ")}
+    >
+      <span
+        className={[
+          "flex h-5 w-5 shrink-0 items-center justify-center rounded-md border transition",
+          checked
+            ? "border-[#0D6E91] bg-[#0D6E91] text-white"
+            : "border-white/[0.15] bg-[#061A2B]",
+        ].join(" ")}
+      >
+        {checked && (
+          <Check className="h-3.5 w-3.5" />
+        )}
+      </span>
+
+      <span className="min-w-0 flex-1">
+        <span className="block truncate text-sm font-bold text-white">
+          {title}
+        </span>
+
+        <span className="mt-0.5 block truncate text-xs text-[#718895]">
+          {subtitle}
+        </span>
+      </span>
+    </button>
+  );
+}
+
+/* =========================================================
+   SELECTED ITEMS
+========================================================= */
 
 function SelectedItems({
   items,
 }: {
-  items: SelectedItem[];
+  items: {
+    id: string;
+    label: string;
+    onRemove: () => void;
+  }[];
 }) {
   return (
     <div className="mb-3 flex flex-wrap gap-2">
       {items.map((item) => (
         <span
           key={item.id}
-          className="inline-flex items-center gap-2 rounded-full border border-[#0D6E91]/20 bg-[#0D6E91]/5 px-3 py-1.5 text-xs font-semibold text-[#061A2B]"
+          className="inline-flex max-w-full items-center gap-2 rounded-full border border-[#0D6E91]/25 bg-[#0D6E91]/10 px-3 py-1.5 text-xs font-bold text-[#8FD4FF]"
         >
-          {item.label}
+          <span className="max-w-[220px] truncate">
+            {item.label}
+          </span>
 
           <button
             type="button"
             onClick={item.onRemove}
-            className="rounded-full p-0.5 text-slate-400 transition hover:bg-white hover:text-red-500"
+            className="rounded-full p-0.5 text-[#718895] transition hover:bg-white/10 hover:text-red-400"
             aria-label={`Remove ${item.label}`}
           >
             <X className="h-3.5 w-3.5" />
@@ -1552,100 +1642,33 @@ function SelectedItems({
   );
 }
 
-/* ============================================================
-   RELATIONSHIP ITEM
-============================================================ */
-
-interface RelationshipItemProps {
-  checked: boolean;
-  title: string;
-  subtitle: string;
-  disabled?: boolean;
-  onClick: () => void;
-}
-
-function RelationshipItem({
-  checked,
-  title,
-  subtitle,
-  disabled,
-  onClick,
-}: RelationshipItemProps) {
-  return (
-    <button
-      type="button"
-      disabled={disabled}
-      onClick={onClick}
-      className={`flex w-full items-center gap-3 px-4 py-3.5 text-left transition ${
-        checked
-          ? "bg-[#0D6E91]/5"
-          : "hover:bg-slate-50"
-      } ${
-        disabled
-          ? "cursor-not-allowed opacity-50"
-          : ""
-      }`}
-    >
-      <span
-        className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-md border transition ${
-          checked
-            ? "border-[#0D6E91] bg-[#0D6E91] text-white"
-            : "border-slate-300 bg-white"
-        }`}
-      >
-        {checked && (
-          <Check className="h-3.5 w-3.5" />
-        )}
-      </span>
-
-      <span className="min-w-0 flex-1">
-        <span className="block truncate text-sm font-semibold text-slate-800">
-          {title}
-        </span>
-
-        <span className="mt-0.5 block truncate text-xs text-slate-400">
-          {subtitle}
-        </span>
-      </span>
-    </button>
-  );
-}
-
-/* ============================================================
+/* =========================================================
    EMPTY RELATIONSHIP
-============================================================ */
+========================================================= */
 
-function EmptyRelationshipState({
+function EmptyRelationship({
   icon,
   message,
 }: {
-  icon: React.ReactNode;
+  icon: ReactNode;
   message: string;
 }) {
   return (
     <div className="flex min-h-[150px] flex-col items-center justify-center px-5 text-center">
-      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100 text-slate-400">
+      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#061A2B] text-[#718895]">
         {icon}
       </div>
 
-      <p className="mt-3 text-sm font-medium text-slate-500">
+      <p className="mt-3 text-sm font-bold text-[#718895]">
         {message}
       </p>
     </div>
   );
 }
 
-/* ============================================================
-   STATUS CARD
-============================================================ */
-
-interface StatusCardProps {
-  active: boolean;
-  title: string;
-  description: string;
-  onClick: () => void;
-  disabled?: boolean;
-}
+/* =========================================================
+   STATUS
+========================================================= */
 
 function StatusCard({
   active,
@@ -1653,29 +1676,37 @@ function StatusCard({
   description,
   onClick,
   disabled,
-}: StatusCardProps) {
+}: {
+  active: boolean;
+  title: string;
+  description: string;
+  onClick: () => void;
+  disabled?: boolean;
+}) {
   return (
     <button
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className={`rounded-2xl border p-5 text-left transition ${
+      className={[
+        "rounded-2xl border p-5 text-left transition",
         active
-          ? "border-[#0D6E91] bg-[#0D6E91]/5 ring-2 ring-[#0D6E91]/10"
-          : "border-slate-200 bg-white hover:border-slate-300"
-      } ${
+          ? "border-[#0D6E91]/70 bg-[#0D6E91]/10 ring-2 ring-[#0D6E91]/10"
+          : "border-white/[0.08] bg-[#061A2B] hover:border-white/[0.16]",
         disabled
           ? "cursor-not-allowed opacity-50"
-          : ""
-      }`}
+          : "",
+      ].join(" ")}
     >
       <div className="flex items-start gap-3">
+
         <span
-          className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border ${
+          className={[
+            "mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border",
             active
               ? "border-[#0D6E91] bg-[#0D6E91]"
-              : "border-slate-300 bg-white"
-          }`}
+              : "border-white/[0.15] bg-[#08263D]",
+          ].join(" ")}
         >
           {active && (
             <span className="h-2 w-2 rounded-full bg-white" />
@@ -1683,14 +1714,15 @@ function StatusCard({
         </span>
 
         <div>
-          <p className="text-sm font-bold text-[#061A2B]">
+          <p className="text-sm font-black text-white">
             {title}
           </p>
 
-          <p className="mt-1 text-xs leading-5 text-slate-500">
+          <p className="mt-1 text-xs leading-5 text-[#718895]">
             {description}
           </p>
         </div>
+
       </div>
     </button>
   );

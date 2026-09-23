@@ -13,49 +13,62 @@ export const metadata = {
 
 export default function NewServicePage() {
   return (
-    <main className="min-h-screen bg-[#F8FAFC]">
+    <main className="min-h-screen bg-[#061A2B] text-[#F8FAFC]">
       <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
         {/* PAGE HEADER */}
 
-        <div className="mb-6">
+        <div className="mb-7">
           <Link
             href="/admin/services"
-            className="mb-4 inline-flex items-center gap-2 text-sm font-semibold text-slate-500 transition hover:text-[#0D6E91]"
+            className="mb-5 inline-flex items-center gap-2 text-sm font-semibold text-[#A8BBC8] transition hover:text-[#FFD400]"
           >
             <ArrowLeft className="h-4 w-4" />
             Back to Services
           </Link>
 
           <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
+            {/* TITLE */}
+
             <div className="flex items-start gap-4">
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#061A2B] text-[#FFD400] shadow-sm">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-[#FFD400]/20 bg-[#FFD400]/10 text-[#FFD400] shadow-[0_10px_30px_rgba(255,212,0,0.08)]">
                 <Wrench className="h-5 w-5" />
               </div>
 
-              <div>
-                <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#0D6E91]">
+              <div className="min-w-0">
+                <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#FFD400]">
                   Service CMS
                 </p>
 
-                <h1 className="mt-1 text-2xl font-black tracking-tight text-slate-950 sm:text-3xl">
+                <h1 className="mt-1 text-2xl font-black tracking-tight text-[#F8FAFC] sm:text-3xl">
                   Create New Service
                 </h1>
 
-                <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500">
+                <p className="mt-2 max-w-2xl text-sm leading-6 text-[#A8BBC8]">
                   Add a complete service with structured content, media,
                   customer actions, publishing controls and SEO.
                 </p>
               </div>
             </div>
 
-            <div className="hidden rounded-xl border border-slate-200 bg-white px-4 py-3 text-xs text-slate-500 shadow-sm sm:block">
-              <span className="font-semibold text-slate-800">
-                New service
-              </span>{" "}
-              · Review before publishing
+            {/* STATUS CARD */}
+
+            <div className="hidden rounded-xl border border-white/[0.08] bg-[#08263D] px-4 py-3 shadow-[0_12px_35px_rgba(0,0,0,0.18)] sm:block">
+              <div className="flex items-center gap-2">
+                <span className="h-2 w-2 rounded-full bg-[#FFD400] shadow-[0_0_10px_rgba(255,212,0,0.45)]" />
+
+                <span className="text-xs font-semibold text-[#F8FAFC]">
+                  New service
+                </span>
+              </div>
+
+              <p className="mt-1 text-[11px] text-[#718895]">
+                Review before publishing
+              </p>
             </div>
           </div>
         </div>
+
+        {/* SERVICE FORM */}
 
         <ServiceForm />
       </div>

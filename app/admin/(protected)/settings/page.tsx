@@ -12,20 +12,20 @@ export const metadata: Metadata = {
 
 export default function SiteSettingsPage() {
   return (
-    <main className="min-h-full bg-slate-50">
-      <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 lg:px-8">
-        <div className="mb-6">
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
-            Settings
+    <main className="min-h-screen bg-[#061A2B] text-[#F8FAFC]">
+      <div className="mx-auto w-full max-w-7xl px-4 py-5 sm:px-6 sm:py-7 lg:px-8">
+        <div className="mb-7">
+          <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-[#FFD400]">
+            Administration
           </p>
 
-          <h1 className="mt-1 text-2xl font-bold tracking-tight text-slate-950">
+          <h1 className="mt-1 text-2xl font-bold tracking-tight text-[#F8FAFC] sm:text-3xl">
             Site Settings
           </h1>
 
-          <p className="mt-1 max-w-2xl text-sm leading-6 text-slate-500">
-            Manage the global business information
-            used across the website.
+          <p className="mt-1 max-w-2xl text-sm leading-6 text-[#A8BBC8]">
+            Manage the global business information used
+            across the website.
           </p>
         </div>
 

@@ -5,7 +5,9 @@ import { connectDB } from "@/lib/db";
 import Booking from "@/models/Booking";
 import Service from "@/models/Service";
 import Availability from "@/models/Availability";
-import Counter from "@/models/Counter";
+import {
+  generateBookingReference,
+} from "@/lib/booking/booking.utils";
 
 import {
   BOOKING_TIMEZONE,
@@ -304,28 +306,9 @@ export async function POST(request: Request) {
    BOOKING REFERENCE
 ===================================================== */
 
-const counter = await Counter.findOneAndUpdate(
-  { key: "booking" },
-  {
-    $inc: {
-      value: 1,
-    },
-  },
-  {
-    new: true,
-    upsert: true,
-    setDefaultsOnInsert: true,
-  }
-);
-
-if (!counter) {
-  throw new Error(
-    "Unable to generate booking reference."
-  );
-}
-
 const bookingReference =
-  `BCS-${counter.value}`;
+  await generateBookingReference();
+
 
     /* =====================================================
        CREATE BOOKING

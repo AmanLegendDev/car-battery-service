@@ -187,20 +187,20 @@ function SectionHeader({
 }) {
   return (
     <div className="flex items-start gap-4">
-      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#061A2B] text-sm font-bold text-white">
-        {number}
-      </div>
+    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[#FFD400]/20 bg-[#FFD400]/10 text-sm font-bold text-[#FFD400]">
+  {number}
+</div>
 
       <div className="min-w-0">
         <div className="flex items-center gap-2">
-          <Icon className="h-4 w-4 text-[#0D6E91]" />
+         <Icon className="h-4 w-4 text-[#FFD400]" />
 
-          <h2 className="text-base font-bold text-slate-950">
+          <h2 className="text-base font-bold text-[#F8FAFC]">
             {title}
           </h2>
         </div>
 
-        <p className="mt-1 text-sm leading-6 text-slate-500">
+       <p className="mt-1 text-sm leading-6 text-[#A8BBC8]">
           {description}
         </p>
       </div>
@@ -227,11 +227,11 @@ function Label({
   required?: boolean;
 }) {
   return (
-    <label className="mb-2 block text-sm font-semibold text-slate-800">
+    <label className="mb-2 block text-sm font-semibold text-[#F8FAFC]">
       {children}
 
       {required && (
-        <span className="ml-1 text-red-500" aria-hidden="true">
+        <span className="ml-1 text-[#FFD400]" aria-hidden="true">
           *
         </span>
       )}
@@ -240,11 +240,9 @@ function Label({
 }
 
 const inputClass =
-  "w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-[#0D6E91] focus:ring-4 focus:ring-[#0D6E91]/10";
-
+  "w-full rounded-xl border border-white/[0.08] bg-[#061A2B] px-4 py-3 text-sm text-[#F8FAFC] outline-none transition placeholder:text-[#718895] focus:border-[#0D6E91] focus:ring-4 focus:ring-[#0D6E91]/15";
 const textareaClass =
-  "w-full resize-y rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm leading-6 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-[#0D6E91] focus:ring-4 focus:ring-[#0D6E91]/10";
-
+  "w-full resize-y rounded-xl border border-white/[0.08] bg-[#061A2B] px-4 py-3 text-sm leading-6 text-[#F8FAFC] outline-none transition placeholder:text-[#718895] focus:border-[#0D6E91] focus:ring-4 focus:ring-[#0D6E91]/15";
 export default function ServiceForm({
   mode = "create",
   serviceId,
@@ -636,20 +634,20 @@ export default function ServiceForm({
         {Array.from({ length: 5 }).map((_, index) => (
           <div
             key={index}
-            className="overflow-hidden rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
+            className="overflow-hidden rounded-2xl border border-white/[0.08] bg-[#08263D] p-6 shadow-[0_20px_50px_rgba(0,0,0,0.18)]"
           >
             <div className="animate-pulse space-y-5">
               <div className="flex items-center gap-4">
-                <div className="h-10 w-10 rounded-xl bg-slate-100" />
+                <div className="h-10 w-10 rounded-xl bg-[#061A2B]" />
                 <div className="space-y-2">
-                  <div className="h-4 w-40 rounded bg-slate-100" />
-                  <div className="h-3 w-64 rounded bg-slate-100" />
+                  <div className="h-4 w-40 rounded bg-[#061A2B]" />
+                  <div className="h-3 w-64 rounded bg-[#061A2B]" />
                 </div>
               </div>
               <div className="grid gap-5 md:grid-cols-2">
-                <div className="h-12 rounded-xl bg-slate-100" />
-                <div className="h-12 rounded-xl bg-slate-100" />
-                <div className="h-24 rounded-xl bg-slate-100 md:col-span-2" />
+                <div className="h-12 rounded-xl bg-[#061A2B]" />
+                <div className="h-12 rounded-xl bg-[#061A2B]" />
+                <div className="h-24 rounded-xl bg-[#061A2B] md:col-span-2" />
               </div>
             </div>
           </div>
@@ -660,11 +658,11 @@ export default function ServiceForm({
 
   if (loadError) {
     return (
-      <div className="mx-auto max-w-2xl rounded-2xl border border-red-100 bg-white p-8 text-center shadow-sm">
-        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-red-50 text-red-600">
+      <div className="mx-auto max-w-2xl rounded-2xl border border-red-400/20 bg-[#08263D] p-8 text-center shadow-[0_20px_50px_rgba(0,0,0,0.18)]">
+        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-red-500/100/10 text-red-400">
           <AlertCircle className="h-6 w-6" />
         </div>
-        <h2 className="mt-4 text-lg font-black text-slate-950">
+        <h2 className="mt-4 text-lg font-black text-[#F8FAFC]">
           Unable to load service
         </h2>
         <p className="mt-2 text-sm leading-6 text-slate-500">
@@ -673,7 +671,7 @@ export default function ServiceForm({
         <button
           type="button"
           onClick={() => router.push("/admin/services")}
-          className="mt-6 inline-flex items-center gap-2 rounded-xl bg-[#061A2B] px-5 py-3 text-sm font-bold text-white transition hover:bg-[#08263D]"
+          className="mt-6 inline-flex items-center gap-2 rounded-xl bg-[#FFD400] px-5 py-3 text-sm font-bold text-[#061A2B] shadow-[0_10px_30px_rgba(255,212,0,0.14)] transition hover:bg-[#F5B800]"
         >
           <ArrowLeft className="h-4 w-4" />
           Back to Services
@@ -690,7 +688,7 @@ export default function ServiceForm({
       <div className="mx-auto max-w-6xl space-y-6">
         {/* BASIC INFORMATION */}
 
-        <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-7">
+        <section className="rounded-2xl border border-white/[0.08] bg-[#08263D] p-5 shadow-[0_20px_50px_rgba(0,0,0,0.18)] sm:p-7">
           <SectionHeader
             number="01"
             icon={Info}
@@ -735,7 +733,7 @@ export default function ServiceForm({
                 spellCheck={false}
               />
 
-              <p className="mt-1.5 text-[11px] text-slate-400">
+              <p className="mt-1.5 text-[11px] text-[#718895]">
                 Public URL: /services/{form.slug || "..."}
               </p>
 
@@ -769,7 +767,7 @@ export default function ServiceForm({
                   )}
                 />
 
-                <span className="text-[11px] text-slate-400">
+                <span className="text-[11px] text-[#718895]">
                   {form.shortDescription.length}/300
                 </span>
               </div>
@@ -800,7 +798,7 @@ export default function ServiceForm({
                   )}
                 />
 
-                <span className="text-[11px] text-slate-400">
+                <span className="text-[11px] text-[#718895]">
                   {form.description.length}/10000
                 </span>
               </div>
@@ -819,7 +817,7 @@ export default function ServiceForm({
                 maxLength={100}
               />
 
-              <p className="mt-1.5 text-[11px] text-slate-400">
+              <p className="mt-1.5 text-[11px] text-[#718895]">
                 Optional icon identifier used by the website.
               </p>
             </div>
@@ -828,7 +826,7 @@ export default function ServiceForm({
 
         {/* SERVICE CONTENT */}
 
-        <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-7">
+        <section className="rounded-2xl border border-white/[0.08] bg-[#08263D] p-5 shadow-[0_20px_50px_rgba(0,0,0,0.18)] sm:p-7">
           <SectionHeader
             number="02"
             icon={Layers3}
@@ -884,11 +882,11 @@ export default function ServiceForm({
             <div>
               <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
                 <div>
-                  <h3 className="text-sm font-bold text-slate-900">
+                  <h3 className="text-sm font-bold text-[#F8FAFC]">
                     How It Works
                   </h3>
 
-                  <p className="mt-1 text-xs leading-5 text-slate-500">
+                  <p className="mt-1 text-xs leading-5 text-[#A8BBC8]">
                     Add the actual steps customers should expect.
                   </p>
                 </div>
@@ -896,7 +894,7 @@ export default function ServiceForm({
                 <button
                   type="button"
                   onClick={addProcessStep}
-                  className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-slate-200 px-4 py-2.5 text-xs font-bold text-slate-700 transition hover:border-[#0D6E91] hover:text-[#0D6E91] sm:w-auto"
+                  className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-white/[0.08] bg-[#061A2B] px-4 py-2.5 text-xs font-bold text-[#A8BBC8] transition hover:border-[#0D6E91] hover:bg-[#0D6E91]/10 hover:text-[#F8FAFC] sm:w-auto"
                 >
                   <Plus className="h-4 w-4" />
                   Add Process Step
@@ -908,7 +906,7 @@ export default function ServiceForm({
                   (step, index) => (
                     <div
                       key={index}
-                      className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4"
+                      className="rounded-2xl border border-white/[0.06] bg-[#061A2B]/70 p-4"
                     >
                       <div className="flex items-start gap-3">
                         <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#061A2B] text-xs font-bold text-white">
@@ -959,7 +957,7 @@ export default function ServiceForm({
                                 "up"
                               )
                             }
-                            className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 disabled:opacity-30"
+                            className="flex h-8 w-8 items-center justify-center rounded-lg border border-white/[0.08] bg-[#061A2B] text-[#A8BBC8] transition hover:border-white/[0.15] hover:text-[#F8FAFC] disabled:opacity-30"
                             aria-label="Move step up"
                           >
                             <ChevronUp className="h-4 w-4" />
@@ -977,7 +975,7 @@ export default function ServiceForm({
                                 "down"
                               )
                             }
-                            className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 disabled:opacity-30"
+                            className="flex h-8 w-8 items-center justify-center rounded-lg border border-white/[0.08] bg-[#061A2B] text-[#A8BBC8] transition hover:border-white/[0.15] hover:text-[#F8FAFC] disabled:opacity-30"
                             aria-label="Move step down"
                           >
                             <ChevronDown className="h-4 w-4" />
@@ -991,7 +989,7 @@ export default function ServiceForm({
                             onClick={() =>
                               removeProcessStep(index)
                             }
-                            className="mt-1 flex h-8 w-8 items-center justify-center rounded-lg border border-red-100 bg-white text-red-500 transition hover:bg-red-50 disabled:opacity-30"
+                            className="mt-1 flex h-8 w-8 items-center justify-center rounded-lg border border-red-100 bg-white text-red-400 transition hover:bg-red-500/10 disabled:opacity-30"
                             aria-label="Remove process step"
                           >
                             <Trash2 className="h-4 w-4" />
@@ -1034,7 +1032,7 @@ export default function ServiceForm({
 
         {/* SERVICE DETAILS */}
 
-        <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-7">
+        <section className="rounded-2xl border border-white/[0.08] bg-[#08263D] p-5 shadow-[0_20px_50px_rgba(0,0,0,0.18)] sm:p-7">
           <SectionHeader
             number="03"
             icon={Clock3}
@@ -1059,7 +1057,7 @@ export default function ServiceForm({
                 maxLength={100}
               />
 
-              <p className="mt-1.5 text-[11px] text-slate-400">
+              <p className="mt-1.5 text-[11px] text-[#718895]">
                 Only enter an estimate genuinely supported by the business.
               </p>
             </div>
@@ -1094,7 +1092,7 @@ export default function ServiceForm({
 
         {/* MEDIA */}
 
-        <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-7">
+        <section className="rounded-2xl border border-white/[0.08] bg-[#08263D] p-5 shadow-[0_20px_50px_rgba(0,0,0,0.18)] sm:p-7">
           <SectionHeader
             number="04"
             icon={ImageIcon}
@@ -1127,11 +1125,11 @@ export default function ServiceForm({
 
             <div>
               <div className="mb-4">
-                <h3 className="text-sm font-bold text-slate-900">
+                <h3 className="text-sm font-bold text-[#F8FAFC]">
                   Service Gallery
                 </h3>
 
-                <p className="mt-1 text-xs leading-5 text-slate-500">
+                <p className="mt-1 text-xs leading-5 text-[#A8BBC8]">
                   Add supporting service images. You can reorder or remove them before saving.
                 </p>
               </div>
@@ -1175,7 +1173,7 @@ export default function ServiceForm({
 
         {/* CTA */}
 
-        <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-7">
+        <section className="rounded-2xl border border-white/[0.08] bg-[#08263D] p-5 shadow-[0_20px_50px_rgba(0,0,0,0.18)] sm:p-7">
           <SectionHeader
             number="05"
             icon={Sparkles}
@@ -1224,7 +1222,7 @@ export default function ServiceForm({
                 )}
               />
 
-              <p className="mt-1.5 text-[11px] text-slate-400">
+              <p className="mt-1.5 text-[11px] text-[#718895]">
                 Supports internal paths, HTTPS URLs, tel: and mailto: links.
               </p>
             </div>
@@ -1233,7 +1231,7 @@ export default function ServiceForm({
 
         {/* SEO */}
 
-        <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-7">
+        <section className="rounded-2xl border border-white/[0.08] bg-[#08263D] p-5 shadow-[0_20px_50px_rgba(0,0,0,0.18)] sm:p-7">
           <SectionHeader
             number="06"
             icon={Search}
@@ -1289,7 +1287,7 @@ export default function ServiceForm({
 
         {/* PUBLISHING */}
 
-        <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-7">
+        <section className="rounded-2xl border border-white/[0.08] bg-[#08263D] p-5 shadow-[0_20px_50px_rgba(0,0,0,0.18)] sm:p-7">
           <SectionHeader
             number="07"
             icon={ShieldCheck}
@@ -1326,7 +1324,7 @@ export default function ServiceForm({
                   className={inputClass}
                 />
 
-                <p className="mt-1.5 text-[11px] text-slate-400">
+                <p className="mt-1.5 text-[11px] text-[#718895]">
                   Lower numbers appear first.
                 </p>
               </div>
@@ -1355,7 +1353,7 @@ export default function ServiceForm({
                   </option>
                 </select>
 
-                <p className="mt-1.5 text-[11px] text-slate-400">
+                <p className="mt-1.5 text-[11px] text-[#718895]">
                   Inactive services should not appear on the public website.
                 </p>
               </div>
@@ -1369,7 +1367,7 @@ export default function ServiceForm({
                   Publishing safety
                 </p>
 
-                <p className="mt-1 text-xs leading-5 text-slate-600">
+                <p className="mt-1 text-xs leading-5 text-[#A8BBC8]">
                   New services default to inactive. Publish only after the content and media have been reviewed.
                 </p>
               </div>
@@ -1380,12 +1378,12 @@ export default function ServiceForm({
 
       {/* DESKTOP ACTION BAR */}
 
-      <div className="mx-auto mt-6 hidden max-w-6xl items-center justify-between rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:flex">
+      <div className="mx-auto mt-6 hidden max-w-6xl items-center justify-between rounded-2xl border border-white/[0.08] bg-[#08263D] p-4 shadow-[0_20px_50px_rgba(0,0,0,0.18)] sm:flex">
         <button
           type="button"
           onClick={() => router.push("/admin/services")}
           disabled={isSubmitting}
-          className="inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold text-slate-600 transition hover:bg-slate-50 hover:text-slate-900 disabled:opacity-50"
+          className="inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold text-[#A8BBC8] transition hover:bg-slate-50 hover:text-slate-900 disabled:opacity-50"
         >
           <ArrowLeft className="h-4 w-4" />
           Cancel
@@ -1394,7 +1392,7 @@ export default function ServiceForm({
         <button
           type="submit"
           disabled={!canSubmit}
-          className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#061A2B] px-6 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-[#08263D] disabled:cursor-not-allowed disabled:opacity-60"
+          className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#FFD400] px-6 py-3 text-sm font-bold text-[#061A2B] shadow-[0_10px_30px_rgba(255,212,0,0.16)] transition hover:bg-[#F5B800] disabled:cursor-not-allowed disabled:opacity-60"
         >
           {isSubmitting ? (
             <>
@@ -1412,7 +1410,7 @@ export default function ServiceForm({
 
       {/* MOBILE STICKY ACTION BAR */}
 
-      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-slate-200 bg-white/95 p-3 shadow-[0_-8px_30px_rgba(0,0,0,0.08)] backdrop-blur sm:hidden">
+      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-white/[0.08] bg-[#061A2B]/95 p-3 shadow-[0_-12px_40px_rgba(0,0,0,0.35)] backdrop-blur sm:hidden">
         <div className="mx-auto flex max-w-lg gap-2">
           <button
             type="button"
@@ -1420,7 +1418,7 @@ export default function ServiceForm({
               router.push("/admin/services")
             }
             disabled={isSubmitting}
-            className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-700 disabled:opacity-50"
+            className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-white/[0.08] bg-[#08263D] px-4 py-3 text-sm font-semibold text-[#A8BBC8] transition hover:bg-[#0A2D47] hover:text-[#F8FAFC] disabled:opacity-50"
           >
             <X className="h-4 w-4" />
             Cancel
@@ -1429,7 +1427,7 @@ export default function ServiceForm({
           <button
             type="submit"
             disabled={!canSubmit}
-            className="flex flex-[1.5] items-center justify-center gap-2 rounded-xl bg-[#061A2B] px-4 py-3 text-sm font-bold text-white disabled:cursor-not-allowed disabled:opacity-60"
+            className="flex flex-[1.5] items-center justify-center gap-2 rounded-xl bg-[#FFD400] px-4 py-3 text-sm font-bold text-[#061A2B] shadow-[0_8px_24px_rgba(255,212,0,0.14)] transition hover:bg-[#F5B800] disabled:cursor-not-allowed disabled:opacity-60"
           >
             {isSubmitting ? (
               <>
@@ -1472,11 +1470,11 @@ function DynamicStringList({
     <div>
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h3 className="text-sm font-bold text-slate-900">
+          <h3 className="text-sm font-bold text-[#F8FAFC]">
             {title}
           </h3>
 
-          <p className="mt-1 text-xs leading-5 text-slate-500">
+          <p className="mt-1 text-xs leading-5 text-[#A8BBC8]">
             {description}
           </p>
         </div>
@@ -1484,7 +1482,7 @@ function DynamicStringList({
         <button
           type="button"
           onClick={onAdd}
-          className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-slate-200 px-4 py-2.5 text-xs font-bold text-slate-700 transition hover:border-[#0D6E91] hover:text-[#0D6E91] sm:w-auto"
+          className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-white/[0.08] bg-[#061A2B] px-4 py-2.5 text-xs font-bold text-[#A8BBC8] transition hover:border-[#0D6E91] hover:bg-[#0D6E91]/10 hover:text-[#F8FAFC] sm:w-auto"
         >
           <Plus className="h-4 w-4" />
           {addLabel}
@@ -1497,7 +1495,7 @@ function DynamicStringList({
             key={index}
             className="flex items-center gap-2"
           >
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-xs font-bold text-slate-500">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[#FFD400]/15 bg-[#FFD400]/10 text-xs font-bold text-[#FFD400]">
               {index + 1}
             </div>
 
@@ -1514,7 +1512,7 @@ function DynamicStringList({
               type="button"
               onClick={() => onRemove(index)}
               disabled={items.length === 1}
-              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-red-100 text-red-500 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-30"
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-red-100 text-red-400 transition hover:bg-red-500/10 disabled:cursor-not-allowed disabled:opacity-30"
               aria-label={`Remove ${title} item`}
             >
               <Trash2 className="h-4 w-4" />
@@ -1541,7 +1539,7 @@ function Toggle({
     <button
       type="button"
       onClick={() => onChange(!checked)}
-      className="flex w-full items-center justify-between gap-4 rounded-2xl border border-slate-200 bg-white p-4 text-left transition hover:border-slate-300"
+      className="flex w-full items-center justify-between gap-4 rounded-2xl border border-white/[0.08] bg-[#061A2B]/70 p-4 text-left transition hover:border-white/[0.15] hover:bg-[#061A2B]"
       aria-pressed={checked}
     >
       <div className="min-w-0">
@@ -1549,7 +1547,7 @@ function Toggle({
           {title}
         </p>
 
-        <p className="mt-1 text-xs leading-5 text-slate-500">
+        <p className="mt-1 text-xs leading-5 text-[#A8BBC8]">
           {description}
         </p>
       </div>

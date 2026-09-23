@@ -5,12 +5,10 @@ import { useRouter } from "next/navigation";
 import {
   ArrowDown,
   ArrowLeft,
-  ArrowUp,
   Check,
   ChevronDown,
   ChevronUp,
   CircleHelp,
-  ExternalLink,
   Globe,
   ImagePlus,
   Loader2,
@@ -32,12 +30,11 @@ import {
   createServiceAreaSchema,
 } from "@/validations/serviceArea";
 
-interface StringItem {
-  id: string;
-  value: string;
-}
+/* =========================================================
+   TYPES
+========================================================= */
 
-interface ServiceAreaFormState {
+export interface ServiceAreaFormData {
   name: string;
   slug: string;
   shortDescription: string;
@@ -59,11 +56,26 @@ interface ServiceAreaFormState {
   seoDescription: string;
 }
 
+interface ServiceAreaFormProps {
+  mode?: "create" | "edit";
+  serviceAreaId?: string;
+  initialData?: Partial<ServiceAreaFormData> | null;
+}
+
+interface StringItem {
+  id: string;
+  value: string;
+}
+
 interface FieldErrors {
   [key: string]: string | undefined;
 }
 
-const INITIAL_FORM: ServiceAreaFormState = {
+/* =========================================================
+   INITIAL FORM
+========================================================= */
+
+const INITIAL_FORM: ServiceAreaFormData = {
   name: "",
   slug: "",
   shortDescription: "",
@@ -85,6 +97,10 @@ const INITIAL_FORM: ServiceAreaFormState = {
   seoDescription: "",
 };
 
+/* =========================================================
+   HELPERS
+========================================================= */
+
 function slugify(value: string): string {
   return value
     .trim()
@@ -99,6 +115,13 @@ function createItemId(): string {
     .slice(2, 9)}`;
 }
 
+function toStringItems(values: string[] = []): StringItem[] {
+  return values.map((value) => ({
+    id: createItemId(),
+    value,
+  }));
+}
+
 function FieldError({
   message,
 }: {
@@ -107,11 +130,15 @@ function FieldError({
   if (!message) return null;
 
   return (
-    <p className="mt-2 text-xs font-medium text-red-600">
+    <p className="mt-2 text-xs font-medium text-red-400">
       {message}
     </p>
   );
 }
+
+/* =========================================================
+   SECTION HEADER
+========================================================= */
 
 function SectionHeader({
   number,
@@ -126,7 +153,7 @@ function SectionHeader({
 }) {
   return (
     <div className="flex gap-4">
-      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#061A2B] text-sm font-black text-[#FFD400]">
+      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[#FFD400]/15 bg-[#061A2B] text-sm font-black text-[#FFD400] shadow-[0_0_24px_rgba(255,212,0,0.06)]">
         {number}
       </div>
 
@@ -134,18 +161,22 @@ function SectionHeader({
         <div className="flex items-center gap-2">
           <Icon className="h-4 w-4 text-[#0D6E91]" />
 
-          <h2 className="text-lg font-black tracking-tight text-slate-950">
+          <h2 className="text-lg font-black tracking-tight text-[#F8FAFC]">
             {title}
           </h2>
         </div>
 
-        <p className="mt-1 text-sm leading-6 text-slate-500">
+        <p className="mt-1 text-sm leading-6 text-[#A8BBC8]">
           {description}
         </p>
       </div>
     </div>
   );
 }
+
+/* =========================================================
+   LABEL
+========================================================= */
 
 function Label({
   children,
@@ -159,16 +190,20 @@ function Label({
   return (
     <label
       htmlFor={htmlFor}
-      className="mb-2 block text-sm font-bold text-slate-800"
+      className="mb-2 block text-sm font-bold text-[#F8FAFC]"
     >
       {children}
 
       {required && (
-        <span className="ml-1 text-red-500">*</span>
+        <span className="ml-1 text-red-400">*</span>
       )}
     </label>
   );
 }
+
+/* =========================================================
+   COUNTER
+========================================================= */
 
 function Counter({
   value,
@@ -178,11 +213,15 @@ function Counter({
   max: number;
 }) {
   return (
-    <div className="mt-1.5 flex justify-end text-[11px] font-medium text-slate-400">
+    <div className="mt-1.5 flex justify-end text-[11px] font-medium text-[#718895]">
       {value.length}/{max}
     </div>
   );
 }
+
+/* =========================================================
+   TOGGLE
+========================================================= */
 
 function Toggle({
   checked,
@@ -202,14 +241,14 @@ function Toggle({
       type="button"
       disabled={disabled}
       onClick={() => onChange(!checked)}
-      className="flex w-full items-center justify-between gap-4 rounded-2xl border border-slate-200 bg-white p-4 text-left transition hover:border-[#0D6E91]/40 disabled:cursor-not-allowed disabled:opacity-60"
+      className="flex w-full items-center justify-between gap-4 rounded-2xl border border-white/[0.10] bg-[#061A2B] p-4 text-left transition hover:border-[#0D6E91]/50 hover:bg-[#08263D] disabled:cursor-not-allowed disabled:opacity-60"
     >
       <span className="min-w-0">
-        <span className="block text-sm font-bold text-slate-900">
+        <span className="block text-sm font-bold text-[#F8FAFC]">
           {title}
         </span>
 
-        <span className="mt-1 block text-xs leading-5 text-slate-500">
+        <span className="mt-1 block text-xs leading-5 text-[#A8BBC8]">
           {description}
         </span>
       </span>
@@ -217,23 +256,23 @@ function Toggle({
       <span
         className={[
           "relative h-7 w-12 shrink-0 rounded-full transition",
-          checked
-            ? "bg-[#0D6E91]"
-            : "bg-slate-200",
+          checked ? "bg-[#0D6E91]" : "bg-[#16384F]",
         ].join(" ")}
       >
         <span
           className={[
             "absolute top-1 h-5 w-5 rounded-full bg-white shadow-sm transition",
-            checked
-              ? "left-6"
-              : "left-1",
+            checked ? "left-6" : "left-1",
           ].join(" ")}
         />
       </span>
     </button>
   );
 }
+
+/* =========================================================
+   STRING LIST EDITOR
+========================================================= */
 
 function StringListEditor({
   title,
@@ -245,7 +284,6 @@ function StringListEditor({
   error,
   maxItems,
   itemLabel,
-  inputType = "text",
 }: {
   title: string;
   description: string;
@@ -256,7 +294,6 @@ function StringListEditor({
   error?: string;
   maxItems: number;
   itemLabel: string;
-  inputType?: "text";
 }) {
   function addItem() {
     if (items.length >= maxItems) return;
@@ -316,11 +353,11 @@ function StringListEditor({
   return (
     <div>
       <div className="mb-4">
-        <h3 className="text-sm font-black text-slate-900">
+        <h3 className="text-sm font-black text-[#F8FAFC]">
           {title}
         </h3>
 
-        <p className="mt-1 text-xs leading-5 text-slate-500">
+        <p className="mt-1 text-xs leading-5 text-[#A8BBC8]">
           {description}
         </p>
       </div>
@@ -329,10 +366,10 @@ function StringListEditor({
         {items.map((item, index) => (
           <div
             key={item.id}
-            className="rounded-2xl border border-slate-200 bg-slate-50/60 p-3"
+            className="rounded-2xl border border-white/[0.10] bg-[#061A2B]/70 p-3"
           >
             <div className="flex gap-3">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#061A2B] text-xs font-black text-[#FFD400]">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[#FFD400]/15 bg-[#061A2B] text-xs font-black text-[#FFD400]">
                 {String(index + 1).padStart(2, "0")}
               </div>
 
@@ -346,7 +383,7 @@ function StringListEditor({
 
                 <input
                   id={`${itemLabel}-${item.id}`}
-                  type={inputType}
+                  type="text"
                   value={item.value}
                   onChange={(event) =>
                     updateItem(
@@ -355,7 +392,8 @@ function StringListEditor({
                     )
                   }
                   placeholder={placeholder}
-                  className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-3 text-sm font-medium text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-[#0D6E91] focus:ring-4 focus:ring-[#0D6E91]/10"
+                  disabled={false}
+                  className="w-full rounded-xl border border-white/[0.10] bg-[#061A2B] px-3.5 py-3 text-sm font-medium text-[#F8FAFC] outline-none transition placeholder:text-[#718895] focus:border-[#0D6E91] focus:ring-4 focus:ring-[#0D6E91]/10"
                 />
               </div>
 
@@ -366,7 +404,7 @@ function StringListEditor({
                   onClick={() =>
                     moveItem(index, "up")
                   }
-                  className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 transition hover:border-[#0D6E91] hover:text-[#0D6E91] disabled:cursor-not-allowed disabled:opacity-25"
+                  className="flex h-8 w-8 items-center justify-center rounded-lg border border-white/[0.10] bg-[#061A2B] text-[#A8BBC8] transition hover:border-[#0D6E91] hover:text-[#0D6E91] disabled:cursor-not-allowed disabled:opacity-25"
                   aria-label={`Move ${itemLabel} ${
                     index + 1
                   } up`}
@@ -382,7 +420,7 @@ function StringListEditor({
                   onClick={() =>
                     moveItem(index, "down")
                   }
-                  className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 transition hover:border-[#0D6E91] hover:text-[#0D6E91] disabled:cursor-not-allowed disabled:opacity-25"
+                  className="flex h-8 w-8 items-center justify-center rounded-lg border border-white/[0.10] bg-[#061A2B] text-[#A8BBC8] transition hover:border-[#0D6E91] hover:text-[#0D6E91] disabled:cursor-not-allowed disabled:opacity-25"
                   aria-label={`Move ${itemLabel} ${
                     index + 1
                   } down`}
@@ -395,7 +433,7 @@ function StringListEditor({
             <button
               type="button"
               onClick={() => removeItem(index)}
-              className="mt-3 inline-flex items-center gap-1.5 text-xs font-bold text-red-500 transition hover:text-red-700"
+              className="mt-3 inline-flex items-center gap-1.5 text-xs font-bold text-red-400 transition hover:text-red-300"
             >
               <Trash2 className="h-3.5 w-3.5" />
               Remove
@@ -408,14 +446,14 @@ function StringListEditor({
         type="button"
         disabled={items.length >= maxItems}
         onClick={addItem}
-        className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-[#0D6E91]/40 bg-[#0D6E91]/5 px-4 py-3 text-xs font-black text-[#0D6E91] transition hover:bg-[#0D6E91]/10 disabled:cursor-not-allowed disabled:opacity-40"
+        className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-[#0D6E91]/50 bg-[#0D6E91]/10 px-4 py-3 text-xs font-black text-[#0D6E91] transition hover:bg-[#0D6E91]/10 disabled:cursor-not-allowed disabled:opacity-40"
       >
         <Plus className="h-4 w-4" />
         {addLabel}
       </button>
 
       {items.length >= maxItems && (
-        <p className="mt-2 text-[11px] text-slate-400">
+        <p className="mt-2 text-[11px] text-[#718895]">
           Maximum of {maxItems} items reached.
         </p>
       )}
@@ -425,24 +463,67 @@ function StringListEditor({
   );
 }
 
-export default function ServiceAreaForm() {
+/* =========================================================
+   MAIN FORM
+========================================================= */
+
+export default function ServiceAreaForm({
+  mode = "create",
+  serviceAreaId,
+  initialData = null,
+}: ServiceAreaFormProps) {
   const router = useRouter();
 
+  const isEditMode =
+    mode === "edit" && Boolean(serviceAreaId);
+
+  /* -------------------------------------------------------
+     FORM STATE
+  ------------------------------------------------------- */
+
   const [form, setForm] =
-    useState<ServiceAreaFormState>(
-      INITIAL_FORM
-    );
+    useState<ServiceAreaFormData>(() => ({
+      ...INITIAL_FORM,
+      ...initialData,
+      name: initialData?.name ?? "",
+      slug: initialData?.slug ?? "",
+      shortDescription:
+        initialData?.shortDescription ?? "",
+      description:
+        initialData?.description ?? "",
+      suburbs: initialData?.suburbs ?? [],
+      postcodes: initialData?.postcodes ?? [],
+      heroImage:
+        initialData?.heroImage ?? null,
+      mapUrl: initialData?.mapUrl ?? "",
+      serviceAvailability:
+        initialData?.serviceAvailability ?? "",
+      featured:
+        initialData?.featured ?? false,
+      displayOrder:
+        initialData?.displayOrder ?? 0,
+      status:
+        initialData?.status ?? "draft",
+      seoTitle:
+        initialData?.seoTitle ?? "",
+      seoDescription:
+        initialData?.seoDescription ?? "",
+    }));
 
   const [suburbs, setSuburbs] = useState<
     StringItem[]
-  >([]);
+  >(() =>
+    toStringItems(initialData?.suburbs ?? [])
+  );
 
   const [postcodes, setPostcodes] = useState<
     StringItem[]
-  >([]);
+  >(() =>
+    toStringItems(initialData?.postcodes ?? [])
+  );
 
   const [slugEdited, setSlugEdited] =
-    useState(false);
+    useState(isEditMode);
 
   const [errors, setErrors] =
     useState<FieldErrors>({});
@@ -453,11 +534,15 @@ export default function ServiceAreaForm() {
   const [showSeoPreview, setShowSeoPreview] =
     useState(false);
 
+  /* -------------------------------------------------------
+     FIELD UPDATE
+  ------------------------------------------------------- */
+
   const updateField = <
-    K extends keyof ServiceAreaFormState
+    K extends keyof ServiceAreaFormData
   >(
     field: K,
-    value: ServiceAreaFormState[K]
+    value: ServiceAreaFormData[K]
   ) => {
     setForm((current) => ({
       ...current,
@@ -469,6 +554,10 @@ export default function ServiceAreaForm() {
       [field]: undefined,
     }));
   };
+
+  /* -------------------------------------------------------
+     NAME / SLUG
+  ------------------------------------------------------- */
 
   function handleNameChange(value: string) {
     updateField("name", value);
@@ -490,6 +579,10 @@ export default function ServiceAreaForm() {
     );
   }
 
+  /* -------------------------------------------------------
+     CLEAN ARRAYS
+  ------------------------------------------------------- */
+
   const cleanedSuburbs = useMemo(
     () =>
       suburbs
@@ -506,14 +599,23 @@ export default function ServiceAreaForm() {
     [postcodes]
   );
 
-  function buildPayload(): ServiceAreaFormState {
+  /* -------------------------------------------------------
+     PAYLOAD
+  ------------------------------------------------------- */
+
+  function buildPayload(): ServiceAreaFormData {
     return {
       ...form,
+
       name: form.name.trim(),
+
       slug: slugify(form.slug),
+
       shortDescription:
         form.shortDescription.trim(),
-      description: form.description.trim(),
+
+      description:
+        form.description.trim(),
 
       suburbs: cleanedSuburbs,
 
@@ -524,12 +626,17 @@ export default function ServiceAreaForm() {
       serviceAvailability:
         form.serviceAvailability.trim(),
 
-      seoTitle: form.seoTitle.trim(),
+      seoTitle:
+        form.seoTitle.trim(),
 
       seoDescription:
         form.seoDescription.trim(),
     };
   }
+
+  /* -------------------------------------------------------
+     ZOD ERRORS
+  ------------------------------------------------------- */
 
   function mapZodErrors(
     issues: Array<{
@@ -552,6 +659,10 @@ export default function ServiceAreaForm() {
     return next;
   }
 
+  /* -------------------------------------------------------
+     SUBMIT
+  ------------------------------------------------------- */
+
   async function handleSubmit() {
     if (isSubmitting) return;
 
@@ -566,7 +677,9 @@ export default function ServiceAreaForm() {
 
     if (!parsed.success) {
       const fieldErrors =
-        mapZodErrors(parsed.error.issues);
+        mapZodErrors(
+          parsed.error.issues
+        );
 
       setErrors(fieldErrors);
 
@@ -582,15 +695,32 @@ export default function ServiceAreaForm() {
       return;
     }
 
+    if (isEditMode && !serviceAreaId) {
+      toast.error(
+        "Service area ID is missing."
+      );
+
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
+      const endpoint = isEditMode
+        ? `/api/admin/service-areas/${serviceAreaId}`
+        : "/api/admin/service-areas";
+
+      const method = isEditMode
+        ? "PATCH"
+        : "POST";
+
       const response = await fetch(
-        "/api/admin/service-areas",
+        endpoint,
         {
-          method: "POST",
+          method,
           headers: {
-            "Content-Type": "application/json",
+            "Content-Type":
+              "application/json",
           },
           body: JSON.stringify(
             parsed.data
@@ -620,7 +750,10 @@ export default function ServiceAreaForm() {
         field?: string;
       };
 
-      if (!response.ok || !data.success) {
+      if (
+        !response.ok ||
+        !data.success
+      ) {
         if (data.errors) {
           const serverErrors: FieldErrors =
             {};
@@ -640,7 +773,10 @@ export default function ServiceAreaForm() {
           setErrors(serverErrors);
         }
 
-        if (data.field && data.message) {
+        if (
+          data.field &&
+          data.message
+        ) {
           setErrors((current) => ({
             ...current,
             [data.field as string]:
@@ -650,12 +786,18 @@ export default function ServiceAreaForm() {
 
         throw new Error(
           data.message ||
-            "Unable to create service area."
+            `Unable to ${
+              isEditMode
+                ? "update"
+                : "create"
+            } service area.`
         );
       }
 
       toast.success(
-        "Service area created successfully."
+        isEditMode
+          ? "Service area updated successfully."
+          : "Service area created successfully."
       );
 
       router.push(
@@ -664,10 +806,19 @@ export default function ServiceAreaForm() {
 
       router.refresh();
     } catch (error) {
+      console.error(
+        "Service area form error:",
+        error
+      );
+
       const message =
         error instanceof Error
           ? error.message
-          : "Something went wrong while creating the service area.";
+          : `Something went wrong while ${
+              isEditMode
+                ? "updating"
+                : "creating"
+            } the service area.`;
 
       toast.error(message);
     } finally {
@@ -675,11 +826,19 @@ export default function ServiceAreaForm() {
     }
   }
 
+  /* -------------------------------------------------------
+     CANCEL
+  ------------------------------------------------------- */
+
   function handleCancel() {
     router.push(
       "/admin/service-areas"
     );
   }
+
+  /* -------------------------------------------------------
+     SEO PREVIEW
+  ------------------------------------------------------- */
 
   const previewTitle =
     form.seoTitle.trim() ||
@@ -691,11 +850,71 @@ export default function ServiceAreaForm() {
     form.shortDescription.trim() ||
     "Mobile car battery service information.";
 
+  const pageHeading = isEditMode
+    ? "Edit Service Area"
+    : "Create Service Area";
+
+  const pageDescription = isEditMode
+    ? "Update the service area information, coverage, media, SEO and publishing settings."
+    : "Create a genuine service area with accurate coverage, customer-facing information and local SEO details.";
+
+  const submitLabel = isEditMode
+    ? "Save Changes"
+    : "Create Service Area";
+
+  const mobileSubmitLabel = isEditMode
+    ? "Save Changes"
+    : "Create Area";
+
+  /* =======================================================
+     RENDER
+  ======================================================= */
+
   return (
     <div className="pb-32">
+      {/* =====================================================
+          PAGE HEADER
+      ===================================================== */}
+
+      <div className="mb-7 flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
+        <div className="flex items-start gap-4">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#061A2B] text-[#FFD400] shadow-sm">
+            {isEditMode ? (
+              <Save className="h-5 w-5" />
+            ) : (
+              <MapPin className="h-5 w-5" />
+            )}
+          </div>
+
+          <div>
+            <p className="text-xs font-black uppercase tracking-[0.18em] text-[#0D6E91]">
+              Location CMS
+            </p>
+
+            <h1 className="mt-1 text-2xl font-black tracking-tight text-[#F8FAFC] sm:text-3xl">
+              {pageHeading}
+            </h1>
+
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-[#A8BBC8]">
+              {pageDescription}
+            </p>
+          </div>
+        </div>
+
+        {isEditMode && (
+          <div className="inline-flex items-center gap-2 self-start rounded-full border border-[#0D6E91]/20 bg-[#0D6E91]/5 px-3 py-1.5 text-[10px] font-black uppercase tracking-wider text-[#0D6E91] sm:self-auto">
+            <Check className="h-3.5 w-3.5" />
+            Edit Mode
+          </div>
+        )}
+      </div>
+
       <div className="space-y-6">
-        {/* BASIC INFORMATION */}
-        <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-7">
+        {/* ===================================================
+            BASIC INFORMATION
+        =================================================== */}
+
+        <section className="rounded-3xl border border-white/[0.08] bg-[#08263D] p-5 shadow-[0_20px_60px_rgba(0,0,0,0.18)] sm:p-7">
           <SectionHeader
             number="01"
             icon={MapPin}
@@ -705,6 +924,8 @@ export default function ServiceAreaForm() {
 
           <div className="mt-7 space-y-6">
             <div className="grid gap-5 lg:grid-cols-2">
+              {/* NAME */}
+
               <div>
                 <Label
                   htmlFor="service-area-name"
@@ -724,7 +945,7 @@ export default function ServiceAreaForm() {
                   placeholder="e.g. Werribee"
                   maxLength={120}
                   disabled={isSubmitting}
-                  className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3.5 text-sm font-medium text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-[#0D6E91] focus:ring-4 focus:ring-[#0D6E91]/10 disabled:bg-slate-50"
+                  className="w-full rounded-xl border border-white/[0.10] bg-[#061A2B] px-4 py-3.5 text-sm font-medium text-[#F8FAFC] outline-none transition placeholder:text-[#718895] focus:border-[#0D6E91] focus:ring-4 focus:ring-[#0D6E91]/10 disabled:bg-[#061A2B]/70"
                 />
 
                 <Counter
@@ -737,6 +958,8 @@ export default function ServiceAreaForm() {
                 />
               </div>
 
+              {/* SLUG */}
+
               <div>
                 <Label
                   htmlFor="service-area-slug"
@@ -746,7 +969,7 @@ export default function ServiceAreaForm() {
                 </Label>
 
                 <div className="relative">
-                  <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">
+                  <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-xs font-bold text-[#718895]">
                     /service-areas/
                   </span>
 
@@ -761,11 +984,11 @@ export default function ServiceAreaForm() {
                     placeholder="werribee"
                     maxLength={160}
                     disabled={isSubmitting}
-                    className="w-full rounded-xl border border-slate-200 bg-white py-3.5 pl-[7.7rem] pr-4 text-sm font-medium text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-[#0D6E91] focus:ring-4 focus:ring-[#0D6E91]/10 disabled:bg-slate-50"
+                    className="w-full rounded-xl border border-white/[0.10] bg-[#061A2B] py-3.5 pl-[7.7rem] pr-4 text-sm font-medium text-[#F8FAFC] outline-none transition placeholder:text-[#718895] focus:border-[#0D6E91] focus:ring-4 focus:ring-[#0D6E91]/10 disabled:bg-[#061A2B]/70"
                   />
                 </div>
 
-                <p className="mt-2 text-[11px] text-slate-400">
+                <p className="mt-2 text-[11px] text-[#718895]">
                   Lowercase letters, numbers and
                   hyphens only.
                 </p>
@@ -775,6 +998,8 @@ export default function ServiceAreaForm() {
                 />
               </div>
             </div>
+
+            {/* SHORT DESCRIPTION */}
 
             <div>
               <Label
@@ -786,7 +1011,9 @@ export default function ServiceAreaForm() {
 
               <textarea
                 id="service-area-short-description"
-                value={form.shortDescription}
+                value={
+                  form.shortDescription
+                }
                 onChange={(event) =>
                   updateField(
                     "shortDescription",
@@ -797,11 +1024,13 @@ export default function ServiceAreaForm() {
                 maxLength={300}
                 rows={3}
                 disabled={isSubmitting}
-                className="w-full resize-none rounded-xl border border-slate-200 bg-white px-4 py-3.5 text-sm font-medium leading-6 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-[#0D6E91] focus:ring-4 focus:ring-[#0D6E91]/10 disabled:bg-slate-50"
+                className="w-full resize-none rounded-xl border border-white/[0.10] bg-[#061A2B] px-4 py-3.5 text-sm font-medium leading-6 text-[#F8FAFC] outline-none transition placeholder:text-[#718895] focus:border-[#0D6E91] focus:ring-4 focus:ring-[#0D6E91]/10 disabled:bg-[#061A2B]/70"
               />
 
               <Counter
-                value={form.shortDescription}
+                value={
+                  form.shortDescription
+                }
                 max={300}
               />
 
@@ -811,6 +1040,8 @@ export default function ServiceAreaForm() {
                 }
               />
             </div>
+
+            {/* DESCRIPTION */}
 
             <div>
               <Label
@@ -833,7 +1064,7 @@ export default function ServiceAreaForm() {
                 maxLength={10000}
                 rows={8}
                 disabled={isSubmitting}
-                className="w-full resize-y rounded-xl border border-slate-200 bg-white px-4 py-3.5 text-sm font-medium leading-6 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-[#0D6E91] focus:ring-4 focus:ring-[#0D6E91]/10 disabled:bg-slate-50"
+                className="w-full resize-y rounded-xl border border-white/[0.10] bg-[#061A2B] px-4 py-3.5 text-sm font-medium leading-6 text-[#F8FAFC] outline-none transition placeholder:text-[#718895] focus:border-[#0D6E91] focus:ring-4 focus:ring-[#0D6E91]/10 disabled:bg-[#061A2B]/70"
               />
 
               <Counter
@@ -848,8 +1079,11 @@ export default function ServiceAreaForm() {
           </div>
         </section>
 
-        {/* COVERAGE */}
-        <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-7">
+        {/* ===================================================
+            COVERAGE
+        =================================================== */}
+
+        <section className="rounded-3xl border border-white/[0.08] bg-[#08263D] p-5 shadow-[0_20px_60px_rgba(0,0,0,0.18)] sm:p-7">
           <SectionHeader
             number="02"
             icon={Globe}
@@ -879,20 +1113,16 @@ export default function ServiceAreaForm() {
               itemLabel="Postcode"
               maxItems={50}
               onChange={setPostcodes}
+              error={errors.postcodes}
             />
-
-            {errors.postcodes && (
-              <div className="lg:col-span-2">
-                <FieldError
-                  message={errors.postcodes}
-                />
-              </div>
-            )}
           </div>
         </section>
 
-        {/* SERVICE INFORMATION */}
-        <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-7">
+        {/* ===================================================
+            SERVICE INFORMATION
+        =================================================== */}
+
+        <section className="rounded-3xl border border-white/[0.08] bg-[#08263D] p-5 shadow-[0_20px_60px_rgba(0,0,0,0.18)] sm:p-7">
           <SectionHeader
             number="03"
             icon={Sparkles}
@@ -901,10 +1131,10 @@ export default function ServiceAreaForm() {
           />
 
           <div className="mt-7 space-y-6">
+            {/* AVAILABILITY */}
+
             <div>
-              <Label
-                htmlFor="service-availability"
-              >
+              <Label htmlFor="service-availability">
                 Service Availability
               </Label>
 
@@ -923,7 +1153,7 @@ export default function ServiceAreaForm() {
                 maxLength={500}
                 rows={4}
                 disabled={isSubmitting}
-                className="w-full resize-none rounded-xl border border-slate-200 bg-white px-4 py-3.5 text-sm font-medium leading-6 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-[#0D6E91] focus:ring-4 focus:ring-[#0D6E91]/10 disabled:bg-slate-50"
+                className="w-full resize-none rounded-xl border border-white/[0.10] bg-[#061A2B] px-4 py-3.5 text-sm font-medium leading-6 text-[#F8FAFC] outline-none transition placeholder:text-[#718895] focus:border-[#0D6E91] focus:ring-4 focus:ring-[#0D6E91]/10 disabled:bg-[#061A2B]/70"
               />
 
               <Counter
@@ -940,13 +1170,15 @@ export default function ServiceAreaForm() {
               />
             </div>
 
+            {/* MAP */}
+
             <div>
               <Label htmlFor="service-area-map-url">
                 Map URL
               </Label>
 
               <div className="relative">
-                <MapPin className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                <MapPin className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#718895]" />
 
                 <input
                   id="service-area-map-url"
@@ -961,13 +1193,13 @@ export default function ServiceAreaForm() {
                   placeholder="https://maps.google.com/..."
                   maxLength={2000}
                   disabled={isSubmitting}
-                  className="w-full rounded-xl border border-slate-200 bg-white py-3.5 pl-11 pr-4 text-sm font-medium text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-[#0D6E91] focus:ring-4 focus:ring-[#0D6E91]/10 disabled:bg-slate-50"
+                  className="w-full rounded-xl border border-white/[0.10] bg-[#061A2B] py-3.5 pl-11 pr-4 text-sm font-medium text-[#F8FAFC] outline-none transition placeholder:text-[#718895] focus:border-[#0D6E91] focus:ring-4 focus:ring-[#0D6E91]/10 disabled:bg-[#061A2B]/70"
                 />
               </div>
 
-              <p className="mt-2 text-[11px] text-slate-400">
-                Optional. Use a genuine HTTP or
-                HTTPS map URL.
+              <p className="mt-2 text-[11px] text-[#718895]">
+                Optional. Use a genuine HTTP or HTTPS
+                map URL.
               </p>
 
               <FieldError
@@ -977,8 +1209,11 @@ export default function ServiceAreaForm() {
           </div>
         </section>
 
-        {/* MEDIA */}
-        <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-7">
+        {/* ===================================================
+            MEDIA
+        =================================================== */}
+
+        <section className="rounded-3xl border border-white/[0.08] bg-[#08263D] p-5 shadow-[0_20px_60px_rgba(0,0,0,0.18)] sm:p-7">
           <SectionHeader
             number="04"
             icon={ImagePlus}
@@ -1007,8 +1242,11 @@ export default function ServiceAreaForm() {
           </div>
         </section>
 
-        {/* SEO */}
-        <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-7">
+        {/* ===================================================
+            SEO
+        =================================================== */}
+
+        <section className="rounded-3xl border border-white/[0.08] bg-[#08263D] p-5 shadow-[0_20px_60px_rgba(0,0,0,0.18)] sm:p-7">
           <SectionHeader
             number="05"
             icon={Search}
@@ -1017,6 +1255,8 @@ export default function ServiceAreaForm() {
           />
 
           <div className="mt-7 space-y-6">
+            {/* SEO TITLE */}
+
             <div>
               <div className="flex items-center justify-between gap-3">
                 <Label htmlFor="service-area-seo-title">
@@ -1033,6 +1273,7 @@ export default function ServiceAreaForm() {
                   className="inline-flex items-center gap-1.5 text-[11px] font-bold text-[#0D6E91]"
                 >
                   <Search className="h-3.5 w-3.5" />
+
                   {showSeoPreview
                     ? "Hide Preview"
                     : "Preview"}
@@ -1051,7 +1292,7 @@ export default function ServiceAreaForm() {
                 placeholder="Werribee Mobile Car Battery Service | Car Battery Service"
                 maxLength={70}
                 disabled={isSubmitting}
-                className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3.5 text-sm font-medium text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-[#0D6E91] focus:ring-4 focus:ring-[#0D6E91]/10 disabled:bg-slate-50"
+                className="w-full rounded-xl border border-white/[0.10] bg-[#061A2B] px-4 py-3.5 text-sm font-medium text-[#F8FAFC] outline-none transition placeholder:text-[#718895] focus:border-[#0D6E91] focus:ring-4 focus:ring-[#0D6E91]/10 disabled:bg-[#061A2B]/70"
               />
 
               <Counter
@@ -1063,6 +1304,8 @@ export default function ServiceAreaForm() {
                 message={errors.seoTitle}
               />
             </div>
+
+            {/* SEO DESCRIPTION */}
 
             <div>
               <Label htmlFor="service-area-seo-description">
@@ -1082,7 +1325,7 @@ export default function ServiceAreaForm() {
                 maxLength={170}
                 rows={4}
                 disabled={isSubmitting}
-                className="w-full resize-none rounded-xl border border-slate-200 bg-white px-4 py-3.5 text-sm font-medium leading-6 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-[#0D6E91] focus:ring-4 focus:ring-[#0D6E91]/10 disabled:bg-slate-50"
+                className="w-full resize-none rounded-xl border border-white/[0.10] bg-[#061A2B] px-4 py-3.5 text-sm font-medium leading-6 text-[#F8FAFC] outline-none transition placeholder:text-[#718895] focus:border-[#0D6E91] focus:ring-4 focus:ring-[#0D6E91]/10 disabled:bg-[#061A2B]/70"
               />
 
               <Counter
@@ -1097,28 +1340,30 @@ export default function ServiceAreaForm() {
               />
             </div>
 
+            {/* SEO PREVIEW */}
+
             {showSeoPreview && (
-              <div className="overflow-hidden rounded-2xl border border-slate-200 bg-slate-50 p-4 sm:p-5">
+              <div className="overflow-hidden rounded-2xl border border-white/[0.08] bg-[#061A2B] p-4 sm:p-5">
                 <div className="mb-3 flex items-center gap-2">
                   <Search className="h-4 w-4 text-[#0D6E91]" />
 
-                  <span className="text-xs font-black uppercase tracking-wider text-slate-500">
+                  <span className="text-xs font-black uppercase tracking-wider text-[#A8BBC8]">
                     Search Preview
                   </span>
                 </div>
 
-                <div className="rounded-xl border border-slate-200 bg-white p-4">
-                  <p className="truncate text-base font-semibold text-[#1a0dab]">
+                <div className="rounded-xl border border-white/[0.08] bg-[#08263D] p-4">
+                  <p className="truncate text-base font-semibold text-[#6FB9FF]">
                     {previewTitle}
                   </p>
 
-                  <p className="mt-1 text-xs font-medium text-emerald-700">
+                  <p className="mt-1 text-xs font-medium text-emerald-400">
                     /service-areas/
                     {form.slug ||
                       "service-area"}
                   </p>
 
-                  <p className="mt-2 line-clamp-3 text-sm leading-5 text-slate-600">
+                  <p className="mt-2 line-clamp-3 text-sm leading-5 text-[#A8BBC8]">
                     {previewDescription}
                   </p>
                 </div>
@@ -1127,8 +1372,11 @@ export default function ServiceAreaForm() {
           </div>
         </section>
 
-        {/* PUBLISHING */}
-        <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-7">
+        {/* ===================================================
+            PUBLISHING
+        =================================================== */}
+
+        <section className="rounded-3xl border border-white/[0.08] bg-[#08263D] p-5 shadow-[0_20px_60px_rgba(0,0,0,0.18)] sm:p-7">
           <SectionHeader
             number="06"
             icon={Check}
@@ -1151,13 +1399,15 @@ export default function ServiceAreaForm() {
             />
 
             <div className="grid gap-5 sm:grid-cols-2">
+              {/* DISPLAY ORDER */}
+
               <div>
                 <Label htmlFor="service-area-display-order">
                   Display Order
                 </Label>
 
                 <div className="relative">
-                  <ArrowDown className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                  <ArrowDown className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#718895]" />
 
                   <input
                     id="service-area-display-order"
@@ -1181,11 +1431,11 @@ export default function ServiceAreaForm() {
                       )
                     }
                     disabled={isSubmitting}
-                    className="w-full rounded-xl border border-slate-200 bg-white py-3.5 pl-11 pr-4 text-sm font-bold text-slate-900 outline-none transition focus:border-[#0D6E91] focus:ring-4 focus:ring-[#0D6E91]/10 disabled:bg-slate-50"
+                    className="w-full rounded-xl border border-white/[0.10] bg-[#061A2B] py-3.5 pl-11 pr-4 text-sm font-bold text-[#F8FAFC] outline-none transition focus:border-[#0D6E91] focus:ring-4 focus:ring-[#0D6E91]/10 disabled:bg-[#061A2B]/70"
                   />
                 </div>
 
-                <p className="mt-2 text-[11px] text-slate-400">
+                <p className="mt-2 text-[11px] text-[#718895]">
                   Lower numbers appear first.
                 </p>
 
@@ -1195,6 +1445,8 @@ export default function ServiceAreaForm() {
                   }
                 />
               </div>
+
+              {/* STATUS */}
 
               <div>
                 <Label htmlFor="service-area-status">
@@ -1215,23 +1467,23 @@ export default function ServiceAreaForm() {
                       )
                     }
                     disabled={isSubmitting}
-                    className="w-full appearance-none rounded-xl border border-slate-200 bg-white px-4 py-3.5 pr-11 text-sm font-bold text-slate-900 outline-none transition focus:border-[#0D6E91] focus:ring-4 focus:ring-[#0D6E91]/10 disabled:bg-slate-50"
+                    className="w-full appearance-none rounded-xl border border-white/[0.10] bg-[#061A2B] px-4 py-3.5 pr-11 text-sm font-bold text-[#F8FAFC] outline-none transition focus:border-[#0D6E91] focus:ring-4 focus:ring-[#0D6E91]/10 disabled:bg-[#061A2B]/70"
                   >
-                    <option value="draft">
+                    <option className="bg-[#08263D] text-white" value="draft">
                       Draft
                     </option>
 
-                    <option value="active">
+                    <option className="bg-[#08263D] text-white" value="active">
                       Active / Published
                     </option>
                   </select>
 
-                  <ChevronDown className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                  <ChevronDown className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#718895]" />
                 </div>
 
-                <p className="mt-2 text-[11px] text-slate-400">
-                  Draft areas remain hidden from
-                  public pages.
+                <p className="mt-2 text-[11px] text-[#718895]">
+                  Draft areas remain hidden from public
+                  pages.
                 </p>
 
                 <FieldError
@@ -1240,19 +1492,18 @@ export default function ServiceAreaForm() {
               </div>
             </div>
 
-            <div className="flex gap-3 rounded-2xl border border-[#0D6E91]/15 bg-[#0D6E91]/5 p-4">
+            <div className="flex gap-3 rounded-2xl border border-[#0D6E91]/25 bg-[#0D6E91]/10 p-4">
               <CircleHelp className="mt-0.5 h-5 w-5 shrink-0 text-[#0D6E91]" />
 
               <div>
-                <p className="text-sm font-black text-slate-900">
+                <p className="text-sm font-black text-[#F8FAFC]">
                   Publishing safety
                 </p>
 
-                <p className="mt-1 text-xs leading-5 text-slate-600">
-                  New service areas default to
-                  draft. Publish only after the
-                  coverage, content and image have
-                  been reviewed.
+                <p className="mt-1 text-xs leading-5 text-[#A8BBC8]">
+                  New service areas default to draft.
+                  Publish only after the coverage,
+                  content and image have been reviewed.
                 </p>
               </div>
             </div>
@@ -1260,22 +1511,32 @@ export default function ServiceAreaForm() {
         </section>
       </div>
 
-      {/* DESKTOP ACTION BAR */}
-      <div className="mt-7 hidden items-center justify-between gap-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:flex">
+      {/* =====================================================
+          DESKTOP ACTION BAR
+      ===================================================== */}
+
+      <div className="mt-7 hidden items-center justify-between gap-4 rounded-2xl border border-white/[0.08] bg-[#08263D] p-4 shadow-[0_20px_60px_rgba(0,0,0,0.18)] sm:flex">
         <div className="flex min-w-0 items-center gap-3">
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#061A2B]">
-            <MapPin className="h-5 w-5 text-[#FFD400]" />
+            {isEditMode ? (
+              <Save className="h-5 w-5 text-[#FFD400]" />
+            ) : (
+              <MapPin className="h-5 w-5 text-[#FFD400]" />
+            )}
           </div>
 
           <div className="min-w-0">
-            <p className="text-sm font-black text-slate-900">
+            <p className="text-sm font-black text-[#F8FAFC]">
               {form.name.trim() ||
-                "New Service Area"}
+                (isEditMode
+                  ? "Edit Service Area"
+                  : "New Service Area")}
             </p>
 
-            <p className="text-xs text-slate-500">
-              Review everything before creating
-              the area.
+            <p className="text-xs text-[#A8BBC8]">
+              {isEditMode
+                ? "Review your changes before saving."
+                : "Review everything before creating the area."}
             </p>
           </div>
         </div>
@@ -1285,7 +1546,7 @@ export default function ServiceAreaForm() {
             type="button"
             onClick={handleCancel}
             disabled={isSubmitting}
-            className="inline-flex items-center gap-2 rounded-xl border border-slate-200 px-4 py-3 text-sm font-bold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+            className="inline-flex items-center gap-2 rounded-xl border border-white/[0.10] px-4 py-3 text-sm font-bold text-[#A8BBC8] transition hover:bg-[#061A2B] disabled:cursor-not-allowed disabled:opacity-50"
           >
             <X className="h-4 w-4" />
             Cancel
@@ -1300,26 +1561,31 @@ export default function ServiceAreaForm() {
             {isSubmitting ? (
               <>
                 <Loader2 className="h-4 w-4 animate-spin" />
-                Creating...
+                {isEditMode
+                  ? "Saving..."
+                  : "Creating..."}
               </>
             ) : (
               <>
                 <Save className="h-4 w-4 text-[#FFD400]" />
-                Create Service Area
+                {submitLabel}
               </>
             )}
           </button>
         </div>
       </div>
 
-      {/* MOBILE STICKY ACTION BAR */}
-      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-slate-200 bg-white/95 p-3 shadow-[0_-10px_30px_rgba(6,26,43,0.12)] backdrop-blur sm:hidden">
+      {/* =====================================================
+          MOBILE STICKY ACTION BAR
+      ===================================================== */}
+
+      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-white/[0.10] bg-[#061A2B]/95 p-3 shadow-[0_-10px_30px_rgba(6,26,43,0.12)] backdrop-blur sm:hidden">
         <div className="mx-auto flex max-w-xl gap-2">
           <button
             type="button"
             onClick={handleCancel}
             disabled={isSubmitting}
-            className="flex min-w-0 flex-1 items-center justify-center gap-2 rounded-xl border border-slate-200 px-3 py-3.5 text-sm font-bold text-slate-700 disabled:cursor-not-allowed disabled:opacity-50"
+            className="flex min-w-0 flex-1 items-center justify-center gap-2 rounded-xl border border-white/[0.10] bg-[#08263D] px-3 py-3.5 text-sm font-bold text-[#A8BBC8] disabled:cursor-not-allowed disabled:opacity-50"
           >
             <ArrowLeft className="h-4 w-4" />
             Cancel
@@ -1334,12 +1600,14 @@ export default function ServiceAreaForm() {
             {isSubmitting ? (
               <>
                 <Loader2 className="h-4 w-4 animate-spin" />
-                Creating...
+                {isEditMode
+                  ? "Saving..."
+                  : "Creating..."}
               </>
             ) : (
               <>
                 <Save className="h-4 w-4 text-[#FFD400]" />
-                Create Area
+                {mobileSubmitLabel}
               </>
             )}
           </button>

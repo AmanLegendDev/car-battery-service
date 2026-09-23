@@ -1,27 +1,40 @@
-import { redirect } from "next/navigation";
 import { auth } from "@/auth";
+import { connectDB } from "@/lib/db";
+import SiteSettings from "@/models/SiteSettings";
 
-export const metadata = {
-  title: {
-    default: "Admin Dashboard | Car Battery Service",
-    template: "%s | Car Battery Service Admin",
-  },
-  robots: {
-    index: false,
-    follow: false,
-  },
-};
+import AdminShell from "@/components/admin/layout/AdminShell";
 
-export default async function AdminLayout({
+export const dynamic = "force-dynamic";
+
+export default async function AdminProtectedLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   const session = await auth();
 
+  if (session?.user?.role !== "admin") {
+    return null;
+  }
+
+  await connectDB();
+
+  const settings = await SiteSettings.findOne()
+    .select("businessName logo")
+    .lean();
+
+  const businessName =
+    settings?.businessName || "Car Battery Service";
+
+  const logoUrl =
+    settings?.logo?.secureUrl || undefined;
+
   return (
-    <>
+    <AdminShell
+      businessName={businessName}
+      logoUrl={logoUrl}
+    >
       {children}
-    </>
+    </AdminShell>
   );
 }

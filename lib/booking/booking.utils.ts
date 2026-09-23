@@ -105,16 +105,14 @@ export async function generateBookingReference(): Promise<string> {
       },
     },
     {
-      new: true,
+      returnDocument: "after",
       upsert: true,
       setDefaultsOnInsert: true,
     }
   );
 
   if (!counter) {
-    throw new Error(
-      "Unable to generate booking reference."
-    );
+    throw new Error("Unable to generate booking reference.");
   }
 
   return `${BOOKING_REFERENCE_PREFIX}-${counter.value}`;
