@@ -8,19 +8,22 @@ import Service from "@/models/Service";
 import ServiceArea from "@/models/ServiceArea";
 import SiteSettings from "@/models/SiteSettings";
 
-
-
 import BlogDetailPage from "@/components/blog/detail/BlogDetailPage";
+
+export const dynamic = "force-dynamic";
+
+const SITE_URL =
+  "https://carbatteryservices.com.au";
+
+const BLOG_RELATED_POST_LIMIT = 6;
+const BLOG_RELATED_SERVICE_LIMIT = 3;
+const BLOG_RELATED_AREA_LIMIT = 4;
 
 interface BlogPageProps {
   params: Promise<{
     slug: string;
   }>;
 }
-
-const BLOG_RELATED_POST_LIMIT = 6;
-const BLOG_RELATED_SERVICE_LIMIT = 3;
-const BLOG_RELATED_AREA_LIMIT = 4;
 
 async function getBlogPost(slug: string) {
   await connectDB();
@@ -54,9 +57,7 @@ async function getBlogPost(slug: string) {
         "ogTitle",
         "ogDescription",
         "relatedServices",
-        "relatedProjects",
         "relatedServiceAreas",
-        "relatedLocations",
         "createdAt",
         "updatedAt",
       ].join(" "),
@@ -96,7 +97,7 @@ async function getSiteSettings() {
 
     primaryServiceRegion:
       settings?.primaryServiceRegion ||
-      "",
+      "Melbourne West",
   };
 }
 
@@ -107,7 +108,10 @@ async function getRelatedBlogPosts(
 ) {
   await connectDB();
 
-  const orConditions: Record<string, unknown>[] = [];
+  const orConditions: Record<
+    string,
+    unknown
+  >[] = [];
 
   if (category) {
     orConditions.push({
@@ -123,7 +127,10 @@ async function getRelatedBlogPosts(
     });
   }
 
-  const query: Record<string, unknown> = {
+  const query: Record<
+    string,
+    unknown
+  > = {
     status: "published",
     noIndex: false,
     slug: {
@@ -164,33 +171,34 @@ async function getRelatedBlogPosts(
     excerpt:
       post.excerpt || "",
 
-    coverImage: post.coverImage
-      ? {
-          publicId:
-            post.coverImage.publicId,
+    coverImage:
+      post.coverImage
+        ? {
+            publicId:
+              post.coverImage.publicId,
 
-          secureUrl:
-            post.coverImage.secureUrl,
+            secureUrl:
+              post.coverImage.secureUrl,
 
-          width:
-            post.coverImage.width,
+            width:
+              post.coverImage.width,
 
-          height:
-            post.coverImage.height,
+            height:
+              post.coverImage.height,
 
-          format:
-            post.coverImage.format,
+            format:
+              post.coverImage.format,
 
-          bytes:
-            post.coverImage.bytes,
+            bytes:
+              post.coverImage.bytes,
 
-          resourceType:
-            post.coverImage.resourceType,
+            resourceType:
+              post.coverImage.resourceType,
 
-          alt:
-            post.coverImage.alt,
-        }
-      : null,
+            alt:
+              post.coverImage.alt,
+          }
+        : null,
 
     category:
       post.category || "",
@@ -297,8 +305,7 @@ async function getRelatedServices(
                 service.heroImage.bytes,
 
               resourceType:
-                service.heroImage
-                  .resourceType,
+                service.heroImage.resourceType,
 
               alt:
                 service.heroImage.alt,
@@ -409,8 +416,7 @@ async function getRelatedServiceAreas(
                 area.heroImage.bytes,
 
               resourceType:
-                area.heroImage
-                  .resourceType,
+                area.heroImage.resourceType,
 
               alt:
                 area.heroImage.alt,
@@ -420,12 +426,36 @@ async function getRelatedServiceAreas(
   );
 }
 
+function getAbsoluteUrl(
+  value: string,
+  fallback: string,
+) {
+  if (!value) {
+    return `${SITE_URL}${fallback}`;
+  }
+
+  if (
+    value.startsWith("http://") ||
+    value.startsWith("https://")
+  ) {
+    return value;
+  }
+
+  return `${SITE_URL}${
+    value.startsWith("/")
+      ? value
+      : `/${value}`
+  }`;
+}
+
 export async function generateMetadata({
   params,
 }: BlogPageProps): Promise<Metadata> {
-  const { slug } = await params;
+  const { slug } =
+    await params;
 
-  const post = await getBlogPost(slug);
+  const post =
+    await getBlogPost(slug);
 
   if (!post) {
     return {
@@ -450,8 +480,10 @@ export async function generateMetadata({
     post.excerpt;
 
   const canonical =
-    post.canonicalUrl ||
-    `/blog/${post.slug}`;
+    getAbsoluteUrl(
+      post.canonicalUrl,
+      `/blog/${post.slug}`,
+    );
 
   const image =
     post.ogImage?.secureUrl ||
@@ -509,7 +541,9 @@ export async function generateMetadata({
         undefined,
 
       tags:
-        Array.isArray(post.tags) &&
+        Array.isArray(
+          post.tags,
+        ) &&
         post.tags.length > 0
           ? post.tags
           : undefined,
@@ -551,10 +585,325 @@ export async function generateMetadata({
   };
 }
 
+function getArticleStructuredData({
+  post,
+  business,
+  canonicalUrl,
+  articleImage,
+}: {
+  post: any;
+  business: {
+    businessName: string;
+  };
+  canonicalUrl: string;
+  articleImage?: {
+    url: string;
+    width?: number;
+    height?: number;
+    alt?: string;
+  };
+}) {
+  const articleId =
+    `${canonicalUrl}#article`;
+
+  const webpageId =
+    `${canonicalUrl}#webpage`;
+
+  const breadcrumbId =
+    `${canonicalUrl}#breadcrumb`;
+
+  const schemaGraph: Record<
+    string,
+    unknown
+  >[] = [
+    {
+      "@type":
+        "BlogPosting",
+
+      "@id":
+        articleId,
+
+      headline:
+        post.title,
+
+      description:
+        post.seoDescription ||
+        post.ogDescription ||
+        post.excerpt ||
+        undefined,
+
+      url:
+        canonicalUrl,
+
+      mainEntityOfPage: {
+        "@id":
+          webpageId,
+      },
+
+      ...(articleImage
+        ? {
+            image: [
+              {
+                "@type":
+                  "ImageObject",
+
+                url:
+                  articleImage.url,
+
+                ...(articleImage.width
+                  ? {
+                      width:
+                        articleImage.width,
+                    }
+                  : {}),
+
+                ...(articleImage.height
+                  ? {
+                      height:
+                        articleImage.height,
+                    }
+                  : {}),
+
+                ...(articleImage.alt
+                  ? {
+                      caption:
+                        articleImage.alt,
+                    }
+                  : {}),
+              },
+            ],
+          }
+        : {}),
+
+      ...(post.publishedAt
+        ? {
+            datePublished:
+              new Date(
+                post.publishedAt,
+              ).toISOString(),
+          }
+        : {}),
+
+      ...(post.updatedAt
+        ? {
+            dateModified:
+              new Date(
+                post.updatedAt,
+              ).toISOString(),
+          }
+        : {}),
+
+      ...(post.authorName
+        ? {
+            author: {
+              "@type":
+                "Person",
+
+              name:
+                post.authorName,
+
+              ...(post.authorRole
+                ? {
+                    jobTitle:
+                      post.authorRole,
+                  }
+                : {}),
+
+              ...(post.authorImage?.secureUrl
+                ? {
+                    image:
+                      post.authorImage
+                        .secureUrl,
+                  }
+                : {}),
+            },
+          }
+        : {}),
+
+      publisher: {
+        "@id":
+          `${SITE_URL}/#organization`,
+      },
+
+      ...(post.category
+        ? {
+            articleSection:
+              post.category,
+          }
+        : {}),
+
+      ...(Array.isArray(
+        post.tags,
+      ) &&
+      post.tags.length > 0
+        ? {
+            keywords:
+              post.tags.join(", "),
+          }
+        : {}),
+
+      ...(post.readingTime
+        ? {
+            timeRequired:
+              `PT${post.readingTime}M`,
+          }
+        : {}),
+
+      inLanguage:
+        "en-AU",
+    },
+
+    {
+      "@type":
+        "WebPage",
+
+      "@id":
+        webpageId,
+
+      url:
+        canonicalUrl,
+
+      name:
+        post.seoTitle ||
+        post.title,
+
+      description:
+        post.seoDescription ||
+        post.ogDescription ||
+        post.excerpt ||
+        undefined,
+
+      isPartOf: {
+        "@id":
+          `${SITE_URL}/#website`,
+      },
+
+      about: {
+        "@id":
+          `${SITE_URL}/#organization`,
+      },
+
+      publisher: {
+        "@id":
+          `${SITE_URL}/#organization`,
+      },
+
+      ...(articleImage
+        ? {
+            primaryImageOfPage: {
+              "@id":
+                `${canonicalUrl}#primaryimage`,
+            },
+          }
+        : {}),
+
+      breadcrumb: {
+        "@id":
+          breadcrumbId,
+      },
+
+      inLanguage:
+        "en-AU",
+    },
+
+    ...(articleImage
+      ? [
+          {
+            "@type":
+              "ImageObject",
+
+            "@id":
+              `${canonicalUrl}#primaryimage`,
+
+            url:
+              articleImage.url,
+
+            ...(articleImage.width
+              ? {
+                  width:
+                    articleImage.width,
+                }
+              : {}),
+
+            ...(articleImage.height
+              ? {
+                  height:
+                    articleImage.height,
+                }
+              : {}),
+
+            ...(articleImage.alt
+              ? {
+                  caption:
+                    articleImage.alt,
+                }
+              : {}),
+          },
+        ]
+      : []),
+
+    {
+      "@type":
+        "BreadcrumbList",
+
+      "@id":
+        breadcrumbId,
+
+      itemListElement: [
+        {
+          "@type":
+            "ListItem",
+
+          position: 1,
+
+          name: "Home",
+
+          item:
+            SITE_URL,
+        },
+
+        {
+          "@type":
+            "ListItem",
+
+          position: 2,
+
+          name: "Blog",
+
+          item:
+            `${SITE_URL}/blog`,
+        },
+
+        {
+          "@type":
+            "ListItem",
+
+          position: 3,
+
+          name:
+            post.title,
+
+          item:
+            canonicalUrl,
+        },
+      ],
+    },
+  ];
+
+  return {
+    "@context":
+      "https://schema.org",
+
+    "@graph":
+      schemaGraph,
+  };
+}
+
 export default async function BlogArticlePage({
   params,
 }: BlogPageProps) {
-  const { slug } = await params;
+  const { slug } =
+    await params;
 
   const post =
     await getBlogPost(slug);
@@ -711,7 +1060,9 @@ export default async function BlogArticlePage({
         : [],
 
     featured:
-      Boolean(post.featured),
+      Boolean(
+        post.featured,
+      ),
 
     publishedAt:
       post.publishedAt
@@ -749,97 +1100,56 @@ export default async function BlogArticlePage({
   };
 
   const canonicalUrl =
-    post.canonicalUrl ||
-    `/blog/${post.slug}`;
+    getAbsoluteUrl(
+      post.canonicalUrl,
+      `/blog/${post.slug}`,
+    );
 
-  const articleImage =
+  const articleImageUrl =
     post.ogImage?.secureUrl ||
     post.coverImage?.secureUrl;
 
-  const articleSchema = {
-    "@context":
-      "https://schema.org",
-
-    "@type":
-      "Article",
-
-    headline:
-      post.title,
-
-    description:
-      post.seoDescription ||
-      post.ogDescription ||
-      post.excerpt ||
-      undefined,
-
-    mainEntityOfPage: {
-      "@type":
-        "WebPage",
-
-      "@id":
-        canonicalUrl,
-    },
-
-    ...(articleImage
+  const articleImage =
+    articleImageUrl
       ? {
-          image: [
-            articleImage,
-          ],
+          url:
+            articleImageUrl,
+
+          width:
+            post.ogImage?.width ||
+            post.coverImage?.width,
+
+          height:
+            post.ogImage?.height ||
+            post.coverImage?.height,
+
+          alt:
+            post.ogImage?.alt ||
+            post.coverImage?.alt ||
+            post.title,
         }
-      : {}),
+      : undefined;
 
-    ...(post.publishedAt
-      ? {
-          datePublished:
-            new Date(
-              post.publishedAt,
-            ).toISOString(),
-        }
-      : {}),
+  const articleSchema =
+    getArticleStructuredData({
+      post,
 
-    ...(post.updatedAt
-      ? {
-          dateModified:
-            new Date(
-              post.updatedAt,
-            ).toISOString(),
-        }
-      : {}),
+      business,
 
-    ...(post.authorName
-      ? {
-          author: {
-            "@type":
-              "Person",
+      canonicalUrl,
 
-            name:
-              post.authorName,
-          },
-        }
-      : {}),
-
-    publisher: {
-      "@type":
-        "Organization",
-
-      name:
-        business.businessName,
-    },
-  };
+      articleImage,
+    });
 
   return (
     <>
-      
-
       <main>
-        <BlogDetailPage
-          post={normalizedPost}
-          relatedPosts={relatedPosts}
-          business={business}
-        />
+     <BlogDetailPage
+  post={normalizedPost}
+  relatedPosts={relatedPosts}
+  business={business}
+/>
       </main>
-
-     
 
       <script
         type="application/ld+json"

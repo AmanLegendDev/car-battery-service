@@ -11,9 +11,9 @@ export default function SiteLayout({
     <div className="flex min-h-screen flex-col">
       <Navbar />
 
-      <main className="flex-1">
+      <div className="flex-1">
         {children}
-      </main>
+      </div>
 
       <Footer />
 

@@ -3,6 +3,8 @@ import { Geist, Geist_Mono } from "next/font/google";
 
 import "./globals.css";
 
+import { getGlobalStructuredData } from "@/lib/seo/structured-data";
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -114,8 +116,6 @@ export const metadata: Metadata = {
     images: [
       {
         url: "/images/seo/og-image.jpg",
-        width: 1200,
-        height: 630,
         alt: "Car Battery Service - Melbourne West",
       },
     ],
@@ -147,6 +147,8 @@ export const viewport: Viewport = {
 export default function RootLayout({
   children,
 }: LayoutProps<"/">) {
+  const globalStructuredData = getGlobalStructuredData();
+
   return (
     <html
       lang="en-AU"
@@ -166,6 +168,13 @@ export default function RootLayout({
 
       <body className="min-h-full bg-[#061A2B] text-[#F8FAFC]">
         {children}
+
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(globalStructuredData),
+          }}
+        />
       </body>
     </html>
   );
