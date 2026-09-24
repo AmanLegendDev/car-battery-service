@@ -43,7 +43,7 @@ export default function TermsHero({
         />
       </div>
 
-      <div className="relative mx-auto max-w-7xl px-5 py-16 sm:px-6 sm:py-20 lg:px-8 lg:py-24">
+      <div className="relative mx-auto max-w-7xl px-5 py-16 sm:px-6 sm:py-20 lg:px-8 lg:py-24 mt-8">
         <div className="grid items-center gap-12 lg:grid-cols-[1fr_0.6fr] lg:gap-20">
           <div className="max-w-3xl">
             <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.045] px-4 py-2 backdrop-blur-md">
@@ -81,26 +81,51 @@ export default function TermsHero({
               </div>
             ) : null}
 
-            <div className="mt-9 flex flex-col gap-3 sm:flex-row">
-              <Link
-                href={TERMS_HERO.primaryHref}
-                className="group inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-[#FFD400] px-6 text-sm font-bold text-[#061A2B] transition hover:bg-[#F5B800]"
-              >
-                {TERMS_HERO.primaryCta}
+            <div className="mt-9 flex flex-col gap-4 sm:flex-row sm:items-start">
+  <Link
+    href={TERMS_HERO.primaryHref}
+    className="group inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-[#FFD400] px-6 text-sm font-bold text-[#061A2B] transition hover:bg-[#F5B800]"
+  >
+    {TERMS_HERO.primaryCta}
 
-                <ArrowRight
-                  size={17}
-                  className="transition-transform group-hover:translate-x-1"
-                />
-              </Link>
+    <ArrowRight
+      size={17}
+      className="transition-transform group-hover:translate-x-1"
+    />
+  </Link>
 
-              <Link
-                href={TERMS_HERO.secondaryHref}
-                className="inline-flex min-h-12 items-center justify-center rounded-full border border-white/12 bg-white/[0.045] px-6 text-sm font-semibold text-[#F8FAFC] transition hover:border-white/25 hover:bg-white/[0.08]"
-              >
-                {TERMS_HERO.secondaryCta}
-              </Link>
-            </div>
+  <div className="flex flex-col items-center sm:items-start">
+    <Link
+      href={TERMS_HERO.secondaryHref}
+      className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full border border-white/12 bg-white/[0.045] px-6 text-sm font-semibold text-[#F8FAFC] transition hover:border-white/25 hover:bg-white/[0.08]"
+    >
+      <span
+        className="flex h-7 w-7 items-center justify-center rounded-full bg-[#FFD400] text-[#061A2B]"
+        aria-hidden="true"
+      >
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          className="h-3.5 w-3.5"
+        >
+          <path
+            d="M6.6 10.8c1.5 3 3.6 4.9 6.6 6.6l2.2-2.2c.3-.3.7-.4 1.1-.2 1.2.4 2.5.6 3.8.6.6 0 1.1.5 1.1 1.1V20c0 .6-.5 1.1-1.1 1.1C11.8 21.1 2.9 12.2 2.9 2.9 2.9 2.3 3.4 1.8 4 1.8h3.3c.6 0 1.1.5 1.1 1.1 0 1.3.2 2.6.6 3.8.1.4 0 .8-.2 1.1l-2.2 2.2Z"
+            fill="currentColor"
+          />
+        </svg>
+      </span>
+
+      {TERMS_HERO.secondaryCta}
+    </Link>
+
+    <a
+      href={`tel:${TERMS_HERO.phoneNumber.replace(/\s/g, "")}`}
+      className="mt-2 text-xs font-medium text-[#A8BBC8] transition hover:text-[#FFD400]"
+    >
+      {TERMS_HERO.phoneNumber}
+    </a>
+  </div>
+</div>
           </div>
 
           <div className="relative lg:justify-self-end lg:w-full lg:max-w-sm">

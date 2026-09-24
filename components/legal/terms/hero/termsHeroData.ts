@@ -7,10 +7,10 @@ export const TERMS_HERO = {
     "Please read these terms carefully before using our website or requesting a mobile car battery service.",
 
   primaryCta: "Book a Service",
-
   primaryHref: "/book-service",
 
-  secondaryCta: "Contact Us",
+  secondaryCta: "Call Us",
+  secondaryHref: "tel:+61467037886",
 
-  secondaryHref: "/contact",
+  phoneNumber: "+61 467 037 886",
 } as const;

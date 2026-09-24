@@ -28,7 +28,7 @@ export default function PrivacyHero({
       {/* Decorative glow */}
       <div className="absolute -right-32 top-1/2 h-72 w-72 -translate-y-1/2 rounded-full bg-[#0D6E91]/10 blur-3xl" />
 
-      <div className="relative mx-auto max-w-7xl px-5 py-20 sm:px-6 sm:py-24 lg:px-8 lg:py-28">
+      <div className="relative mx-auto max-w-7xl px-5 py-20 sm:px-6 sm:py-24 lg:px-8 lg:py-28 mt-6">
         <div className="grid items-center gap-12 lg:grid-cols-[minmax(0,1fr)_380px] lg:gap-20">
           {/* Content */}
           <div className="max-w-3xl">
