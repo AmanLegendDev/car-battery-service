@@ -180,7 +180,7 @@ const bookingStats = [
           </div>
 
           <h1 className="text-3xl font-bold tracking-tight text-[#F8FAFC] sm:text-4xl">
-            Welcome back, {adminName}
+            Welcome, Ankit
           </h1>
 
           <p className="mt-2 max-w-2xl text-sm leading-6 text-[#A8BBC8] sm:text-base">
