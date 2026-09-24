@@ -1,6 +1,8 @@
 import { connectDB } from "@/lib/db";
 import Availability from "@/models/Availability";
-import Booking from "@/models/Booking";
+import Booking, {
+  type BookingStatus,
+} from "@/models/Booking";
 import SiteSettings from "@/models/SiteSettings";
 
 import {
@@ -41,11 +43,10 @@ interface BusinessHour {
   close: string;
 }
 
-const BOOKING_BLOCKING_STATUSES = [
+const BOOKING_BLOCKING_STATUSES: BookingStatus[] = [
   "pending",
   "confirmed",
-  "in-progress",
-] as const;
+];
 
 /* ============================================================
    DATE HELPERS
@@ -448,18 +449,21 @@ export async function getPublicAvailability(
      EXISTING BOOKINGS
   ========================================================== */
 
-  const bookings =
-    await Booking.find({
-      "appointment.date": {
-        $gte: from,
-        $lte: to,
-      },
+ const bookings =
+  await Booking.find({
+    "appointment.date": {
+      $gte: from,
+      $lte: to,
+    },
 
-      status: {
-        $in:
-          BOOKING_BLOCKING_STATUSES,
-      },
-    })
+    status: {
+      $in: BOOKING_BLOCKING_STATUSES,
+    },
+
+    archived: {
+      $ne: true,
+    },
+  })
       .select({
         "appointment.date": 1,
         "appointment.startTime": 1,

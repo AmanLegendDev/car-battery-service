@@ -19,6 +19,13 @@ import { connectDB } from "@/lib/db";
 import Booking from "@/models/Booking";
 
 const managementItems = [
+
+  {
+  title: "Availability",
+  description: "Manage booking availability and blocked dates.",
+  href: "/admin/availability",
+  icon: CalendarCheck,
+},
   {
     title: "Services",
     description: "Manage your battery service offerings.",
@@ -65,84 +72,93 @@ export default async function AdminDashboardPage() {
 
   await connectDB();
 
-  const [
-    pendingCount,
-    bookedCount,
-    completedCount,
-    cancelledCount,
-    totalCount,
-  ] = await Promise.all([
-    Booking.countDocuments({
-      status: "pending",
-    }),
+const [
+  pendingCount,
+  bookedCount,
+  completedCount,
+  cancelledCount,
+  totalCount,
+] = await Promise.all([
+  Booking.countDocuments({
+    status: "pending",
+    archived: { $ne: true },
+  }),
 
-    Booking.countDocuments({
-      status: "confirmed",
-    }),
+  Booking.countDocuments({
+    status: "confirmed",
+    archived: { $ne: true },
+  }),
 
-    Booking.countDocuments({
-      status: "completed",
-    }),
+  Booking.countDocuments({
+    status: "completed",
+    archived: { $ne: true },
+  }),
 
-    Booking.countDocuments({
-      status: "cancelled",
-    }),
+  Booking.countDocuments({
+    status: "cancelled",
+    archived: { $ne: true },
+  }),
 
-    Booking.countDocuments({}),
-  ]);
+  Booking.countDocuments({
+    archived: { $ne: true },
+  }),
+]);
 
   const adminName =
     session?.user?.name?.trim() || "Ankit";
 
-  const bookingStats = [
-    {
-      title: "Pending Bookings",
-      description: "Awaiting completion",
-      count: pendingCount,
-      href: "/admin/bookings/pending",
-      icon: Clock3,
-      iconClass: "text-[#FFD400]",
-      iconBg: "bg-[#FFD400]/10",
-    },
-    {
-      title: "Booked Bookings",
-      description: "Confirmed customer bookings",
-      count: bookedCount,
-      href: "/admin/bookings/booked",
-      icon: CalendarCheck,
-      iconClass: "text-[#5EC8FF]",
-      iconBg: "bg-[#5EC8FF]/10",
-    },
-    {
-      title: "Completed Bookings",
-      description: "Successfully completed",
-      count: completedCount,
-      href: "/admin/bookings/completed",
-      icon: CheckCircle2,
-      iconClass: "text-[#67E8A5]",
-      iconBg: "bg-[#67E8A5]/10",
-    },
-    {
-      title: "Cancelled Bookings",
-      description: "Cancelled requests",
-      count: cancelledCount,
-      href: "/admin/bookings/cancelled",
-      icon: XCircle,
-      iconClass: "text-[#FF7D7D]",
-      iconBg: "bg-[#FF7D7D]/10",
-    },
-    {
-      title: "Total Bookings",
-      description: "All bookings combined",
-      count: totalCount,
-      href: "/admin/bookings",
-      icon: CalendarCheck,
-      iconClass: "text-[#FFD400]",
-      iconBg: "bg-[#FFD400]/10",
-      featured: true,
-    },
-  ];
+const bookingStats = [
+  {
+    title: "Pending Bookings",
+    description: "Awaiting confirmation",
+    count: pendingCount,
+    href: "/admin/bookings?status=pending",
+    icon: Clock3,
+    iconClass: "text-[#FFD400]",
+    iconBg: "bg-[#FFD400]/10",
+  },
 
+  {
+    title: "Confirmed Bookings",
+    description: "Confirmed customer bookings",
+    count: bookedCount,
+    href: "/admin/bookings?status=confirmed",
+    icon: CalendarCheck,
+    iconClass: "text-[#5EC8FF]",
+    iconBg: "bg-[#5EC8FF]/10",
+  },
+
+  {
+    title: "Completed Bookings",
+    description: "Successfully completed",
+    count: completedCount,
+    href: "/admin/bookings?status=completed",
+    icon: CheckCircle2,
+    iconClass: "text-[#67E8A5]",
+    iconBg: "bg-[#67E8A5]/10",
+  },
+
+  {
+    title: "Cancelled Bookings",
+    description: "Cancelled requests",
+    count: cancelledCount,
+    href: "/admin/bookings?status=cancelled",
+    icon: XCircle,
+    iconClass: "text-[#FF7D7D]",
+    iconBg: "bg-[#FF7D7D]/10",
+  },
+
+  {
+    title: "Total Bookings",
+    description: "All bookings combined",
+    count: totalCount,
+    href: "/admin/bookings?status=all",
+    icon: CalendarCheck,
+    iconClass: "text-[#FFD400]",
+    iconBg: "bg-[#FFD400]/10",
+    featured: true,
+  },
+];
   return (
     <div className="mx-auto w-full max-w-[1600px] px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
       {/* =====================================================
@@ -278,6 +294,8 @@ export default async function AdminDashboardPage() {
         </div>
       </section>
 
+      
+
       {/* =====================================================
           MANAGEMENT
       ===================================================== */}
@@ -338,6 +356,164 @@ export default async function AdminDashboardPage() {
           })}
         </div>
       </section>
+
+            {/* =====================================================
+          QUICK ACTIONS
+      ===================================================== */}
+      <section
+        aria-labelledby="quick-actions-heading"
+        className="mb-10"
+      >
+        <div className="mb-5">
+          <h2
+            id="quick-actions-heading"
+            className="text-xl font-semibold text-[#F8FAFC]"
+          >
+            Quick Actions
+          </h2>
+
+          <p className="mt-1 text-sm text-[#A8BBC8]">
+            Quickly create new content or access archived bookings.
+          </p>
+        </div>
+
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-7">
+          {/* New Booking */}
+         
+          {/* Add Service */}
+          <a
+            href="/admin/services/new"
+            className="group rounded-xl border border-white/[0.08] bg-[#08263D] p-4 transition duration-200 hover:-translate-y-0.5 hover:border-[#FFD400]/30 hover:bg-[#0A2D47]"
+          >
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#FFD400]/10 text-[#FFD400]">
+                <Wrench className="h-4 w-4" />
+              </div>
+
+              <ArrowRight className="h-4 w-4 text-[#718895] transition group-hover:translate-x-1 group-hover:text-[#FFD400]" />
+            </div>
+
+            <h3 className="mt-4 text-sm font-semibold text-[#F8FAFC]">
+              Add Service
+            </h3>
+
+            <p className="mt-1 text-xs text-[#A8BBC8]">
+              Create a new service
+            </p>
+          </a>
+
+          {/* Add Service Area */}
+          <a
+            href="/admin/service-areas/new"
+            className="group rounded-xl border border-white/[0.08] bg-[#08263D] p-4 transition duration-200 hover:-translate-y-0.5 hover:border-[#FFD400]/30 hover:bg-[#0A2D47]"
+          >
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#FFD400]/10 text-[#FFD400]">
+                <MapPin className="h-4 w-4" />
+              </div>
+
+              <ArrowRight className="h-4 w-4 text-[#718895] transition group-hover:translate-x-1 group-hover:text-[#FFD400]" />
+            </div>
+
+            <h3 className="mt-4 text-sm font-semibold text-[#F8FAFC]">
+              Add Service Area
+            </h3>
+
+            <p className="mt-1 text-xs text-[#A8BBC8]">
+              Add a new service location
+            </p>
+          </a>
+
+          {/* Add FAQ */}
+          <a
+            href="/admin/faqs/new"
+            className="group rounded-xl border border-white/[0.08] bg-[#08263D] p-4 transition duration-200 hover:-translate-y-0.5 hover:border-[#FFD400]/30 hover:bg-[#0A2D47]"
+          >
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#FFD400]/10 text-[#FFD400]">
+                <MessageSquare className="h-4 w-4" />
+              </div>
+
+              <ArrowRight className="h-4 w-4 text-[#718895] transition group-hover:translate-x-1 group-hover:text-[#FFD400]" />
+            </div>
+
+            <h3 className="mt-4 text-sm font-semibold text-[#F8FAFC]">
+              Add FAQ
+            </h3>
+
+            <p className="mt-1 text-xs text-[#A8BBC8]">
+              Add a customer question
+            </p>
+          </a>
+
+          {/* Write Blog */}
+          <a
+            href="/admin/blog/new"
+            className="group rounded-xl border border-white/[0.08] bg-[#08263D] p-4 transition duration-200 hover:-translate-y-0.5 hover:border-[#FFD400]/30 hover:bg-[#0A2D47]"
+          >
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#FFD400]/10 text-[#FFD400]">
+                <FileText className="h-4 w-4" />
+              </div>
+
+              <ArrowRight className="h-4 w-4 text-[#718895] transition group-hover:translate-x-1 group-hover:text-[#FFD400]" />
+            </div>
+
+            <h3 className="mt-4 text-sm font-semibold text-[#F8FAFC]">
+              Write Blog
+            </h3>
+
+            <p className="mt-1 text-xs text-[#A8BBC8]">
+              Create a new article
+            </p>
+          </a>
+
+          {/* Add Review */}
+          <a
+            href="/admin/testimonials/new"
+            className="group rounded-xl border border-white/[0.08] bg-[#08263D] p-4 transition duration-200 hover:-translate-y-0.5 hover:border-[#FFD400]/30 hover:bg-[#0A2D47]"
+          >
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#FFD400]/10 text-[#FFD400]">
+                <Star className="h-4 w-4" />
+              </div>
+
+              <ArrowRight className="h-4 w-4 text-[#718895] transition group-hover:translate-x-1 group-hover:text-[#FFD400]" />
+            </div>
+
+            <h3 className="mt-4 text-sm font-semibold text-[#F8FAFC]">
+              Add Review
+            </h3>
+
+            <p className="mt-1 text-xs text-[#A8BBC8]">
+              Add a genuine customer review
+            </p>
+          </a>
+
+          {/* View All Archived */}
+          <a
+            href="/admin/bookings/archive"
+            className="group rounded-xl border border-[#FFD400]/20 bg-[#08263D] p-4 transition duration-200 hover:-translate-y-0.5 hover:border-[#FFD400]/40 hover:bg-[#0A2D47]"
+          >
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#FFD400]/10 text-[#FFD400]">
+                <ClipboardList className="h-4 w-4" />
+              </div>
+
+              <ArrowRight className="h-4 w-4 text-[#718895] transition group-hover:translate-x-1 group-hover:text-[#FFD400]" />
+            </div>
+
+            <h3 className="mt-4 text-sm font-semibold text-[#F8FAFC]">
+              View All Archived
+            </h3>
+
+            <p className="mt-1 text-xs text-[#A8BBC8]">
+              Open archived bookings
+            </p>
+          </a>
+        </div>
+      </section>
     </div>
+    
   );
 }

@@ -3,7 +3,7 @@ export const BOOKING_TIMEZONE =
 
 export const WORKING_HOURS = {
   start: "08:00",
-  end: "17:00",
+  end: "21:00",
 } as const;
 
 export const APPOINTMENT_DURATION_MINUTES = 60;

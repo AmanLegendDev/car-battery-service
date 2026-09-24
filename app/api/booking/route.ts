@@ -282,7 +282,7 @@ export async function POST(request: Request) {
           $in: [
             "pending",
             "confirmed",
-            "in-progress",
+            
           ],
         },
       });

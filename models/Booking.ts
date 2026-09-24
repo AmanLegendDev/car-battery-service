@@ -8,7 +8,6 @@ import mongoose, {
 export type BookingStatus =
   | "pending"
   | "confirmed"
-  | "in-progress"
   | "completed"
   | "cancelled";
 
@@ -57,16 +56,15 @@ export interface IBooking extends Document {
   bookingReference: string;
 
   customer: IBookingCustomer;
-
   vehicle: IBookingVehicle;
-
   service: IBookingService;
-
   location: IBookingLocation;
-
   appointment: IBookingAppointment;
 
   status: BookingStatus;
+
+  archived: boolean;
+  archivedAt?: Date | null;
 
   createdAt: Date;
   updatedAt: Date;
@@ -100,7 +98,9 @@ const BookingCustomerSchema =
         maxlength: 2000,
       },
     },
-    { _id: false }
+    {
+      _id: false,
+    }
   );
 
 const BookingVehicleSchema =
@@ -134,7 +134,9 @@ const BookingVehicleSchema =
         maxlength: 2000,
       },
     },
-    { _id: false }
+    {
+      _id: false,
+    }
   );
 
 const BookingServiceSchema =
@@ -152,7 +154,9 @@ const BookingServiceSchema =
         trim: true,
       },
     },
-    { _id: false }
+    {
+      _id: false,
+    }
   );
 
 const BookingLocationSchema =
@@ -189,7 +193,9 @@ const BookingLocationSchema =
         maxlength: 2000,
       },
     },
-    { _id: false }
+    {
+      _id: false,
+    }
   );
 
 const BookingAppointmentSchema =
@@ -219,7 +225,9 @@ const BookingAppointmentSchema =
         default: "Australia/Melbourne",
       },
     },
-    { _id: false }
+    {
+      _id: false,
+    }
   );
 
 const BookingSchema = new Schema<IBooking>(
@@ -262,12 +270,28 @@ const BookingSchema = new Schema<IBooking>(
       enum: [
         "pending",
         "confirmed",
-        "in-progress",
         "completed",
         "cancelled",
       ],
       default: "pending",
       index: true,
+    },
+
+    /*
+     * Archive is intentionally NOT a booking status.
+     *
+     * The original status is preserved when a booking
+     * is archived.
+     */
+    archived: {
+      type: Boolean,
+      default: false,
+      index: true,
+    },
+
+    archivedAt: {
+      type: Date,
+      default: null,
     },
   },
   {
@@ -276,24 +300,22 @@ const BookingSchema = new Schema<IBooking>(
 );
 
 /*
- * Used by the availability / booking system.
+ * Appointment lookup / availability.
  *
- * We intentionally do NOT make this unique because cancelled bookings
- * should not permanently consume a time slot.
- *
- * Final booking creation performs a server-side availability check
- * before saving.
+ * Archived bookings remain in the database but are
+ * not treated as active bookings by the API.
  */
-
 BookingSchema.index({
   "appointment.date": 1,
   "appointment.startTime": 1,
   status: 1,
+  archived: 1,
 });
 
 BookingSchema.index({
   "appointment.date": 1,
   status: 1,
+  archived: 1,
 });
 
 const Booking: Model<IBooking> =

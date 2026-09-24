@@ -18,11 +18,25 @@ export interface AdminNavItem {
 }
 
 export const ADMIN_NAV_ITEMS: AdminNavItem[] = [
+
   {
     title: "Dashboard",
     href: "/admin",
     icon: LayoutDashboard,
   },
+   {
+    title: "Bookings",
+    href: "/admin/bookings",
+    icon: CalendarCheck,
+
+
+  },
+
+  {
+  title: "Availability",
+  href: "/admin/availability",
+  icon: CalendarCheck,
+},
   {
     title: "Services",
     href: "/admin/services",
@@ -45,19 +59,11 @@ export const ADMIN_NAV_ITEMS: AdminNavItem[] = [
   },
   {
     title: "Reviews",
-    href: "/admin/reviews",
+    href: "/admin/testimonials",
     icon: Star,
   },
-  {
-    title: "Bookings",
-    href: "/admin/bookings",
-    icon: CalendarCheck,
-  },
-  {
-    title: "Enquiries",
-    href: "/admin/enquiries",
-    icon: ClipboardList,
-  },
+
+ 
   {
     title: "Site Settings",
     href: "/admin/settings",

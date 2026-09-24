@@ -111,7 +111,6 @@ export const BOOKING_STATES = [
 export const BOOKING_STATUSES = [
   "pending",
   "confirmed",
-  "in-progress",
   "completed",
   "cancelled",
 ] as const;

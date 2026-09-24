@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 
+import AdminNavbar from "./AdminNavbar";
 import AdminSidebar from "./AdminSidebar";
 import AdminMobileHeader from "./AdminMobileHeader";
 
@@ -16,10 +17,15 @@ export default function AdminShell({
   businessName,
   logoUrl,
 }: AdminShellProps) {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] =
+    useState(false);
 
   return (
     <div className="min-h-screen bg-[#061A2B] text-[#F8FAFC]">
+
+      {/* =================================================
+          SIDEBAR
+      ================================================= */}
       <AdminSidebar
         businessName={businessName}
         logoUrl={logoUrl}
@@ -27,13 +33,26 @@ export default function AdminShell({
         onClose={() => setSidebarOpen(false)}
       />
 
+      {/* =================================================
+          MAIN APPLICATION AREA
+      ================================================= */}
       <div className="min-h-screen lg:pl-[280px]">
+
+        {/* Mobile top bar */}
         <AdminMobileHeader
           businessName={businessName}
           onOpen={() => setSidebarOpen(true)}
         />
 
-        <main className="min-h-[calc(100vh-70px)] lg:min-h-screen">
+        {/* Desktop top navbar */}
+        <div className="hidden lg:block">
+          <AdminNavbar
+            businessName={businessName}
+          />
+        </div>
+
+        {/* Page content */}
+        <main className="min-h-[calc(100vh-70px)] lg:min-h-[calc(100vh-76px)]">
           {children}
         </main>
       </div>
