@@ -118,7 +118,7 @@ export default function TermsHero({
                 </span>
 
                 <span className="whitespace-nowrap">
-                  Call Us Now
+                  Call Us +61 467 037 886
                 </span>
 
                 <ArrowRight

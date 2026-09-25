@@ -5,5 +5,5 @@ export const CONTACT_HERO = {
     "Contact Car Battery Service for mobile battery assistance, or book a service online when you are ready.",
   primaryCta: "Book a Battery Service",
   primaryHref: "/book-service",
-  secondaryCta: "Call Now",
+  secondaryCta: "Call Now  +61 467 037 886",
 } as const;

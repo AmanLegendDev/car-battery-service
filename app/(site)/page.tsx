@@ -15,6 +15,7 @@ import TestimonialsOverview from "@/components/home/testimonials/TestimonialsOve
 import FAQOverview from "@/components/home/faqs/FAQOverview";
 import BlogPreview from "@/components/home/blog/BlogPreview";
 import FinalCTA from "@/components/home/final-cta/FinalCTA";
+import PaymentOptions from "@/components/home/payment-options/PaymentOptions";
 
 export const dynamic = "force-dynamic";
 
@@ -250,6 +251,8 @@ export default async function HomePage() {
         <RequestAssistance />
 
         <TestimonialsOverview />
+
+        <PaymentOptions />
 
         <FAQOverview />
 

@@ -10,7 +10,7 @@ export const ABOUT_HERO = {
 
   primaryHref: "/book-service",
 
-  secondaryCta: "Contact Us",
+  secondaryCta: "Contact  +61 467 037 886",
 
   secondaryHref: "/contact",
 } as const;

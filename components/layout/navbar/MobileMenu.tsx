@@ -115,11 +115,11 @@ export default function MobileMenu({
         {/* Bottom CTA */}
         <div className="shrink-0 border-t border-white/[0.07] bg-[#061A2B]/95 p-5 backdrop-blur-xl">
           <a
-            href={NAVBAR_PHONE_HREF}
+            href="/book-service"
             onClick={onClose}
             className="flex h-13 w-full items-center justify-center rounded-[15px] bg-[#FFD400] px-5 text-sm font-extrabold text-[#061A2B] shadow-[0_10px_32px_rgba(255,212,0,0.13)] transition-all duration-150 hover:bg-[#F5B800] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#FFD400]/60 active:scale-[0.985]"
           >
-            Call Now
+            Book Now
           </a>
 
           <p className="mt-3 text-center text-[9px] font-semibold uppercase tracking-[0.18em] text-[#718895]">
