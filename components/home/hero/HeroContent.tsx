@@ -1,7 +1,12 @@
 "use client";
 
 import { motion, type Variants } from "framer-motion";
-import { ArrowRight, Phone } from "lucide-react";
+import {
+  ArrowRight,
+  Check,
+  CreditCard,
+  Phone,
+} from "lucide-react";
 import Link from "next/link";
 
 import { HERO_DATA } from "./heroData";
@@ -59,7 +64,7 @@ export default function HeroContent({
 
   const phoneHref = `tel:${phoneNumber.replace(
     /[^+\d]/g,
-    ""
+    "",
   )}`;
 
   const description =
@@ -77,7 +82,9 @@ export default function HeroContent({
       variants={contentVariants}
       className="relative z-20 w-full max-w-[720px]"
     >
-      {/* Eyebrow */}
+      {/* =========================================================
+          EYEBROW
+      ========================================================== */}
       <motion.div
         variants={itemVariants}
         className="mb-5 flex items-center gap-3 sm:mb-6 lg:mb-7"
@@ -92,7 +99,9 @@ export default function HeroContent({
         </span>
       </motion.div>
 
-      {/* Headline */}
+      {/* =========================================================
+          HEADLINE
+      ========================================================== */}
       <motion.h1
         id="hero-heading"
         variants={itemVariants}
@@ -107,7 +116,9 @@ export default function HeroContent({
         </span>
       </motion.h1>
 
-      {/* Description */}
+      {/* =========================================================
+          DESCRIPTION
+      ========================================================== */}
       <motion.p
         variants={itemVariants}
         className="mt-6 max-w-[540px] text-[14px] leading-6 text-[#B3C3CE] sm:mt-7 sm:text-[15px] sm:leading-7 lg:mt-8 lg:text-[16px] lg:leading-8"
@@ -115,7 +126,9 @@ export default function HeroContent({
         {description}
       </motion.p>
 
-      {/* CTAs */}
+      {/* =========================================================
+          CTA BUTTONS
+      ========================================================== */}
       <motion.div
         variants={itemVariants}
         className="mt-7 flex w-full flex-col gap-3 sm:mt-8 sm:w-auto sm:flex-row sm:items-center"
@@ -149,10 +162,55 @@ export default function HeroContent({
         </a>
       </motion.div>
 
-      {/* Phone detail */}
+      {/* =========================================================
+          PAYMENT TRUST SIGNAL
+          Compact enough for mobile, premium enough for desktop.
+      ========================================================== */}
       <motion.div
         variants={itemVariants}
-        className="mt-6 flex items-center sm:mt-7"
+        className="mt-4 sm:mt-5"
+      >
+        <div className="inline-flex max-w-full items-center gap-3 rounded-2xl border border-white/[0.09] bg-[#08263D]/55 px-3.5 py-2.5 shadow-[0_10px_35px_rgba(0,0,0,0.14)] backdrop-blur-md sm:px-4 sm:py-3"
+        >
+          {/* Icon */}
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-[#FFD400]/15 bg-[#FFD400]/[0.07] text-[#FFD400]">
+            <CreditCard
+              aria-hidden="true"
+              className="h-4 w-4"
+              strokeWidth={1.8}
+            />
+          </div>
+
+          {/* Copy */}
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
+              <span className="text-[10px] font-extrabold uppercase tracking-[0.13em] text-[#F8FAFC] sm:text-[11px]">
+                Accepted all types of payments
+              </span>
+
+              <span className="inline-flex items-center gap-1 text-[9px] font-semibold uppercase tracking-[0.1em] text-[#FFD400]">
+                <Check
+                  aria-hidden="true"
+                  className="h-3 w-3"
+                  strokeWidth={2.5}
+                />
+                Flexible
+              </span>
+            </div>
+
+            <p className="mt-0.5 text-[9px] leading-4 text-[#8FA5B3] sm:text-[10px]">
+              Afterpay · Zip Pay · PayPal · Apple Pay · Google Pay · Cards
+            </p>
+          </div>
+        </div>
+      </motion.div>
+
+      {/* =========================================================
+          PHONE DETAIL
+      ========================================================== */}
+      <motion.div
+        variants={itemVariants}
+        className="mt-5 flex items-center sm:mt-6"
       >
         <div className="relative flex items-center">
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-white/[0.1] bg-[#08263D]/55 shadow-[0_8px_25px_rgba(0,0,0,0.16)] backdrop-blur-md">
