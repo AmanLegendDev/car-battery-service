@@ -25,15 +25,15 @@ export const PAYMENT_CATEGORIES: Array<{
 }> = [
   {
     title: "Buy Now, Pay Later",
-    description: "Flexible payment options for eligible purchases.",
+    description: "Flexible payment options available through selected providers.",
   },
   {
     title: "Digital Wallets",
-    description: "Fast and convenient digital payment options.",
+    description: "Convenient digital payment methods for a simple checkout.",
   },
   {
     title: "Cards",
-    description: "Major card payment methods accepted.",
+    description: "Major card payment methods are accepted.",
   },
 ];
 
@@ -95,14 +95,14 @@ export const PAYMENT_OPTIONS: PaymentOption[] = [
   },
   {
     name: "Credit Card",
-    label: "Credit card payments",
+    label: "Credit card payments accepted",
     category: "Cards",
     icon: CreditCard,
     accent: "blue",
   },
   {
     name: "Debit Card",
-    label: "Debit card payments",
+    label: "Debit card payments accepted",
     category: "Cards",
     icon: CreditCard,
     accent: "blue",
