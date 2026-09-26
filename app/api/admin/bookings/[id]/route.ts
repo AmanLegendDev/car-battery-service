@@ -5,11 +5,14 @@ import { auth } from "@/auth";
 import { connectDB } from "@/lib/db";
 import Booking from "@/models/Booking";
 
+import {
+  sendCustomerBookingStatusEmail,
+} from "@/lib/email/bookingEmails";
 type BookingAction =
   | "confirm"
   | "cancel"
   | "complete"
-  | "archive";
+  | "archive"; 
 
 interface RouteContext {
   params: Promise<{
@@ -315,19 +318,110 @@ export async function PATCH(
      * STATUS UPDATE
      * ---------------------------------------------------------
      */
-    if (action === "confirm") {
-      booking.status = "confirmed";
-    }
+if (action === "confirm") {
+  booking.status = "confirmed";
+}
 
-    if (action === "cancel") {
-      booking.status = "cancelled";
-    }
+if (action === "cancel") {
+  booking.status = "cancelled";
+}
 
-    if (action === "complete") {
-      booking.status = "completed";
-    }
+if (action === "complete") {
+  booking.status = "completed";
+}
 
-    await booking.save();
+await booking.save();
+
+/* =====================================================
+   CUSTOMER STATUS EMAILS
+===================================================== */
+
+if (
+  action === "cancel" ||
+  action === "complete"
+) {
+  const emailBooking = {
+    bookingReference:
+      booking.bookingReference,
+
+    customer: {
+      fullName:
+        booking.customer.fullName,
+
+      phone:
+        booking.customer.phone,
+
+      email:
+        booking.customer.email,
+    },
+
+    vehicle: {
+      registrationNumber:
+        booking.vehicle.registrationNumber,
+
+      issue:
+        booking.vehicle.issue,
+
+      notes:
+        booking.vehicle.notes,
+    },
+
+    service: {
+      serviceName:
+        booking.service.serviceName,
+    },
+
+    location: {
+      address:
+        booking.location.address,
+
+      suburb:
+        booking.location.suburb,
+
+      state:
+        booking.location.state,
+
+      postcode:
+        booking.location.postcode,
+
+      accessNotes:
+        booking.location.accessNotes,
+    },
+
+    appointment: {
+      date:
+        booking.appointment.date,
+
+      startTime:
+        booking.appointment.startTime,
+
+      endTime:
+        booking.appointment.endTime,
+
+      timezone:
+        booking.appointment.timezone,
+    },
+  };
+
+  const emailResult =
+    await Promise.allSettled([
+      sendCustomerBookingStatusEmail(
+        emailBooking,
+        action === "complete"
+          ? "completed"
+          : "cancelled"
+      ),
+    ]);
+
+  for (const result of emailResult) {
+    if (result.status === "rejected") {
+      console.error(
+        "BOOKING STATUS EMAIL ERROR:",
+        result.reason
+      );
+    }
+  }
+}
 
     const actionMessages: Record<
       Exclude<BookingAction, "archive">,

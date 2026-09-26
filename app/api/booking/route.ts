@@ -16,6 +16,11 @@ import {
 } from "@/lib/availability/availability.constants";
 
 import {
+  sendAdminNewBookingEmail,
+  sendCustomerBookingReceivedEmail,
+} from "@/lib/email/bookingEmails";
+
+import {
   isValidDateFormat,
   isValidTimeFormat,
   isWithinWorkingHours,
@@ -379,9 +384,102 @@ const bookingReference =
         status: "pending",
       });
 
+
+
+
+      /* =====================================================
+   BOOKING EMAILS
+===================================================== */
+
+const emailBooking = {
+  bookingReference:
+    createdBooking.bookingReference,
+
+  customer: {
+    fullName:
+      createdBooking.customer.fullName,
+
+    phone:
+      createdBooking.customer.phone,
+
+    email:
+      createdBooking.customer.email,
+  },
+
+  vehicle: {
+    registrationNumber:
+      createdBooking.vehicle.registrationNumber,
+
+    issue:
+      createdBooking.vehicle.issue,
+
+    notes:
+      createdBooking.vehicle.notes,
+  },
+
+  service: {
+    serviceName:
+      createdBooking.service.serviceName,
+  },
+
+  location: {
+    address:
+      createdBooking.location.address,
+
+    suburb:
+      createdBooking.location.suburb,
+
+    state:
+      createdBooking.location.state,
+
+    postcode:
+      createdBooking.location.postcode,
+
+    accessNotes:
+      createdBooking.location.accessNotes,
+  },
+
+  appointment: {
+    date:
+      createdBooking.appointment.date,
+
+    startTime:
+      createdBooking.appointment.startTime,
+
+    endTime:
+      createdBooking.appointment.endTime,
+
+    timezone:
+      createdBooking.appointment.timezone,
+  },
+};
+
+const emailResults =
+  await Promise.allSettled([
+    sendCustomerBookingReceivedEmail(
+      emailBooking
+    ),
+
+    sendAdminNewBookingEmail(
+      emailBooking
+    ),
+  ]);
+
+for (const result of emailResults) {
+  if (result.status === "rejected") {
+    console.error(
+      "BOOKING EMAIL ERROR:",
+      result.reason
+    );
+  }
+}
+
     /* =====================================================
        RESPONSE
     ===================================================== */
+
+
+
 
     const bookingId =
       String(createdBooking._id);
