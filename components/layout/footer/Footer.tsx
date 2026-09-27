@@ -675,6 +675,63 @@ export default async function Footer() {
           </div>
         </div>
 
+
+        {/* =====================================================
+    SERVICE AREA MAP
+====================================================== */}
+
+<div className="border-b border-white/[0.08] py-12 sm:py-14 lg:py-16">
+  <div className="grid gap-7 lg:grid-cols-[0.7fr_1.3fr] lg:items-center lg:gap-12">
+
+    {/* Map intro */}
+    <div>
+      <div className="flex items-center gap-2">
+        <span className="h-1.5 w-1.5 rounded-full bg-[#FFD400]" />
+
+        <p className="text-[9px] font-bold uppercase tracking-[0.25em] text-[#A8BBC8]">
+          Service Area
+        </p>
+      </div>
+
+      <h3 className="mt-4 max-w-md text-2xl font-semibold leading-tight tracking-[-0.04em] text-[#F8FAFC] sm:text-3xl">
+        Mobile battery assistance across Melbourne West.
+      </h3>
+
+      <p className="mt-4 max-w-md text-sm leading-7 text-[#A8BBC8]">
+        View our service area and get a better idea of where our mobile
+        battery assistance is available.
+      </p>
+
+      <Link
+        href="/service-areas"
+        className="group mt-6 inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.14em] text-[#FFD400] transition-colors hover:text-[#F5B800]"
+      >
+        Explore service areas
+
+        <ArrowUpRight
+          className="h-3.5 w-3.5 transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
+        />
+      </Link>
+    </div>
+
+    {/* Google Map */}
+    <div className="relative overflow-hidden rounded-[24px] border border-white/[0.09] bg-[#08263D] shadow-[0_25px_80px_rgba(0,0,0,0.22)]">
+      <div className="absolute inset-0 z-10 pointer-events-none rounded-[24px] ring-1 ring-inset ring-white/[0.06]" />
+
+      <div className="aspect-[16/10] w-full sm:aspect-[16/8] lg:aspect-[16/9]">
+        <iframe
+          src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d100823.10962526224!2d144.63983015!3d-37.843389450000004!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x82fa6fc9c760fe6d%3A0xdc0773757f4c793c!2sCar%20Battery%20Services!5e0!3m2!1sen!2sau!4v1790186398514!5m2!1sen!2sau"
+          title="Car Battery Services service area map"
+          className="h-full w-full border-0 grayscale-[0.15] opacity-90 transition-opacity duration-300 hover:opacity-100"
+          loading="lazy"
+          referrerPolicy="strict-origin-when-cross-origin"
+          allowFullScreen
+        />
+      </div>
+    </div>
+  </div>
+</div>
+
         {/* =====================================================
             TRUST / SERVICE STRIP
         ====================================================== */}
