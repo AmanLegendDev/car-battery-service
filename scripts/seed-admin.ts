@@ -6,11 +6,16 @@ dotenv.config({
   path: ".env.local",
 });
 
+// ─────────────────────────────────────────────
+// Environment Variables
+// ─────────────────────────────────────────────
+
 const MONGODB_URI = process.env.MONGODB_URI;
 const ADMIN_NAME = process.env.ADMIN_NAME;
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL;
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
 
+// Validate required environment variables
 if (!MONGODB_URI) {
   throw new Error("Missing MONGODB_URI in .env.local");
 }
@@ -27,13 +32,24 @@ if (!ADMIN_PASSWORD) {
   throw new Error("Missing ADMIN_PASSWORD in .env.local");
 }
 
-if (ADMIN_PASSWORD.length < 12) {
+// Create guaranteed string values after validation
+const mongoUri = MONGODB_URI;
+const adminName = ADMIN_NAME;
+const adminEmail = ADMIN_EMAIL;
+const adminPassword = ADMIN_PASSWORD;
+
+// Password validation
+if (adminPassword.length < 12) {
   throw new Error(
     "ADMIN_PASSWORD must be at least 12 characters long."
   );
 }
 
-const normalizedEmail = ADMIN_EMAIL.trim().toLowerCase();
+const normalizedEmail = adminEmail.trim().toLowerCase();
+
+// ─────────────────────────────────────────────
+// Admin Schema
+// ─────────────────────────────────────────────
 
 const adminSchema = new mongoose.Schema(
   {
@@ -80,27 +96,35 @@ const Admin =
   mongoose.models.Admin ||
   mongoose.model("Admin", adminSchema);
 
+// ─────────────────────────────────────────────
+// Seed Admin
+// ─────────────────────────────────────────────
+
 async function main() {
   try {
+    console.log("");
     console.log("Connecting to MongoDB...");
 
-    await mongoose.connect(MONGODB_URI);
+    await mongoose.connect(mongoUri);
 
     console.log("Connected to MongoDB.");
 
-    // Delete all existing admin accounts
+    // Remove existing admin accounts
     const deleteResult = await Admin.deleteMany({});
 
     console.log(
       `Deleted ${deleteResult.deletedCount} existing admin account(s).`
     );
 
-    // Hash the new password
-    const passwordHash = await bcrypt.hash(ADMIN_PASSWORD, 12);
+    // Hash password
+    const passwordHash = await bcrypt.hash(
+      adminPassword,
+      12
+    );
 
     // Create new admin
     await Admin.create({
-      name: ADMIN_NAME.trim(),
+      name: adminName.trim(),
       email: normalizedEmail,
       passwordHash,
       role: "admin",
@@ -108,13 +132,13 @@ async function main() {
     });
 
     console.log("");
-    console.log("=================================");
-    console.log("ADMIN CREATED SUCCESSFULLY");
-    console.log("=================================");
-    console.log(`Name:  ${ADMIN_NAME.trim()}`);
+    console.log("========================================");
+    console.log("       ADMIN CREATED SUCCESSFULLY");
+    console.log("========================================");
+    console.log(`Name:  ${adminName.trim()}`);
     console.log(`Email: ${normalizedEmail}`);
     console.log("Password: [hidden]");
-    console.log("=================================");
+    console.log("========================================");
     console.log("");
   } catch (error) {
     console.error("");
