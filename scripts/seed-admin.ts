@@ -1,11 +1,10 @@
 import dotenv from "dotenv";
+import mongoose from "mongoose";
+import bcrypt from "bcryptjs";
 
 dotenv.config({
   path: ".env.local",
 });
-
-import mongoose from "mongoose";
-import bcrypt from "bcryptjs";
 
 const MONGODB_URI = process.env.MONGODB_URI;
 const ADMIN_NAME = process.env.ADMIN_NAME;
@@ -81,44 +80,57 @@ const Admin =
   mongoose.models.Admin ||
   mongoose.model("Admin", adminSchema);
 
-try {
-  await mongoose.connect(MONGODB_URI);
+async function main() {
+  try {
+    console.log("Connecting to MongoDB...");
 
-  console.log("Connected to MongoDB.");
+    await mongoose.connect(MONGODB_URI);
 
-  // Delete ALL existing admin accounts
-  const deleteResult = await Admin.deleteMany({});
+    console.log("Connected to MongoDB.");
 
-  console.log(
-    `Deleted ${deleteResult.deletedCount} existing admin account(s).`
-  );
+    // Delete all existing admin accounts
+    const deleteResult = await Admin.deleteMany({});
 
-  // Hash the new admin password
-  const passwordHash = await bcrypt.hash(ADMIN_PASSWORD, 12);
+    console.log(
+      `Deleted ${deleteResult.deletedCount} existing admin account(s).`
+    );
 
-  // Create the new admin
-  await Admin.create({
-    name: ADMIN_NAME.trim(),
-    email: normalizedEmail,
-    passwordHash,
-    role: "admin",
-    isActive: true,
-  });
+    // Hash the new password
+    const passwordHash = await bcrypt.hash(ADMIN_PASSWORD, 12);
 
-  console.log("=================================");
-  console.log("Admin created successfully.");
-  console.log(`Name: ${ADMIN_NAME.trim()}`);
-  console.log(`Email: ${normalizedEmail}`);
-  console.log("Password: [hidden]");
-  console.log("=================================");
-} catch (error) {
-  console.error("Admin seed failed.");
+    // Create new admin
+    await Admin.create({
+      name: ADMIN_NAME.trim(),
+      email: normalizedEmail,
+      passwordHash,
+      role: "admin",
+      isActive: true,
+    });
 
-  if (error instanceof Error) {
-    console.error(error.message);
+    console.log("");
+    console.log("=================================");
+    console.log("ADMIN CREATED SUCCESSFULLY");
+    console.log("=================================");
+    console.log(`Name:  ${ADMIN_NAME.trim()}`);
+    console.log(`Email: ${normalizedEmail}`);
+    console.log("Password: [hidden]");
+    console.log("=================================");
+    console.log("");
+  } catch (error) {
+    console.error("");
+    console.error("Admin seed failed.");
+
+    if (error instanceof Error) {
+      console.error(error.message);
+    } else {
+      console.error(error);
+    }
+
+    process.exitCode = 1;
+  } finally {
+    await mongoose.disconnect();
+    console.log("MongoDB disconnected.");
   }
-
-  process.exitCode = 1;
-} finally {
-  await mongoose.disconnect();
 }
+
+main();

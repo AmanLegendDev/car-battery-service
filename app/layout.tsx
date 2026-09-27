@@ -155,6 +155,19 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <head>
+        {/* Google Search Console Verification */}
+        <meta
+          name="google-site-verification"
+          content="diUTaZzt0mlFvO4CwYHMs7g2cbi4aNrPP6NlSOm89b0"
+        />
+
+        {/* Bing Webmaster Tools Verification */}
+        <meta
+          name="msvalidate.01"
+          content="6C56034BC8A4093CC1774D376348B66E"
+        />
+
+        {/* Cloudinary connection optimization */}
         <link
           rel="preconnect"
           href="https://res.cloudinary.com"
