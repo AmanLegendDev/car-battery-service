@@ -3,6 +3,7 @@
 import { motion, type Variants } from "framer-motion";
 import {
   ArrowRight,
+  CalendarCheck,
   Check,
   CreditCard,
   Phone,
@@ -139,7 +140,7 @@ export default function HeroContent({
           aria-label={bookingLabel}
           className="group inline-flex h-[54px] w-full items-center justify-center gap-3 rounded-2xl bg-[#FFD400] px-6 text-[14px] font-extrabold text-[#061A2B] shadow-[0_14px_40px_rgba(255,212,0,0.16)] transition-all duration-200 hover:bg-[#F5B800] hover:shadow-[0_18px_48px_rgba(255,212,0,0.24)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#FFD400] focus-visible:ring-offset-2 focus-visible:ring-offset-[#061A2B] active:scale-[0.985] sm:h-14 sm:w-auto sm:min-w-[145px]"
         >
-          <Phone
+          <CalendarCheck
             aria-hidden="true"
             className="h-[17px] w-[17px] transition-transform duration-200 group-hover:rotate-[-8deg]"
           />
