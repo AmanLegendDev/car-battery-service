@@ -24,7 +24,7 @@ const DEFAULT_REGION =
   "Melbourne West";
 
 const DEFAULT_DESCRIPTION =
-  "Explore mobile car battery services from Car Battery Service, including battery replacement, battery testing and jump start assistance.";
+  "Battery replacement, battery testing, jump starts, starter motor and alternator replacement – all done on-site at your vehicle in Melbourne's west.";
 
 /* ============================================================
    GET BUSINESS SETTINGS
