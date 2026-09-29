@@ -1,20 +1,31 @@
 import type { MetadataRoute } from "next";
 
 import { connectDB } from "@/lib/db";
+
 import Blog from "@/models/Blog";
 import Service from "@/models/Service";
 import ServiceArea from "@/models/ServiceArea";
 
-const SITE_URL = "https://carbatteryservices.com.au";
+const SITE_URL =
+  "https://carbatteryservices.com.au";
 
-export const dynamic = "force-dynamic";
+export const dynamic =
+  "force-dynamic";
 
 function absoluteUrl(path: string): string {
-  return `${SITE_URL}${path.startsWith("/") ? path : `/${path}`}`;
+  return `${SITE_URL}${
+    path.startsWith("/")
+      ? path
+      : `/${path}`
+  }`;
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date();
+
+  /* ============================================================
+     STATIC PUBLIC PAGES
+  ============================================================ */
 
   const staticPages: MetadataRoute.Sitemap = [
     {
@@ -74,14 +85,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     },
 
     {
-      url: absoluteUrl("/privacy"),
+      url: absoluteUrl("/privacy-policy"),
       lastModified: now,
       changeFrequency: "yearly",
       priority: 0.3,
     },
 
     {
-      url: absoluteUrl("/terms"),
+      url: absoluteUrl("/terms-and-conditions"),
       lastModified: now,
       changeFrequency: "yearly",
       priority: 0.3,
@@ -91,7 +102,15 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   try {
     await connectDB();
 
-    const [services, serviceAreas, blogPosts] = await Promise.all([
+    /* ============================================================
+       FETCH PUBLIC CMS CONTENT
+    ============================================================ */
+
+    const [
+      services,
+      serviceAreas,
+      blogPosts,
+    ] = await Promise.all([
       Service.find({
         status: "active",
       })
@@ -114,50 +133,105 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         status: "published",
         noIndex: false,
       })
-        .select("slug updatedAt publishedAt canonicalUrl")
+        .select(
+          "slug updatedAt publishedAt canonicalUrl"
+        )
         .sort({
           publishedAt: -1,
         })
         .lean(),
     ]);
 
-    const servicePages: MetadataRoute.Sitemap = services
-      .filter((service) => Boolean(service.slug))
-      .map((service) => ({
-        url: absoluteUrl(`/services/${service.slug}`),
-        lastModified: service.updatedAt ?? now,
-        changeFrequency: "monthly" as const,
-        priority: 0.85,
-      }));
+    /* ============================================================
+       SERVICE DETAIL PAGES
+    ============================================================ */
 
-    const serviceAreaPages: MetadataRoute.Sitemap = serviceAreas
-      .filter((area) => Boolean(area.slug))
-      .map((area) => ({
-        url: absoluteUrl(`/service-areas/${area.slug}`),
-        lastModified: area.updatedAt ?? now,
-        changeFrequency: "monthly" as const,
-        priority: 0.8,
-      }));
+    const servicePages: MetadataRoute.Sitemap =
+      services
+        .filter(
+          (service) =>
+            Boolean(service.slug)
+        )
+        .map((service) => ({
+          url: absoluteUrl(
+            `/services/${service.slug}`
+          ),
 
-    const blogPages: MetadataRoute.Sitemap = blogPosts
-      .filter((post) => Boolean(post.slug))
-      .map((post) => {
-        const canonicalUrl =
-          typeof post.canonicalUrl === "string" &&
-          post.canonicalUrl.startsWith(SITE_URL)
-            ? post.canonicalUrl
-            : absoluteUrl(`/blog/${post.slug}`);
-
-        return {
-          url: canonicalUrl,
           lastModified:
-            post.updatedAt ??
-            post.publishedAt ??
+            service.updatedAt ??
             now,
-          changeFrequency: "monthly" as const,
-          priority: 0.75,
-        };
-      });
+
+          changeFrequency:
+            "monthly" as const,
+
+          priority: 0.85,
+        }));
+
+    /* ============================================================
+       SERVICE AREA DETAIL PAGES
+    ============================================================ */
+
+    const serviceAreaPages: MetadataRoute.Sitemap =
+      serviceAreas
+        .filter(
+          (area) =>
+            Boolean(area.slug)
+        )
+        .map((area) => ({
+          url: absoluteUrl(
+            `/service-areas/${area.slug}`
+          ),
+
+          lastModified:
+            area.updatedAt ??
+            now,
+
+          changeFrequency:
+            "monthly" as const,
+
+          priority: 0.8,
+        }));
+
+    /* ============================================================
+       BLOG DETAIL PAGES
+    ============================================================ */
+
+    const blogPages: MetadataRoute.Sitemap =
+      blogPosts
+        .filter(
+          (post) =>
+            Boolean(post.slug)
+        )
+        .map((post) => {
+          const canonicalUrl =
+            typeof post.canonicalUrl ===
+              "string" &&
+            post.canonicalUrl.startsWith(
+              SITE_URL
+            )
+              ? post.canonicalUrl
+              : absoluteUrl(
+                  `/blog/${post.slug}`
+                );
+
+          return {
+            url: canonicalUrl,
+
+            lastModified:
+              post.updatedAt ??
+              post.publishedAt ??
+              now,
+
+            changeFrequency:
+              "monthly" as const,
+
+            priority: 0.75,
+          };
+        });
+
+    /* ============================================================
+       FINAL SITEMAP
+    ============================================================ */
 
     return [
       ...staticPages,
@@ -171,6 +245,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       error
     );
 
+    /*
+     * Keep the sitemap available even if
+     * the database is temporarily unavailable.
+     */
     return staticPages;
   }
 }
