@@ -20,15 +20,30 @@ const SITE_URL = "https://carbatteryservices.com.au";
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
 
+  /*
+   * Global fallback metadata.
+   *
+   * Individual pages will provide their own exact SEO titles
+   * and descriptions from the SEO sheet.
+   *
+   * IMPORTANT:
+   * Page-specific titles should use:
+   *
+   * title: {
+   *   absolute: "Exact SEO Title",
+   * }
+   *
+   * so the global template does not append the brand again.
+   */
   title: {
-    default: "Car Battery Service | Melbourne West",
-    template: "%s | Car Battery Service",
+    default: "Car Battery Services",
+    template: "%s | Car Battery Services",
   },
 
   description:
-    "Mobile car battery service in Melbourne West including battery replacement, battery testing, jump start assistance, starter motor replacement and alternator replacement at your vehicle's location.",
+    "Mobile car battery services across Melbourne West, including battery replacement, battery testing, jump starts, starter motor replacement and alternator replacement.",
 
-  applicationName: "Car Battery Service",
+  applicationName: "Car Battery Services",
 
   generator: "Next.js",
 
@@ -45,14 +60,18 @@ export const metadata: Metadata = {
 
   authors: [
     {
-      name: "Car Battery Service",
+      name: "Car Battery Services",
     },
   ],
 
-  creator: "Car Battery Service",
+  creator: "Car Battery Services",
 
-  publisher: "Car Battery Service",
+  publisher: "Car Battery Services",
 
+  /*
+   * Keep the current site-wide canonical here as the fallback.
+   * Individual pages will define their own canonical URLs.
+   */
   alternates: {
     canonical: SITE_URL,
   },
@@ -84,43 +103,58 @@ export const metadata: Metadata = {
     ],
   },
 
+  /*
+   * Global Open Graph fallback.
+   *
+   * Individual pages will override title/description/url
+   * with their page-specific SEO metadata.
+   */
   openGraph: {
     type: "website",
     locale: "en_AU",
     url: SITE_URL,
-    siteName: "Car Battery Service",
+    siteName: "Car Battery Services",
 
-    title: "Car Battery Service | Melbourne West",
+    title: "Car Battery Services",
 
     description:
-      "Mobile car battery and vehicle starting assistance across Melbourne West. Battery replacement, testing, jump starts, starter motor replacement and alternator replacement.",
+      "Mobile car battery services across Melbourne West, including battery replacement, battery testing, jump starts, starter motor replacement and alternator replacement.",
 
     images: [
       {
         url: "/images/seo/og-image.jpg",
         width: 1200,
         height: 630,
-        alt: "Car Battery Service - Mobile Car Battery Service in Melbourne West",
+        alt: "Car Battery Services - Mobile Car Battery Service Melbourne West",
       },
     ],
   },
 
+  /*
+   * Global Twitter fallback.
+   */
   twitter: {
     card: "summary_large_image",
 
-    title: "Car Battery Service | Melbourne West",
+    title: "Car Battery Services",
 
     description:
-      "Mobile car battery and vehicle starting assistance across Melbourne West.",
+      "Mobile car battery services across Melbourne West, including battery replacement, testing, jump starts, starter motor replacement and alternator replacement.",
 
     images: [
       {
         url: "/images/seo/og-image.jpg",
-        alt: "Car Battery Service - Melbourne West",
+        alt: "Car Battery Services - Melbourne West",
       },
     ],
   },
 
+  /*
+   * Site-wide crawl directives.
+   *
+   * Individual pages such as Privacy/Terms can override this
+   * later if we decide to noindex them.
+   */
   robots: {
     index: true,
     follow: true,

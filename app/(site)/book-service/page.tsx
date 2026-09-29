@@ -13,23 +13,27 @@ const SITE_URL =
 const PAGE_URL =
   `${SITE_URL}/book-service`;
 
-const PAGE_TITLE =
-  "Book a Battery Service | Car Battery Service";
+const SEO_TITLE =
+  "Book Mobile Car Battery Replacement Online | 7 Days";
 
-const PAGE_DESCRIPTION =
-  "Request a mobile car battery service in Melbourne West. Choose a service, provide your vehicle and location details, and select an available appointment.";
+const SEO_DESCRIPTION =
+  "Book a mobile car battery service in Melbourne West. Choose your service, provide your vehicle and location details, and request an appointment online.";
 
 const OG_IMAGE =
   "/images/seo/og-image.jpg";
 
 export const metadata: Metadata = {
-  title: PAGE_TITLE,
+  title: {
+    absolute:
+      SEO_TITLE,
+  },
 
   description:
-    PAGE_DESCRIPTION,
+    SEO_DESCRIPTION,
 
   alternates: {
-    canonical: "/book-service",
+    canonical:
+      PAGE_URL,
   },
 
   openGraph: {
@@ -37,27 +41,29 @@ export const metadata: Metadata = {
 
     locale: "en_AU",
 
-    url: PAGE_URL,
+    url:
+      PAGE_URL,
 
     siteName:
-      "Car Battery Service",
+      "Car Battery Services",
 
     title:
-      PAGE_TITLE,
+      SEO_TITLE,
 
     description:
-      PAGE_DESCRIPTION,
+      SEO_DESCRIPTION,
 
     images: [
       {
-        url: OG_IMAGE,
+        url:
+          OG_IMAGE,
 
         width: 1200,
 
         height: 630,
 
         alt:
-          "Book a Mobile Car Battery Service in Melbourne West",
+          "Book Mobile Car Battery Replacement Online - Car Battery Services",
       },
     ],
   },
@@ -67,10 +73,10 @@ export const metadata: Metadata = {
       "summary_large_image",
 
     title:
-      PAGE_TITLE,
+      SEO_TITLE,
 
     description:
-      PAGE_DESCRIPTION,
+      SEO_DESCRIPTION,
 
     images: [
       OG_IMAGE,
@@ -84,9 +90,12 @@ export const metadata: Metadata = {
     googleBot: {
       index: true,
       follow: true,
-      "max-image-preview": "large",
-      "max-snippet": -1,
-      "max-video-preview": -1,
+      "max-image-preview":
+        "large",
+      "max-snippet":
+        -1,
+      "max-video-preview":
+        -1,
     },
   },
 };
@@ -108,10 +117,10 @@ function getBookingStructuredData() {
           PAGE_URL,
 
         name:
-          PAGE_TITLE,
+          SEO_TITLE,
 
         description:
-          PAGE_DESCRIPTION,
+          SEO_DESCRIPTION,
 
         isPartOf: {
           "@id":
@@ -135,9 +144,11 @@ function getBookingStructuredData() {
           url:
             `${SITE_URL}${OG_IMAGE}`,
 
-          width: 1200,
+          width:
+            1200,
 
-          height: 630,
+          height:
+            630,
         },
 
         breadcrumb: {
@@ -161,9 +172,11 @@ function getBookingStructuredData() {
             "@type":
               "ListItem",
 
-            position: 1,
+            position:
+              1,
 
-            name: "Home",
+            name:
+              "Home",
 
             item:
               SITE_URL,
@@ -173,9 +186,11 @@ function getBookingStructuredData() {
             "@type":
               "ListItem",
 
-            position: 2,
+            position:
+              2,
 
-            name: "Book a Service",
+            name:
+              "Book a Service",
 
             item:
               PAGE_URL,

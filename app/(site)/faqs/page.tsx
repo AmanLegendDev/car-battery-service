@@ -17,14 +17,17 @@ const SITE_URL =
 const PAGE_URL =
   `${SITE_URL}/faqs`;
 
-const DEFAULT_BUSINESS_NAME =
-  "Car Battery Service";
+const SEO_TITLE =
+  "Car Battery FAQs | Signs, Testing, Replacement & Jump Starts";
 
-const DEFAULT_DESCRIPTION =
+const SEO_DESCRIPTION =
   "Frequently asked questions about mobile car battery service in Melbourne West, including battery replacement, battery testing and jump start assistance.";
 
 const OG_IMAGE =
   "/images/seo/og-image.jpg";
+
+const DEFAULT_BUSINESS_NAME =
+  "Car Battery Services";
 
 /* ============================================================
    PUBLIC FAQ
@@ -103,8 +106,7 @@ async function getFAQs(): Promise<PublicFAQ[]> {
     .lean();
 
   return faqs.map((faq) => ({
-    id:
-      faq._id.toString(),
+    id: faq._id.toString(),
 
     question:
       faq.question,
@@ -116,31 +118,24 @@ async function getFAQs(): Promise<PublicFAQ[]> {
       faq.category,
 
     relatedServices:
-      Array.isArray(
-        faq.relatedServices,
-      )
+      Array.isArray(faq.relatedServices)
         ? faq.relatedServices.map(
             (id) => id.toString(),
           )
         : [],
 
     relatedServiceAreas:
-      Array.isArray(
-        faq.relatedServiceAreas,
-      )
+      Array.isArray(faq.relatedServiceAreas)
         ? faq.relatedServiceAreas.map(
             (id) => id.toString(),
           )
         : [],
 
     featured:
-      Boolean(
-        faq.featured,
-      ),
+      Boolean(faq.featured),
 
     displayOrder:
-      typeof faq.displayOrder ===
-      "number"
+      typeof faq.displayOrder === "number"
         ? faq.displayOrder
         : 0,
   }));
@@ -323,24 +318,18 @@ async function getRelatedContent(
 ============================================================ */
 
 export async function generateMetadata(): Promise<Metadata> {
-  const business =
-    await getBusinessSettings();
-
-  const title =
-    `FAQs | ${business.businessName}`;
-
-  const description =
-    business.primaryServiceRegion
-      ? `Frequently asked questions about mobile car battery service in ${business.primaryServiceRegion}, including battery replacement, battery testing and jump start assistance.`
-      : DEFAULT_DESCRIPTION;
-
   return {
-    title,
+    title: {
+      absolute:
+        SEO_TITLE,
+    },
 
-    description,
+    description:
+      SEO_DESCRIPTION,
 
     alternates: {
-      canonical: "/faqs",
+      canonical:
+        PAGE_URL,
     },
 
     openGraph: {
@@ -348,25 +337,29 @@ export async function generateMetadata(): Promise<Metadata> {
 
       locale: "en_AU",
 
-      url: PAGE_URL,
+      url:
+        PAGE_URL,
 
       siteName:
-        business.businessName,
+        "Car Battery Services",
 
-      title,
+      title:
+        SEO_TITLE,
 
-      description,
+      description:
+        SEO_DESCRIPTION,
 
       images: [
         {
-          url: OG_IMAGE,
+          url:
+            OG_IMAGE,
 
           width: 1200,
 
           height: 630,
 
           alt:
-            `${business.businessName} - Frequently Asked Questions`,
+            "Car Battery FAQs - Signs, Testing, Replacement and Jump Starts",
         },
       ],
     },
@@ -375,9 +368,11 @@ export async function generateMetadata(): Promise<Metadata> {
       card:
         "summary_large_image",
 
-      title,
+      title:
+        SEO_TITLE,
 
-      description,
+      description:
+        SEO_DESCRIPTION,
 
       images: [
         OG_IMAGE,
@@ -386,14 +381,22 @@ export async function generateMetadata(): Promise<Metadata> {
 
     robots: {
       index: true,
+
       follow: true,
 
       googleBot: {
         index: true,
+
         follow: true,
-        "max-image-preview": "large",
-        "max-snippet": -1,
-        "max-video-preview": -1,
+
+        "max-image-preview":
+          "large",
+
+        "max-snippet":
+          -1,
+
+        "max-video-preview":
+          -1,
       },
     },
   };
@@ -405,15 +408,12 @@ export async function generateMetadata(): Promise<Metadata> {
 
 function getFAQStructuredData(
   faqs: PublicFAQ[],
-  business: FAQsBusiness,
 ) {
   const validFAQs =
     faqs.filter(
       (faq) =>
-        faq.question.trim().length >
-          0 &&
-        faq.answer.trim().length >
-          0,
+        faq.question.trim().length > 0 &&
+        faq.answer.trim().length > 0,
     );
 
   return {
@@ -432,12 +432,10 @@ function getFAQStructuredData(
           PAGE_URL,
 
         name:
-          `FAQs | ${business.businessName}`,
+          SEO_TITLE,
 
         description:
-          business.primaryServiceRegion
-            ? `Frequently asked questions about mobile car battery service in ${business.primaryServiceRegion}.`
-            : DEFAULT_DESCRIPTION,
+          SEO_DESCRIPTION,
 
         isPartOf: {
           "@id":
@@ -491,12 +489,10 @@ function getFAQStructuredData(
           PAGE_URL,
 
         name:
-          `FAQs | ${business.businessName}`,
+          SEO_TITLE,
 
         description:
-          business.primaryServiceRegion
-            ? `Frequently asked questions about mobile car battery service in ${business.primaryServiceRegion}.`
-            : DEFAULT_DESCRIPTION,
+          SEO_DESCRIPTION,
 
         isPartOf: {
           "@id":
@@ -520,9 +516,11 @@ function getFAQStructuredData(
           url:
             `${SITE_URL}${OG_IMAGE}`,
 
-          width: 1200,
+          width:
+            1200,
 
-          height: 630,
+          height:
+            630,
         },
 
         breadcrumb: {
@@ -546,9 +544,11 @@ function getFAQStructuredData(
             "@type":
               "ListItem",
 
-            position: 1,
+            position:
+              1,
 
-            name: "Home",
+            name:
+              "Home",
 
             item:
               SITE_URL,
@@ -558,9 +558,11 @@ function getFAQStructuredData(
             "@type":
               "ListItem",
 
-            position: 2,
+            position:
+              2,
 
-            name: "FAQs",
+            name:
+              "FAQs",
 
             item:
               PAGE_URL,
@@ -593,7 +595,6 @@ export default async function FAQsPage() {
   const structuredData =
     getFAQStructuredData(
       faqs,
-      business,
     );
 
   return (

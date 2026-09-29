@@ -14,17 +14,20 @@ const SITE_URL =
 const PAGE_URL =
   `${SITE_URL}/service-areas`;
 
+const SEO_TITLE =
+  "Service Areas | Mobile Car Battery Service Western Suburbs";
+
+const SEO_DESCRIPTION =
+  "We provide mobile car battery replacement, testing and jump starts across Melbourne's western suburbs. Check your area.";
+
 const OG_IMAGE =
   "/images/seo/og-image.jpg";
 
 const DEFAULT_BUSINESS_NAME =
-  "Car Battery Service";
+  "Car Battery Services";
 
 const DEFAULT_REGION =
   "Melbourne West";
-
-const DEFAULT_DESCRIPTION =
-  "Explore the locations currently listed for mobile car battery assistance from Car Battery Service.";
 
 /* ============================================================
    GET BUSINESS SETTINGS
@@ -92,14 +95,11 @@ async function getServiceAreas() {
 
   return serviceAreas.map(
     (area) => ({
-      id:
-        String(area._id),
+      id: String(area._id),
 
-      name:
-        area.name,
+      name: area.name,
 
-      slug:
-        area.slug,
+      slug: area.slug,
 
       shortDescription:
         area.shortDescription ||
@@ -110,16 +110,12 @@ async function getServiceAreas() {
         "",
 
       suburbs:
-        Array.isArray(
-          area.suburbs,
-        )
+        Array.isArray(area.suburbs)
           ? area.suburbs
           : [],
 
       postcodes:
-        Array.isArray(
-          area.postcodes,
-        )
+        Array.isArray(area.postcodes)
           ? area.postcodes
           : [],
 
@@ -127,36 +123,28 @@ async function getServiceAreas() {
         area.heroImage
           ? {
               publicId:
-                area.heroImage
-                  .publicId,
+                area.heroImage.publicId,
 
               secureUrl:
-                area.heroImage
-                  .secureUrl,
+                area.heroImage.secureUrl,
 
               width:
-                area.heroImage
-                  .width,
+                area.heroImage.width,
 
               height:
-                area.heroImage
-                  .height,
+                area.heroImage.height,
 
               format:
-                area.heroImage
-                  .format,
+                area.heroImage.format,
 
               bytes:
-                area.heroImage
-                  .bytes,
+                area.heroImage.bytes,
 
               resourceType:
-                area.heroImage
-                  .resourceType,
+                area.heroImage.resourceType,
 
               alt:
-                area.heroImage
-                  .alt,
+                area.heroImage.alt,
             }
           : null,
 
@@ -169,13 +157,10 @@ async function getServiceAreas() {
         "",
 
       featured:
-        Boolean(
-          area.featured,
-        ),
+        Boolean(area.featured),
 
       displayOrder:
-        area.displayOrder ??
-        0,
+        area.displayOrder ?? 0,
     }),
   );
 }
@@ -185,23 +170,21 @@ async function getServiceAreas() {
 ============================================================ */
 
 export async function generateMetadata(): Promise<Metadata> {
-  const business =
-    await getBusinessSettings();
-
-  const title =
-    `Service Areas | ${business.businessName}`;
-
-  const description =
-    `Explore the locations currently listed for mobile car battery assistance from ${business.businessName}${business.primaryServiceRegion ? ` across ${business.primaryServiceRegion}` : ""}.`;
-
   return {
-    title,
+    /*
+     * `absolute` keeps the exact SEO-sheet title and prevents
+     * the global layout template from appending the brand.
+     */
+    title: {
+      absolute: SEO_TITLE,
+    },
 
-    description,
+    description:
+      SEO_DESCRIPTION,
 
     alternates: {
       canonical:
-        "/service-areas",
+        PAGE_URL,
     },
 
     openGraph: {
@@ -213,11 +196,13 @@ export async function generateMetadata(): Promise<Metadata> {
         PAGE_URL,
 
       siteName:
-        business.businessName,
+        "Car Battery Services",
 
-      title,
+      title:
+        SEO_TITLE,
 
-      description,
+      description:
+        SEO_DESCRIPTION,
 
       images: [
         {
@@ -229,7 +214,7 @@ export async function generateMetadata(): Promise<Metadata> {
           height: 630,
 
           alt:
-            `${business.businessName} - Service Areas`,
+            "Service Areas - Mobile Car Battery Service Western Suburbs",
         },
       ],
     },
@@ -238,9 +223,11 @@ export async function generateMetadata(): Promise<Metadata> {
       card:
         "summary_large_image",
 
-      title,
+      title:
+        SEO_TITLE,
 
-      description,
+      description:
+        SEO_DESCRIPTION,
 
       images: [
         OG_IMAGE,
@@ -278,8 +265,6 @@ function getServiceAreasStructuredData(
   serviceAreas: Awaited<
     ReturnType<typeof getServiceAreas>
   >,
-  businessName: string,
-  region: string,
 ) {
   const itemList =
     serviceAreas.map(
@@ -310,10 +295,10 @@ function getServiceAreasStructuredData(
         PAGE_URL,
 
       name:
-        `Service Areas | ${businessName}`,
+        SEO_TITLE,
 
       description:
-        `Explore the locations currently listed for mobile car battery assistance from ${businessName}${region ? ` across ${region}` : ""}.`,
+        SEO_DESCRIPTION,
 
       isPartOf: {
         "@id":
@@ -427,8 +412,6 @@ export default async function ServiceAreasPage() {
   const structuredData =
     getServiceAreasStructuredData(
       serviceAreas,
-      business.businessName,
-      business.primaryServiceRegion,
     );
 
   return (

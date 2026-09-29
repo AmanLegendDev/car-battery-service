@@ -13,24 +13,48 @@ const SITE_URL =
 const PAGE_URL =
   `${SITE_URL}/privacy-policy`;
 
+const SEO_TITLE =
+  "Privacy Policy | Car Battery Services";
+
+const SEO_DESCRIPTION =
+  "Read the Privacy Policy for Car Battery Services, including how information is collected, used and handled when using our website or requesting mobile car battery services.";
+
 const OG_IMAGE =
   "/images/seo/og-image.jpg";
 
 const DEFAULT_BUSINESS_NAME =
-  "Car Battery Service";
+  "Car Battery Services";
 
-const DEFAULT_DESCRIPTION =
-  "Privacy Policy for Car Battery Service.";
+const DEFAULT_REGION =
+  "Melbourne West";
+
+/* ============================================================
+   BUSINESS TYPE
+============================================================ */
+
+interface PrivacyBusiness {
+  businessName: string;
+  tagline: string;
+  description: string;
+  phone: string;
+  primaryCallNumber: string;
+  whatsapp: string;
+  email: string;
+  primaryServiceRegion: string;
+}
 
 /* ============================================================
    GET BUSINESS SETTINGS
 ============================================================ */
 
-async function getBusinessSettings() {
+async function getBusinessSettings(): Promise<PrivacyBusiness> {
   await connectDB();
 
   const business =
     await SiteSettings.findOne()
+      .select(
+        "businessName tagline description phone primaryCallNumber whatsapp email primaryServiceRegion",
+      )
       .lean();
 
   const businessName =
@@ -63,15 +87,27 @@ async function getBusinessSettings() {
 
     primaryCallNumber:
       typeof business?.primaryCallNumber ===
-        "string"
+        "string" &&
+      business.primaryCallNumber.trim()
         ? business.primaryCallNumber
-        : "",
+        : typeof business?.phone ===
+            "string"
+          ? business.phone
+          : "",
 
     whatsapp:
       typeof business?.whatsapp ===
-        "string"
+        "string" &&
+      business.whatsapp.trim()
         ? business.whatsapp
-        : "",
+        : typeof business?.primaryCallNumber ===
+              "string" &&
+            business.primaryCallNumber.trim()
+          ? business.primaryCallNumber
+          : typeof business?.phone ===
+              "string"
+            ? business.phone
+            : "",
 
     email:
       typeof business?.email ===
@@ -81,9 +117,10 @@ async function getBusinessSettings() {
 
     primaryServiceRegion:
       typeof business?.primaryServiceRegion ===
-        "string"
+        "string" &&
+      business.primaryServiceRegion.trim()
         ? business.primaryServiceRegion
-        : "",
+        : DEFAULT_REGION,
   };
 }
 
@@ -92,48 +129,52 @@ async function getBusinessSettings() {
 ============================================================ */
 
 export async function generateMetadata(): Promise<Metadata> {
-  const business =
-    await getBusinessSettings();
-
-  const title =
-    `Privacy Policy | ${business.businessName}`;
-
-  const description =
-    `Privacy Policy for ${business.businessName}.`;
-
   return {
-    title,
+    title: {
+      absolute:
+        SEO_TITLE,
+    },
 
-    description,
+    description:
+      SEO_DESCRIPTION,
 
     alternates: {
-      canonical: "/privacy-policy",
+      canonical:
+        PAGE_URL,
     },
 
     openGraph: {
-      type: "website",
+      type:
+        "website",
 
-      locale: "en_AU",
+      locale:
+        "en_AU",
 
-      url: PAGE_URL,
+      url:
+        PAGE_URL,
 
       siteName:
-        business.businessName,
+        "Car Battery Services",
 
-      title,
+      title:
+        SEO_TITLE,
 
-      description,
+      description:
+        SEO_DESCRIPTION,
 
       images: [
         {
-          url: OG_IMAGE,
+          url:
+            OG_IMAGE,
 
-          width: 1200,
+          width:
+            1200,
 
-          height: 630,
+          height:
+            630,
 
           alt:
-            `${business.businessName} - Privacy Policy`,
+            "Car Battery Services - Privacy Policy",
         },
       ],
     },
@@ -142,9 +183,11 @@ export async function generateMetadata(): Promise<Metadata> {
       card:
         "summary_large_image",
 
-      title,
+      title:
+        SEO_TITLE,
 
-      description,
+      description:
+        SEO_DESCRIPTION,
 
       images: [
         OG_IMAGE,
@@ -152,15 +195,27 @@ export async function generateMetadata(): Promise<Metadata> {
     },
 
     robots: {
-      index: true,
-      follow: true,
+      index:
+        true,
+
+      follow:
+        true,
 
       googleBot: {
-        index: true,
-        follow: true,
-        "max-image-preview": "large",
-        "max-snippet": -1,
-        "max-video-preview": -1,
+        index:
+          true,
+
+        follow:
+          true,
+
+        "max-image-preview":
+          "large",
+
+        "max-snippet":
+          -1,
+
+        "max-video-preview":
+          -1,
       },
     },
   };
@@ -170,9 +225,7 @@ export async function generateMetadata(): Promise<Metadata> {
    STRUCTURED DATA
 ============================================================ */
 
-function getPrivacyStructuredData(
-  businessName: string,
-) {
+function getPrivacyStructuredData() {
   return {
     "@context":
       "https://schema.org",
@@ -189,10 +242,10 @@ function getPrivacyStructuredData(
           PAGE_URL,
 
         name:
-          `Privacy Policy | ${businessName}`,
+          SEO_TITLE,
 
         description:
-          `Privacy Policy for ${businessName}.`,
+          SEO_DESCRIPTION,
 
         isPartOf: {
           "@id":
@@ -221,9 +274,14 @@ function getPrivacyStructuredData(
           url:
             `${SITE_URL}${OG_IMAGE}`,
 
-          width: 1200,
+          width:
+            1200,
 
-          height: 630,
+          height:
+            630,
+
+          caption:
+            "Car Battery Services - Privacy Policy",
         },
 
         inLanguage:
@@ -242,9 +300,11 @@ function getPrivacyStructuredData(
             "@type":
               "ListItem",
 
-            position: 1,
+            position:
+              1,
 
-            name: "Home",
+            name:
+              "Home",
 
             item:
               SITE_URL,
@@ -254,9 +314,11 @@ function getPrivacyStructuredData(
             "@type":
               "ListItem",
 
-            position: 2,
+            position:
+              2,
 
-            name: "Privacy Policy",
+            name:
+              "Privacy Policy",
 
             item:
               PAGE_URL,
@@ -276,15 +338,15 @@ export default async function PrivacyPolicyRoute() {
     await getBusinessSettings();
 
   const structuredData =
-    getPrivacyStructuredData(
-      business.businessName,
-    );
+    getPrivacyStructuredData();
 
   return (
     <>
       <main>
         <PrivacyPolicyPage
-          business={business}
+          business={
+            business
+          }
         />
       </main>
 

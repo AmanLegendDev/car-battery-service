@@ -14,17 +14,20 @@ const SITE_URL =
 const PAGE_URL =
   `${SITE_URL}/services`;
 
+const SEO_TITLE =
+  "Car Battery Services | Replacement, Testing & Jump Starts";
+
+const SEO_DESCRIPTION =
+  "Battery replacement, battery testing, jump starts, starter motor and alternator replacement – all done on-site at your vehicle in Melbourne's west.";
+
 const OG_IMAGE =
   "/images/seo/service-og.jpg";
 
 const DEFAULT_BUSINESS_NAME =
-  "Car Battery Service";
+  "Car Battery Services";
 
 const DEFAULT_REGION =
   "Melbourne West";
-
-const DEFAULT_DESCRIPTION =
-  "Battery replacement, battery testing, jump starts, starter motor and alternator replacement – all done on-site at your vehicle in Melbourne's west.";
 
 /* ============================================================
    GET BUSINESS SETTINGS
@@ -92,88 +95,64 @@ async function getServices() {
 
   return services.map(
     (service) => ({
-      id:
-        String(
-          service._id,
-        ),
+      id: String(service._id),
 
-      title:
-        service.title,
+      title: service.title,
 
-      slug:
-        service.slug,
+      slug: service.slug,
 
       shortDescription:
-        service.shortDescription ||
-        "",
+        service.shortDescription || "",
 
       description:
-        service.description ||
-        "",
+        service.description || "",
 
       heroImage:
         service.heroImage
           ? {
               publicId:
-                service.heroImage
-                  .publicId,
+                service.heroImage.publicId,
 
               secureUrl:
-                service.heroImage
-                  .secureUrl,
+                service.heroImage.secureUrl,
 
               width:
-                service.heroImage
-                  .width,
+                service.heroImage.width,
 
               height:
-                service.heroImage
-                  .height,
+                service.heroImage.height,
 
               format:
-                service.heroImage
-                  .format,
+                service.heroImage.format,
 
               bytes:
-                service.heroImage
-                  .bytes,
+                service.heroImage.bytes,
 
               resourceType:
-                service.heroImage
-                  .resourceType,
+                service.heroImage.resourceType,
 
               alt:
-                service.heroImage
-                  .alt,
+                service.heroImage.alt,
             }
           : null,
 
       estimatedTime:
-        service.estimatedTime ||
-        "",
+        service.estimatedTime || "",
 
       emergencyService:
-        Boolean(
-          service.emergencyService,
-        ),
+        Boolean(service.emergencyService),
 
       onSiteService:
-        Boolean(
-          service.onSiteService,
-        ),
+        Boolean(service.onSiteService),
 
       ctaText:
-        service.ctaText ||
-        "",
+        service.ctaText || "",
 
       featured:
-        Boolean(
-          service.featured,
-        ),
+        Boolean(service.featured),
 
       displayOrder:
-        service.displayOrder ??
-        0,
+        service.displayOrder ?? 0,
     }),
   );
 }
@@ -183,25 +162,30 @@ async function getServices() {
 ============================================================ */
 
 export async function generateMetadata(): Promise<Metadata> {
-  const business =
-    await getBusinessSettings();
-
-  const title =
-    `Services | ${business.businessName}`;
-
-  const description =
-    business.primaryServiceRegion
-      ? `Explore mobile car battery services from ${business.businessName} in ${business.primaryServiceRegion}, including battery replacement, battery testing, jump start assistance, starter motor replacement and alternator replacement.`
-      : DEFAULT_DESCRIPTION;
-
   return {
-    title,
+    /*
+     * `absolute` is intentional.
+     *
+     * The global layout has:
+     * "%s | Car Battery Services"
+     *
+     * Using `absolute` prevents:
+     *
+     * Car Battery Services | Replacement, Testing & Jump Starts
+     * | Car Battery Services
+     *
+     * and preserves the exact title from the SEO sheet.
+     */
+    title: {
+      absolute: SEO_TITLE,
+    },
 
-    description,
+    description:
+      SEO_DESCRIPTION,
 
     alternates: {
       canonical:
-        "/services",
+        PAGE_URL,
     },
 
     openGraph: {
@@ -213,11 +197,13 @@ export async function generateMetadata(): Promise<Metadata> {
         PAGE_URL,
 
       siteName:
-        business.businessName,
+        "Car Battery Services",
 
-      title,
+      title:
+        SEO_TITLE,
 
-      description,
+      description:
+        SEO_DESCRIPTION,
 
       images: [
         {
@@ -229,7 +215,7 @@ export async function generateMetadata(): Promise<Metadata> {
           height: 630,
 
           alt:
-            `${business.businessName} - Mobile Car Battery Services`,
+            "Car Battery Services - Replacement, Testing and Jump Starts",
         },
       ],
     },
@@ -238,9 +224,11 @@ export async function generateMetadata(): Promise<Metadata> {
       card:
         "summary_large_image",
 
-      title,
+      title:
+        SEO_TITLE,
 
-      description,
+      description:
+        SEO_DESCRIPTION,
 
       images: [
         OG_IMAGE,
@@ -314,12 +302,10 @@ function getServicesStructuredData(
         PAGE_URL,
 
       name:
-        `Services | ${businessName}`,
+        SEO_TITLE,
 
       description:
-        region
-          ? `Explore mobile car battery services from ${businessName} in ${region}.`
-          : DEFAULT_DESCRIPTION,
+        SEO_DESCRIPTION,
 
       isPartOf: {
         "@id":

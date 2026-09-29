@@ -21,15 +21,21 @@ export const dynamic = "force-dynamic";
 
 const SITE_URL = "https://carbatteryservices.com.au";
 
-const DEFAULT_TITLE =
-  "Car Battery Service | Melbourne West";
+const HOME_TITLE =
+  "Mobile Car Battery Replacement Melbourne West | 7 Days";
 
-const DEFAULT_DESCRIPTION =
-  "Mobile car battery service in Melbourne West including battery replacement, battery testing, jump start assistance, starter motor replacement and alternator replacement at your vehicle's location.";
+const HOME_DESCRIPTION =
+  "Flat battery? Mobile car battery replacement, testing & jump starts at your home, work or roadside across Melbourne's west. Open 7 days. Call 0467 037 886.";
 
-const DEFAULT_OG_IMAGE =
+const HOME_OG_IMAGE =
   "/images/seo/og-image.jpg";
 
+/**
+ * Site settings are used for website content/UI.
+ * Page SEO metadata is intentionally controlled here
+ * so the exact SEO values from the SEO sheet cannot be
+ * accidentally overridden by CMS business description data.
+ */
 async function getSiteSettings() {
   await connectDB();
 
@@ -40,28 +46,23 @@ async function getSiteSettings() {
     .lean();
 }
 
+/**
+ * Homepage SEO metadata.
+ *
+ * IMPORTANT:
+ * `absolute` prevents the global layout title template
+ * from appending "| Car Battery Services" to this exact
+ * homepage SEO title.
+ */
 export async function generateMetadata(): Promise<Metadata> {
-  const settings = await getSiteSettings();
-
-  const businessName =
-    settings?.businessName?.trim() ||
-    "Car Battery Service";
-
-  const description =
-    settings?.description?.trim() ||
-    DEFAULT_DESCRIPTION;
-
-  const title =
-    settings?.primaryServiceRegion?.trim()
-      ? `${businessName} | ${settings.primaryServiceRegion.trim()}`
-      : DEFAULT_TITLE;
-
   const canonicalUrl = SITE_URL;
 
   return {
-    title,
+    title: {
+      absolute: HOME_TITLE,
+    },
 
-    description,
+    description: HOME_DESCRIPTION,
 
     alternates: {
       canonical: canonicalUrl,
@@ -71,18 +72,17 @@ export async function generateMetadata(): Promise<Metadata> {
       type: "website",
       locale: "en_AU",
       url: canonicalUrl,
-      siteName: businessName,
+      siteName: "Car Battery Services",
 
-      title,
-
-      description,
+      title: HOME_TITLE,
+      description: HOME_DESCRIPTION,
 
       images: [
         {
-          url: DEFAULT_OG_IMAGE,
+          url: HOME_OG_IMAGE,
           width: 1200,
           height: 630,
-          alt: `${businessName} - Mobile Car Battery Service in Melbourne West`,
+          alt: "Mobile Car Battery Replacement Melbourne West",
         },
       ],
     },
@@ -90,12 +90,14 @@ export async function generateMetadata(): Promise<Metadata> {
     twitter: {
       card: "summary_large_image",
 
-      title,
-
-      description,
+      title: HOME_TITLE,
+      description: HOME_DESCRIPTION,
 
       images: [
-        DEFAULT_OG_IMAGE,
+        {
+          url: HOME_OG_IMAGE,
+          alt: "Mobile Car Battery Replacement Melbourne West",
+        },
       ],
     },
 
@@ -114,12 +116,15 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-function getHomepageStructuredData(
-  businessName: string,
-  description: string,
-  phone: string,
-  serviceRegion: string,
-) {
+/**
+ * Homepage structured data.
+ *
+ * The WebPage name and description are aligned with the
+ * exact homepage SEO metadata.
+ *
+ * Phone remains dynamic because it comes from SiteSettings.
+ */
+function getHomepageStructuredData(phone: string) {
   return {
     "@context": "https://schema.org",
 
@@ -131,10 +136,9 @@ function getHomepageStructuredData(
 
         url: SITE_URL,
 
-        name:
-          `${businessName} | ${serviceRegion || "Melbourne West"}`,
+        name: HOME_TITLE,
 
-        description,
+        description: HOME_DESCRIPTION,
 
         isPartOf: {
           "@id": `${SITE_URL}/#website`,
@@ -151,7 +155,7 @@ function getHomepageStructuredData(
         primaryImageOfPage: {
           "@type": "ImageObject",
 
-          url: `${SITE_URL}${DEFAULT_OG_IMAGE}`,
+          url: `${SITE_URL}${HOME_OG_IMAGE}`,
 
           width: 1200,
 
@@ -172,9 +176,7 @@ function getHomepageStructuredData(
 
         areaServed: "Melbourne West",
 
-        availableLanguage: [
-          "English",
-        ],
+        availableLanguage: ["English"],
       },
     ],
   };
@@ -183,15 +185,17 @@ function getHomepageStructuredData(
 export default async function HomePage() {
   const settings = await getSiteSettings();
 
+  /*
+   * Dynamic CMS/business information for the actual website UI.
+   * This is intentionally separate from homepage SEO metadata.
+   */
   const heroSettings = settings
     ? {
         businessName: settings.businessName,
 
-        tagline:
-          settings.tagline ?? "",
+        tagline: settings.tagline ?? "",
 
-        description:
-          settings.description ?? "",
+        description: settings.description ?? "",
 
         phone:
           settings.primaryCallNumber ||
@@ -206,30 +210,13 @@ export default async function HomePage() {
       }
     : null;
 
-  const businessName =
-    settings?.businessName?.trim() ||
-    "Car Battery Service";
-
-  const description =
-    settings?.description?.trim() ||
-    DEFAULT_DESCRIPTION;
-
   const phone =
     settings?.primaryCallNumber ||
     settings?.phone ||
     "+61 467 037 886";
 
-  const serviceRegion =
-    settings?.primaryServiceRegion?.trim() ||
-    "Melbourne West";
-
   const homepageStructuredData =
-    getHomepageStructuredData(
-      businessName,
-      description,
-      phone,
-      serviceRegion,
-    );
+    getHomepageStructuredData(phone);
 
   return (
     <>
@@ -264,10 +251,9 @@ export default async function HomePage() {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html:
-            JSON.stringify(
-              homepageStructuredData,
-            ),
+          __html: JSON.stringify(
+            homepageStructuredData,
+          ),
         }}
       />
     </>

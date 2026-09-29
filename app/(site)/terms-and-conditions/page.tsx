@@ -14,11 +14,17 @@ const SITE_URL =
 const PAGE_URL =
   `${SITE_URL}/terms-and-conditions`;
 
+const SEO_TITLE =
+  "Terms & Conditions | Car Battery Services";
+
+const SEO_DESCRIPTION =
+  "Read the Terms & Conditions that apply when using the Car Battery Services website or requesting mobile car battery services in Melbourne West.";
+
 const OG_IMAGE =
   "/images/seo/og-image.jpg";
 
 const DEFAULT_BUSINESS_NAME =
-  "Car Battery Service";
+  "Car Battery Services";
 
 const DEFAULT_REGION =
   "Melbourne West";
@@ -91,53 +97,52 @@ async function getBusinessSettings(): Promise<TermsBusiness> {
 ============================================================ */
 
 export async function generateMetadata(): Promise<Metadata> {
-  const business =
-    await getBusinessSettings();
-
-  const title =
-    `Terms & Conditions | ${business.businessName}`;
-
-  const description =
-    business.primaryServiceRegion
-      ? `Terms and conditions for using ${business.businessName}'s mobile car battery services in ${business.primaryServiceRegion}.`
-      : `Terms and conditions for using ${business.businessName}'s mobile car battery services.`;
-
   return {
-    title,
+    title: {
+      absolute:
+        SEO_TITLE,
+    },
 
-    description,
+    description:
+      SEO_DESCRIPTION,
 
     alternates: {
       canonical:
-        "/terms-and-conditions",
+        PAGE_URL,
     },
 
     openGraph: {
-      type: "website",
+      type:
+        "website",
 
-      locale: "en_AU",
+      locale:
+        "en_AU",
 
       url:
         PAGE_URL,
 
       siteName:
-        business.businessName,
+        "Car Battery Services",
 
-      title,
+      title:
+        SEO_TITLE,
 
-      description,
+      description:
+        SEO_DESCRIPTION,
 
       images: [
         {
           url:
             OG_IMAGE,
 
-          width: 1200,
+          width:
+            1200,
 
-          height: 630,
+          height:
+            630,
 
           alt:
-            `${business.businessName} - Terms & Conditions`,
+            "Car Battery Services - Terms & Conditions",
         },
       ],
     },
@@ -146,9 +151,11 @@ export async function generateMetadata(): Promise<Metadata> {
       card:
         "summary_large_image",
 
-      title,
+      title:
+        SEO_TITLE,
 
-      description,
+      description:
+        SEO_DESCRIPTION,
 
       images: [
         OG_IMAGE,
@@ -156,14 +163,18 @@ export async function generateMetadata(): Promise<Metadata> {
     },
 
     robots: {
-      index: true,
+      index:
+        true,
 
-      follow: true,
+      follow:
+        true,
 
       googleBot: {
-        index: true,
+        index:
+          true,
 
-        follow: true,
+        follow:
+          true,
 
         "max-image-preview":
           "large",
@@ -182,17 +193,7 @@ export async function generateMetadata(): Promise<Metadata> {
    STRUCTURED DATA
 ============================================================ */
 
-function getTermsStructuredData(
-  business: TermsBusiness,
-) {
-  const title =
-    `Terms & Conditions | ${business.businessName}`;
-
-  const description =
-    business.primaryServiceRegion
-      ? `Terms and conditions for using ${business.businessName}'s mobile car battery services in ${business.primaryServiceRegion}.`
-      : `Terms and conditions for using ${business.businessName}'s mobile car battery services.`;
-
+function getTermsStructuredData() {
   return {
     "@context":
       "https://schema.org",
@@ -209,10 +210,10 @@ function getTermsStructuredData(
           PAGE_URL,
 
         name:
-          title,
+          SEO_TITLE,
 
         description:
-          description,
+          SEO_DESCRIPTION,
 
         isPartOf: {
           "@id":
@@ -236,12 +237,14 @@ function getTermsStructuredData(
           url:
             `${SITE_URL}${OG_IMAGE}`,
 
-          width: 1200,
+          width:
+            1200,
 
-          height: 630,
+          height:
+            630,
 
           caption:
-            `${business.businessName} - Terms & Conditions`,
+            "Car Battery Services - Terms & Conditions",
         },
 
         breadcrumb: {
@@ -265,7 +268,8 @@ function getTermsStructuredData(
             "@type":
               "ListItem",
 
-            position: 1,
+            position:
+              1,
 
             name:
               "Home",
@@ -278,7 +282,8 @@ function getTermsStructuredData(
             "@type":
               "ListItem",
 
-            position: 2,
+            position:
+              2,
 
             name:
               "Terms & Conditions",
@@ -301,9 +306,7 @@ export default async function TermsAndConditionsRoute() {
     await getBusinessSettings();
 
   const structuredData =
-    getTermsStructuredData(
-      business,
-    );
+    getTermsStructuredData();
 
   return (
     <>

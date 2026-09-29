@@ -14,14 +14,21 @@ const SITE_URL =
 const PAGE_URL =
   `${SITE_URL}/contact`;
 
-const DEFAULT_BUSINESS_NAME =
-  "Car Battery Service";
+const SEO_TITLE =
+  "Contact Car Battery Services | Call 0467 037 886";
 
-const DEFAULT_DESCRIPTION =
-  "Contact Car Battery Service for mobile car battery assistance in Melbourne West. Call, message on WhatsApp or book a battery service online.";
+const SEO_DESCRIPTION =
+  "Contact Car Battery Services for mobile car battery assistance in Melbourne West. Call, message on WhatsApp or book a battery service online.";
 
 const OG_IMAGE =
   "/images/seo/og-image.jpg";
+
+const DEFAULT_BUSINESS_NAME =
+  "Car Battery Services";
+
+/* ============================================================
+   BUSINESS SETTINGS
+============================================================ */
 
 export interface ContactBusiness {
   businessName: string;
@@ -34,24 +41,15 @@ export interface ContactBusiness {
   primaryServiceRegion: string;
 }
 
-export interface ContactService {
-  id: string;
-  title: string;
-  slug: string;
-  shortDescription: string;
-  estimatedTime: string;
-  emergencyService: boolean;
-  onSiteService: boolean;
-}
-
 async function getBusinessSettings(): Promise<ContactBusiness> {
   await connectDB();
 
-  const settings = await SiteSettings.findOne()
-    .select(
-      "businessName tagline description phone primaryCallNumber whatsapp email primaryServiceRegion",
-    )
-    .lean();
+  const settings =
+    await SiteSettings.findOne()
+      .select(
+        "businessName tagline description phone primaryCallNumber whatsapp email primaryServiceRegion",
+      )
+      .lean();
 
   return {
     businessName:
@@ -91,71 +89,90 @@ async function getBusinessSettings(): Promise<ContactBusiness> {
   };
 }
 
+/* ============================================================
+   SERVICES
+============================================================ */
+
+export interface ContactService {
+  id: string;
+  title: string;
+  slug: string;
+  shortDescription: string;
+  estimatedTime: string;
+  emergencyService: boolean;
+  onSiteService: boolean;
+}
+
 async function getServices(): Promise<ContactService[]> {
   await connectDB();
 
-  const services = await Service.find({
-    status: "active",
-  })
-    .select(
-      "title slug shortDescription estimatedTime emergencyService onSiteService featured displayOrder",
-    )
-    .sort({
-      featured: -1,
-      displayOrder: 1,
-      title: 1,
+  const services =
+    await Service.find({
+      status: "active",
     })
-    .lean();
+      .select(
+        "title slug shortDescription estimatedTime emergencyService onSiteService featured displayOrder",
+      )
+      .sort({
+        featured: -1,
+        displayOrder: 1,
+        title: 1,
+      })
+      .lean();
 
-  return services.map((service) => ({
-    id:
-      service._id.toString(),
+  return services.map(
+    (service) => ({
+      id:
+        service._id.toString(),
 
-    title:
-      service.title,
+      title:
+        service.title,
 
-    slug:
-      service.slug,
+      slug:
+        service.slug,
 
-    shortDescription:
-      service.shortDescription ||
-      "",
+      shortDescription:
+        service.shortDescription ||
+        "",
 
-    estimatedTime:
-      service.estimatedTime ||
-      "",
+      estimatedTime:
+        service.estimatedTime ||
+        "",
 
-    emergencyService:
-      Boolean(
-        service.emergencyService,
-      ),
+      emergencyService:
+        Boolean(
+          service.emergencyService,
+        ),
 
-    onSiteService:
-      Boolean(
-        service.onSiteService,
-      ),
-  }));
+      onSiteService:
+        Boolean(
+          service.onSiteService,
+        ),
+    }),
+  );
 }
 
+/* ============================================================
+   SEO METADATA
+============================================================ */
+
 export async function generateMetadata(): Promise<Metadata> {
-  const business =
-    await getBusinessSettings();
-
-  const title =
-    `Contact ${business.businessName}`;
-
-  const description =
-    business.primaryServiceRegion
-      ? `Contact ${business.businessName} for mobile car battery assistance in ${business.primaryServiceRegion}. Call, message on WhatsApp or book a battery service online.`
-      : DEFAULT_DESCRIPTION;
-
   return {
-    title,
+    /*
+     * Use absolute so the global layout template does not
+     * append "| Car Battery Services" again.
+     */
+    title: {
+      absolute:
+        SEO_TITLE,
+    },
 
-    description,
+    description:
+      SEO_DESCRIPTION,
 
     alternates: {
-      canonical: "/contact",
+      canonical:
+        PAGE_URL,
     },
 
     openGraph: {
@@ -163,25 +180,29 @@ export async function generateMetadata(): Promise<Metadata> {
 
       locale: "en_AU",
 
-      url: PAGE_URL,
+      url:
+        PAGE_URL,
 
       siteName:
-        business.businessName,
+        "Car Battery Services",
 
-      title,
+      title:
+        SEO_TITLE,
 
-      description,
+      description:
+        SEO_DESCRIPTION,
 
       images: [
         {
-          url: OG_IMAGE,
+          url:
+            OG_IMAGE,
 
           width: 1200,
 
           height: 630,
 
           alt:
-            `${business.businessName} - Contact`,
+            "Contact Car Battery Services - Mobile Car Battery Service Melbourne West",
         },
       ],
     },
@@ -190,9 +211,11 @@ export async function generateMetadata(): Promise<Metadata> {
       card:
         "summary_large_image",
 
-      title,
+      title:
+        SEO_TITLE,
 
-      description,
+      description:
+        SEO_DESCRIPTION,
 
       images: [
         OG_IMAGE,
@@ -201,18 +224,30 @@ export async function generateMetadata(): Promise<Metadata> {
 
     robots: {
       index: true,
+
       follow: true,
 
       googleBot: {
         index: true,
+
         follow: true,
-        "max-image-preview": "large",
-        "max-snippet": -1,
-        "max-video-preview": -1,
+
+        "max-image-preview":
+          "large",
+
+        "max-snippet":
+          -1,
+
+        "max-video-preview":
+          -1,
       },
     },
   };
 }
+
+/* ============================================================
+   CONTACT STRUCTURED DATA
+============================================================ */
 
 function getContactStructuredData(
   business: ContactBusiness,
@@ -233,12 +268,10 @@ function getContactStructuredData(
           PAGE_URL,
 
         name:
-          `Contact ${business.businessName}`,
+          SEO_TITLE,
 
         description:
-          business.primaryServiceRegion
-            ? `Contact ${business.businessName} for mobile car battery assistance in ${business.primaryServiceRegion}.`
-            : DEFAULT_DESCRIPTION,
+          SEO_DESCRIPTION,
 
         isPartOf: {
           "@id":
@@ -262,9 +295,11 @@ function getContactStructuredData(
           url:
             `${SITE_URL}${OG_IMAGE}`,
 
-          width: 1200,
+          width:
+            1200,
 
-          height: 630,
+          height:
+            630,
         },
 
         breadcrumb: {
@@ -288,9 +323,11 @@ function getContactStructuredData(
             "@type":
               "ListItem",
 
-            position: 1,
+            position:
+              1,
 
-            name: "Home",
+            name:
+              "Home",
 
             item:
               SITE_URL,
@@ -300,9 +337,11 @@ function getContactStructuredData(
             "@type":
               "ListItem",
 
-            position: 2,
+            position:
+              2,
 
-            name: "Contact",
+            name:
+              "Contact",
 
             item:
               PAGE_URL,
@@ -312,6 +351,10 @@ function getContactStructuredData(
     ],
   };
 }
+
+/* ============================================================
+   CONTACT PAGE
+============================================================ */
 
 export default async function ContactRoute() {
   const [

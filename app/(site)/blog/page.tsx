@@ -17,11 +17,11 @@ const SITE_URL =
 
 const POSTS_PER_PAGE = 6;
 
-const DEFAULT_TITLE =
-  "Blog | Car Battery Service";
+const SEO_TITLE =
+  "Car Battery Tips & Guides | Car Battery Services Blog";
 
-const DEFAULT_DESCRIPTION =
-  "Practical information about car batteries, battery replacement, battery testing, jump start assistance, starter motors and alternators from Car Battery Service.";
+const SEO_DESCRIPTION =
+  "Practical car battery tips and guides covering battery replacement, battery testing, jump starts, starter motors and alternators in Melbourne West.";
 
 const OG_IMAGE =
   "/images/seo/blog-og.jpg";
@@ -35,16 +35,17 @@ interface BlogPageProps {
 async function getSiteSettings() {
   await connectDB();
 
-  const settings = await SiteSettings.findOne()
-    .select(
-      "businessName tagline defaultSiteTitle defaultSiteDescription",
-    )
-    .lean();
+  const settings =
+    await SiteSettings.findOne()
+      .select(
+        "businessName tagline defaultSiteTitle defaultSiteDescription",
+      )
+      .lean();
 
   return {
     businessName:
       settings?.businessName ||
-      "Car Battery Service",
+      "Car Battery Services",
 
     tagline:
       settings?.tagline ||
@@ -52,22 +53,19 @@ async function getSiteSettings() {
 
     title:
       settings?.defaultSiteTitle ||
-      DEFAULT_TITLE,
+      SEO_TITLE,
 
     description:
       settings?.defaultSiteDescription ||
-      DEFAULT_DESCRIPTION,
+      SEO_DESCRIPTION,
   };
 }
 
 export async function generateMetadata({
   searchParams,
 }: BlogPageProps): Promise<Metadata> {
-  const [settings, params] =
-    await Promise.all([
-      getSiteSettings(),
-      searchParams,
-    ]);
+  const params =
+    await searchParams;
 
   const rawPage =
     Number.parseInt(
@@ -85,24 +83,25 @@ export async function generateMetadata({
     currentPage > 1;
 
   const title = isPaginated
-    ? `${settings.title} - Page ${currentPage}`
-    : settings.title;
-
-  const description =
-    settings.description ||
-    DEFAULT_DESCRIPTION;
+    ? `${SEO_TITLE} - Page ${currentPage}`
+    : SEO_TITLE;
 
   const canonicalUrl = isPaginated
     ? `${SITE_URL}/blog?page=${currentPage}`
     : `${SITE_URL}/blog`;
 
   return {
-    title,
+    title: {
+      absolute:
+        title,
+    },
 
-    description,
+    description:
+      SEO_DESCRIPTION,
 
     alternates: {
-      canonical: canonicalUrl,
+      canonical:
+        canonicalUrl,
     },
 
     openGraph: {
@@ -110,35 +109,42 @@ export async function generateMetadata({
 
       locale: "en_AU",
 
-      url: canonicalUrl,
+      url:
+        canonicalUrl,
 
       siteName:
-        settings.businessName,
+        "Car Battery Services",
 
-      title,
+      title:
+        title,
 
-      description,
+      description:
+        SEO_DESCRIPTION,
 
       images: [
         {
-          url: OG_IMAGE,
+          url:
+            OG_IMAGE,
 
           width: 1200,
 
           height: 630,
 
           alt:
-            "Car Battery Service Blog - Melbourne West",
+            "Car Battery Tips & Guides - Car Battery Services Blog",
         },
       ],
     },
 
     twitter: {
-      card: "summary_large_image",
+      card:
+        "summary_large_image",
 
-      title,
+      title:
+        title,
 
-      description,
+      description:
+        SEO_DESCRIPTION,
 
       images: [
         OG_IMAGE,
@@ -152,9 +158,12 @@ export async function generateMetadata({
       googleBot: {
         index: true,
         follow: true,
-        "max-image-preview": "large",
-        "max-snippet": -1,
-        "max-video-preview": -1,
+        "max-image-preview":
+          "large",
+        "max-snippet":
+          -1,
+        "max-video-preview":
+          -1,
       },
     },
   };
@@ -288,13 +297,9 @@ async function getBlogPosts(page: number) {
 }
 
 function getBlogStructuredData({
-  businessName,
-  description,
   posts,
   currentPage,
 }: {
-  businessName: string;
-  description: string;
   posts: Array<{
     title: string;
     slug: string;
@@ -308,6 +313,7 @@ function getBlogStructuredData({
     publishedAt: string | null;
     authorName: string;
   }>;
+
   currentPage: number;
 }) {
   const blogUrl =
@@ -321,20 +327,24 @@ function getBlogStructuredData({
         `${SITE_URL}/blog/${post.slug}`;
 
       return {
-        "@type": "ListItem",
+        "@type":
+          "ListItem",
 
         position:
           index + 1,
 
-        url: articleUrl,
+        url:
+          articleUrl,
 
         item: {
-          "@type": "Article",
+          "@type":
+            "Article",
 
           "@id":
             `${articleUrl}#article`,
 
-          url: articleUrl,
+          url:
+            articleUrl,
 
           headline:
             post.title,
@@ -408,10 +418,11 @@ function getBlogStructuredData({
 
         name:
           currentPage > 1
-            ? `${businessName} Blog - Page ${currentPage}`
-            : `${businessName} Blog`,
+            ? `${SEO_TITLE} - Page ${currentPage}`
+            : SEO_TITLE,
 
-        description,
+        description:
+          SEO_DESCRIPTION,
 
         isPartOf: {
           "@id":
@@ -440,7 +451,7 @@ function getBlogStructuredData({
           `${blogUrl}#itemlist`,
 
         name:
-          "Car Battery Service Blog Articles",
+          "Car Battery Services Blog Articles",
 
         numberOfItems:
           posts.length,
@@ -461,9 +472,11 @@ function getBlogStructuredData({
             "@type":
               "ListItem",
 
-            position: 1,
+            position:
+              1,
 
-            name: "Home",
+            name:
+              "Home",
 
             item:
               SITE_URL,
@@ -473,9 +486,11 @@ function getBlogStructuredData({
             "@type":
               "ListItem",
 
-            position: 2,
+            position:
+              2,
 
-            name: "Blog",
+            name:
+              "Blog",
 
             item:
               `${SITE_URL}/blog`,
@@ -487,7 +502,8 @@ function getBlogStructuredData({
                   "@type":
                     "ListItem",
 
-                  position: 3,
+                  position:
+                    3,
 
                   name:
                     `Page ${currentPage}`,
@@ -538,17 +554,8 @@ export default async function BlogPage({
       ),
     );
 
-  const settings =
-    await getSiteSettings();
-
   const structuredData =
     getBlogStructuredData({
-      businessName:
-        settings.businessName,
-
-      description:
-        settings.description,
-
       posts,
 
       currentPage,
