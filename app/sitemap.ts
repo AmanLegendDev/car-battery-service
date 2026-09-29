@@ -57,6 +57,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     },
 
     {
+  url: absoluteUrl("/testimonials"),
+  lastModified: now,
+  changeFrequency: "monthly",
+  priority: 0.8,
+},
+
+
+    {
       url: absoluteUrl("/blog"),
       lastModified: now,
       changeFrequency: "weekly",
