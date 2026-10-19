@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useEditor, EditorContent } from "@tiptap/react";
@@ -10,6 +11,7 @@ import Image from "@tiptap/extension-image";
 import Placeholder from "@tiptap/extension-placeholder";
 import TextAlign from "@tiptap/extension-text-align";
 import Youtube from "@tiptap/extension-youtube";
+import { TableKit } from "@tiptap/extension-table";
 
 import TaskList from "@tiptap/extension-task-list";
 import TaskItem from "@tiptap/extension-task-item";
@@ -39,30 +41,33 @@ export default function TiptapEditor({
         },
       }),
 
+      TableKit.configure({
+        table: {
+          resizable: true,
+          HTMLAttributes: {
+            class: "blog-editor-table",
+          },
+        },
+      }),
+
       Underline,
 
       Highlight,
 
       Link.configure({
         openOnClick: false,
-
         autolink: true,
-
         linkOnPaste: true,
       }),
 
       Image,
 
       Placeholder.configure({
-        placeholder:
-          "Start writing your travel story...",
+        placeholder: "Start writing your travel story...",
       }),
 
       TextAlign.configure({
-        types: [
-          "heading",
-          "paragraph",
-        ],
+        types: ["heading", "paragraph"],
       }),
 
       Youtube.configure({
@@ -84,7 +89,7 @@ export default function TiptapEditor({
     editorProps: {
       attributes: {
         class:
-  "max-w-none focus:outline-none min-h-[450px] px-6 py-5",
+          "max-w-none focus:outline-none min-h-[450px] px-6 py-5",
       },
     },
 
@@ -93,63 +98,25 @@ export default function TiptapEditor({
     },
   });
 
+  const characterCount =
+    editor?.storage.characterCount.characters() ?? 0;
+
+  const wordCount =
+    editor?.storage.characterCount.words() ?? 0;
+
   return (
-    <div
-      className="
-        overflow-hidden
-
-        rounded-2xl
-
-        border
-
-        border-slate-200
-
-        bg-white
-
-        shadow-sm
-      "
-    >
+    <div className="relative rounded-2xl border border-slate-200 bg-white shadow-sm">
       <Toolbar editor={editor} />
 
-      <EditorContent
-        editor={editor}
-      />
+      <EditorContent editor={editor} />
 
-      <div
-        className="
-          flex
-
-          items-center
-
-          justify-between
-
-          border-t
-
-          border-slate-200
-
-          bg-slate-50
-
-          px-5
-
-          py-3
-
-          text-sm
-
-          text-slate-500
-        "
-      >
+      <div className="flex items-center justify-between border-t border-slate-200 bg-slate-50 px-5 py-3 text-sm text-slate-500">
         <span>
-          Characters :
-          {" "}
-          {editor?.storage.characterCount.characters() ??
-            0}
+          Characters: {characterCount}
         </span>
 
         <span>
-          Words :
-          {" "}
-          {editor?.storage.characterCount.words() ??
-            0}
+          Words: {wordCount}
         </span>
       </div>
     </div>

@@ -1919,7 +1919,7 @@ function Section({
   children: ReactNode;
 }) {
   return (
-    <section className="overflow-hidden rounded-2xl border border-white/[0.08] bg-[#08263D] shadow-2xl shadow-black/10">
+    <section className="rounded-2xl border border-white/[0.08] bg-[#08263D] shadow-2xl shadow-black/10">
       <div className="border-b border-white/[0.07] bg-[#061A2B]/70 px-5 py-5 sm:px-6">
         <div className="flex items-start gap-4">
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#FFD400] text-[#061A2B] shadow-lg shadow-[#FFD400]/10">

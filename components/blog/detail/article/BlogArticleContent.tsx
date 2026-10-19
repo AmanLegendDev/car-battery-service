@@ -12,6 +12,10 @@ interface BlogArticleContentProps {
   content: string;
 }
 
+/* =========================================
+   SLUG GENERATION
+========================================= */
+
 function createSlug(value: string) {
   return value
     .toLowerCase()
@@ -24,6 +28,10 @@ function createSlug(value: string) {
     .replace(/^-|-$/g, "");
 }
 
+/* =========================================
+   HTML TEXT DECODING
+========================================= */
+
 function decodeHtml(value: string) {
   return value
     .replace(/<[^>]*>/g, "")
@@ -35,6 +43,10 @@ function decodeHtml(value: string) {
     .replace(/&gt;/gi, ">")
     .trim();
 }
+
+/* =========================================
+   ARTICLE PREPARATION
+========================================= */
 
 function prepareArticle(content: string) {
   const sanitized = sanitizeHtml(content, {
@@ -73,6 +85,7 @@ function prepareArticle(content: string) {
       "table",
       "thead",
       "tbody",
+      "tfoot",
       "tr",
       "th",
       "td",
@@ -95,6 +108,18 @@ function prepareArticle(content: string) {
         "title",
         "width",
         "height",
+        "loading",
+      ],
+
+      th: [
+        "colspan",
+        "rowspan",
+        "scope",
+      ],
+
+      td: [
+        "colspan",
+        "rowspan",
       ],
 
       "*": [
@@ -130,6 +155,10 @@ function prepareArticle(content: string) {
     },
   });
 
+  /* =========================================
+     GENERATE UNIQUE HEADING IDS + TOC
+  ========================================= */
+
   const usedIds = new Map<string, number>();
   const toc: TocItem[] = [];
 
@@ -137,9 +166,9 @@ function prepareArticle(content: string) {
     /<(h2|h3)([^>]*)>([\s\S]*?)<\/\1>/gi,
     (
       fullMatch,
-      tagName,
-      attributes,
-      innerHtml,
+      tagName: string,
+      attributes: string,
+      innerHtml: string,
     ) => {
       const text = decodeHtml(innerHtml);
 
@@ -151,8 +180,7 @@ function prepareArticle(content: string) {
         createSlug(text) ||
         `section-${toc.length + 1}`;
 
-      const count =
-        usedIds.get(baseId) || 0;
+      const count = usedIds.get(baseId) || 0;
 
       usedIds.set(baseId, count + 1);
 
@@ -161,7 +189,7 @@ function prepareArticle(content: string) {
           ? baseId
           : `${baseId}-${count + 1}`;
 
-      const level =
+      const level: 2 | 3 =
         tagName.toLowerCase() === "h3"
           ? 3
           : 2;
@@ -172,28 +200,40 @@ function prepareArticle(content: string) {
         level,
       });
 
-      const existingId =
-        attributes.match(
-          /\sid=["']([^"']+)["']/i,
-        );
+      const existingId = attributes.match(
+        /\sid=["']([^"']+)["']/i,
+      );
 
-      const nextAttributes =
-        existingId
-          ? attributes.replace(
-              /\sid=["'][^"']+["']/i,
-              ` id="${id}"`,
-            )
-          : `${attributes} id="${id}"`;
+      const nextAttributes = existingId
+        ? attributes.replace(
+            /\sid=["'][^"']+["']/i,
+            ` id="${id}"`,
+          )
+        : `${attributes} id="${id}"`;
 
       return `<${tagName}${nextAttributes}>${innerHtml}</${tagName}>`;
     },
   );
 
+  /* =========================================
+     RESPONSIVE TABLE WRAPPERS
+  ========================================= */
+
+  const htmlWithResponsiveTables = html.replace(
+    /<table\b[^>]*>[\s\S]*?<\/table>/gi,
+    (table: string) =>
+      `<div class="blog-table-scroll my-8 w-full max-w-full overflow-x-auto rounded-2xl border border-[#DDE7ED] bg-white shadow-[0_12px_35px_rgba(6,26,43,0.05)]" style="overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch">${table}</div>`,
+  );
+
   return {
-    html,
+    html: htmlWithResponsiveTables,
     toc,
   };
 }
+
+/* =========================================
+   BLOG ARTICLE CONTENT
+========================================= */
 
 export default function BlogArticleContent({
   content,
@@ -223,13 +263,29 @@ export default function BlogArticleContent({
       className="bg-[#F8FAFC] px-5 py-12 sm:px-6 sm:py-16 lg:px-8 lg:py-24"
     >
       <div className="mx-auto max-w-7xl">
+        {/* =====================================
+            MOBILE TABLE OF CONTENTS
+            Display before article on mobile
+        ====================================== */}
+
+        {article.toc.length > 0 && (
+          <div className="mb-8 lg:hidden">
+            <BlogArticleToc items={article.toc} />
+          </div>
+        )}
+
+        {/* =====================================
+            ARTICLE + DESKTOP SIDEBAR
+        ====================================== */}
+
         <div className="grid items-start gap-10 lg:grid-cols-[minmax(0,820px)_280px] lg:justify-center lg:gap-16">
           {/* ARTICLE */}
+
           <article className="min-w-0">
             <div
               className="
                 blog-prose
-
+                min-w-0
                 text-[#425866]
 
                 [&>h1]:mb-8
@@ -376,30 +432,45 @@ export default function BlogArticleContent({
                 [&_figcaption]:leading-5
                 [&_figcaption]:text-[#84939B]
 
-                [&_table]:my-10
+                [&_.blog-table-scroll]:my-8
+                [&_.blog-table-scroll]:w-full
+                [&_.blog-table-scroll]:max-w-full
+                [&_.blog-table-scroll]:overflow-x-auto
+
+                [&_table]:my-0
                 [&_table]:w-full
-                [&_table]:overflow-hidden
-                [&_table]:rounded-[1rem]
-                [&_table]:border
-                [&_table]:border-[#DDE7ED]
+                [&_table]:min-w-[520px]
+                [&_table]:border-separate
+                [&_table]:border-spacing-0
+                [&_table]:text-left
 
                 [&_th]:border-b
+                [&_th]:border-r
                 [&_th]:border-[#DDE7ED]
-                [&_th]:bg-[#F1F6F8]
+                [&_th]:bg-[#061A2B]
                 [&_th]:px-4
-                [&_th]:py-3
+                [&_th]:py-4
                 [&_th]:text-left
                 [&_th]:text-xs
                 [&_th]:font-bold
-                [&_th]:text-[#061A2B]
+                [&_th]:leading-5
+                [&_th]:text-white
 
                 [&_td]:border-b
+                [&_td]:border-r
                 [&_td]:border-[#E7EEF2]
                 [&_td]:px-4
-                [&_td]:py-3
+                [&_td]:py-4
                 [&_td]:text-sm
                 [&_td]:leading-6
                 [&_td]:text-[#526A77]
+                [&_td]:align-top
+
+                [&_tbody_tr:nth-child(even)_td]:bg-[#F8FAFC]
+                [&_tbody_tr:hover_td]:bg-[#F0F7F9]
+
+                [&_tr>*:last-child]:border-r-0
+                [&_tr:last-child>*]:border-b-0
 
                 [&_pre]:my-10
                 [&_pre]:overflow-x-auto
@@ -433,24 +504,14 @@ export default function BlogArticleContent({
             />
           </article>
 
-          {/* DESKTOP TOC */}
+          {/* DESKTOP TABLE OF CONTENTS */}
+
           {article.toc.length > 0 && (
-            <aside className="hidden lg:block">
-              <BlogArticleToc
-                items={article.toc}
-              />
+            <aside className="hidden min-w-0 lg:sticky lg:top-28 lg:block">
+              <BlogArticleToc items={article.toc} />
             </aside>
           )}
         </div>
-
-        {/* MOBILE TOC */}
-        {article.toc.length > 0 && (
-          <div className="mt-10 lg:hidden">
-            <BlogArticleToc
-              items={article.toc}
-            />
-          </div>
-        )}
       </div>
     </section>
   );
