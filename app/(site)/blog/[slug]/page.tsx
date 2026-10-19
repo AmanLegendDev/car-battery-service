@@ -585,6 +585,53 @@ export async function generateMetadata({
   };
 }
 
+function extractFaqItems(content: unknown) {
+  if (typeof content !== "string" || !content) {
+    return [];
+  }
+
+  const sectionMatch = content.match(
+    /<h2\b[^>]*>\s*Frequently Asked Questions\s*<\/h2>([\s\S]*?)(?=<h2\b|$)/i
+  );
+
+  if (!sectionMatch) {
+    return [];
+  }
+
+  const section = sectionMatch[1];
+
+  const faqRegex =
+    /<h3\b[^>]*>([\s\S]*?)<\/h3>\s*<p\b[^>]*>([\s\S]*?)<\/p>/gi;
+
+  const decodeText = (html: string) =>
+    html
+      .replace(/<[^>]*>/g, " ")
+      .replace(/&nbsp;|&#160;/gi, " ")
+      .replace(/&amp;/gi, "&")
+      .replace(/&quot;/gi, '"')
+      .replace(/&#39;|&apos;/gi, "'")
+      .replace(/&lt;/gi, "<")
+      .replace(/&gt;/gi, ">")
+      .replace(/\s+/g, " ")
+      .trim();
+
+  const faqs: {
+    question: string;
+    answer: string;
+  }[] = [];
+
+  for (const match of section.matchAll(faqRegex)) {
+    const question = decodeText(match[1]);
+    const answer = decodeText(match[2]);
+
+    if (question && answer) {
+      faqs.push({ question, answer });
+    }
+  }
+
+  return faqs;
+}
+
 function getArticleStructuredData({
   post,
   business,
@@ -611,6 +658,8 @@ function getArticleStructuredData({
 
   const breadcrumbId =
     `${canonicalUrl}#breadcrumb`;
+
+    const faqItems = extractFaqItems(post.content);
 
   const schemaGraph: Record<
     string,
@@ -842,52 +891,50 @@ function getArticleStructuredData({
         ]
       : []),
 
-    {
-      "@type":
-        "BreadcrumbList",
+        {
+      "@type": "BreadcrumbList",
 
-      "@id":
-        breadcrumbId,
+      "@id": breadcrumbId,
 
       itemListElement: [
         {
-          "@type":
-            "ListItem",
-
+          "@type": "ListItem",
           position: 1,
-
           name: "Home",
-
-          item:
-            SITE_URL,
+          item: SITE_URL,
         },
-
         {
-          "@type":
-            "ListItem",
-
+          "@type": "ListItem",
           position: 2,
-
           name: "Blog",
-
-          item:
-            `${SITE_URL}/blog`,
+          item: `${SITE_URL}/blog`,
         },
-
         {
-          "@type":
-            "ListItem",
-
+          "@type": "ListItem",
           position: 3,
-
-          name:
-            post.title,
-
-          item:
-            canonicalUrl,
+          name: post.title,
+          item: canonicalUrl,
         },
       ],
     },
+
+    // FAQ Schema — add this before the closing ];
+    ...(faqItems.length > 0
+      ? [
+          {
+            "@type": "FAQPage",
+            "@id": `${canonicalUrl}#faq`,
+            mainEntity: faqItems.map((faq) => ({
+              "@type": "Question",
+              name: faq.question,
+              acceptedAnswer: {
+                "@type": "Answer",
+                text: faq.answer,
+              },
+            })),
+          },
+        ]
+      : []),
   ];
 
   return {

@@ -17,14 +17,14 @@ export default function MobileMenuHeader({
       className="group flex min-w-0 items-center gap-3"
     >
       <span className="relative flex h-12 w-12 shrink-0 items-center justify-center transition-transform duration-200 group-hover:scale-[1.02]">
-        <Image
-          src={NAVBAR_BRAND.logoSrc}
-          alt=""
-          width={48}
-          height={48}
-          priority
-          className="h-12 w-12 object-contain"
-        />
+      <Image
+  src={NAVBAR_BRAND.logoSrc}
+  alt={NAVBAR_BRAND.name}
+  width={48}
+  height={48}
+  priority
+  className="h-12 w-12 object-contain"
+/>
       </span>
 
       <span className="min-w-0 leading-none">

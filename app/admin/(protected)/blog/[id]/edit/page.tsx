@@ -27,6 +27,22 @@ interface EditBlogPageProps {
   }>;
 }
 
+function safeDateToISOString(value: unknown): string {
+  if (!value) {
+    return "";
+  }
+
+  const date = value instanceof Date
+    ? value
+    : new Date(String(value));
+
+  if (Number.isNaN(date.getTime())) {
+    return "";
+  }
+
+  return date.toISOString();
+}
+
 function mapMedia(
   media:
     | {
@@ -122,15 +138,9 @@ export default async function EditBlogPage({
 
     status: blog.status,
     featured: blog.featured,
+publishedAt: safeDateToISOString(blog.publishedAt),
 
-    publishedAt: blog.publishedAt
-      ? blog.publishedAt.toISOString()
-      : "",
-
-    scheduledAt: blog.scheduledAt
-      ? blog.scheduledAt.toISOString()
-      : "",
-
+scheduledAt: safeDateToISOString(blog.scheduledAt),
     displayOrder: String(blog.displayOrder ?? 0),
 
     seoTitle: blog.seoTitle ?? "",

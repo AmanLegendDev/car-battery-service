@@ -48,9 +48,12 @@ export default function Toolbar({ editor }: Props) {
   const imageInputRef = useRef<HTMLInputElement>(null);
 const imagePositionRef = useRef<number | null>(null);
 const [isUploadingImage, setIsUploadingImage] = useState(false);
+const [pendingImageFile, setPendingImageFile] = useState<File | null>(null);
+const [imageAltText, setImageAltText] = useState("");
+const [isAltDialogOpen, setIsAltDialogOpen] = useState(false);
 
 
-async function handleImageUpload(
+function handleImageUpload(
   event: ChangeEvent<HTMLInputElement>
 ) {
   const file = event.target.files?.[0];
@@ -65,6 +68,27 @@ async function handleImageUpload(
 
   if (file.size > 10 * 1024 * 1024) {
     window.alert("Image must be 10 MB or smaller.");
+    return;
+  }
+
+  const suggestedAlt = file.name
+    .replace(/\.[^.]+$/, "")
+    .replace(/[-_]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  setPendingImageFile(file);
+  setImageAltText(suggestedAlt);
+  setIsAltDialogOpen(true);
+}
+
+async function handleConfirmImageUpload() {
+  if (!pendingImageFile || !editor) return;
+
+  const alt = imageAltText.trim();
+
+  if (!alt) {
+    window.alert("Please enter descriptive alt text for this image.");
     return;
   }
 
@@ -117,8 +141,7 @@ async function handleImageUpload(
     }
 
     const uploadData = new FormData();
-
-    uploadData.append("file", file);
+    uploadData.append("file", pendingImageFile);
     uploadData.append("api_key", signatureData.apiKey);
     uploadData.append("timestamp", String(timestamp));
     uploadData.append("folder", folder);
@@ -151,17 +174,25 @@ async function handleImageUpload(
       editor.state.doc.content.size
     );
 
-    editor
+    const inserted = editor
       .chain()
       .focus()
       .insertContentAt(position, {
         type: "image",
         attrs: {
           src: uploadedImage.secure_url,
-          alt: file.name,
+          alt,
         },
       })
       .run();
+
+    if (!inserted) {
+      throw new Error("Image uploaded, but it could not be inserted into the editor.");
+    }
+
+    setIsAltDialogOpen(false);
+    setPendingImageFile(null);
+    setImageAltText("");
   } catch (error) {
     console.error("Blog content image upload:", error);
 
@@ -718,6 +749,94 @@ editor
   hidden
   onChange={handleImageUpload}
 />
+
+{isAltDialogOpen && (
+  <div
+    className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/50 p-4"
+    role="presentation"
+    onMouseDown={(event) => {
+      if (event.target === event.currentTarget && !isUploadingImage) {
+        setIsAltDialogOpen(false);
+        setPendingImageFile(null);
+        setImageAltText("");
+      }
+    }}
+  >
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="blog-image-alt-title"
+      className="w-full max-w-lg rounded-2xl border border-slate-200 bg-white p-5 shadow-2xl sm:p-6"
+    >
+      <h2
+        id="blog-image-alt-title"
+        className="text-lg font-semibold text-[#061A2B]"
+      >
+        Add image alt text
+      </h2>
+      <p className="mt-1 text-sm leading-6 text-slate-500">
+        Describe what the image shows. This text will be saved with the image in your blog content.
+      </p>
+
+      {pendingImageFile && (
+        <p className="mt-3 truncate rounded-lg bg-slate-50 px-3 py-2 text-xs text-slate-500">
+          {pendingImageFile.name}
+        </p>
+      )}
+
+      <label
+        htmlFor="blog-image-alt-text"
+        className="mt-4 block text-sm font-medium text-slate-700"
+      >
+        Alt text <span className="text-red-600">*</span>
+      </label>
+      <textarea
+        id="blog-image-alt-text"
+        value={imageAltText}
+        onChange={(event) => setImageAltText(event.target.value)}
+        rows={3}
+        maxLength={300}
+        autoFocus
+        placeholder="e.g. Technician testing a car battery beside a vehicle"
+        disabled={isUploadingImage}
+        className="mt-2 w-full resize-y rounded-xl border border-slate-300 px-3 py-2.5 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-[#0D6E91] focus:ring-2 focus:ring-[#0D6E91]/15 disabled:bg-slate-50"
+      />
+      <p className="mt-1 text-right text-xs text-slate-400">
+        {imageAltText.length}/300
+      </p>
+
+      <div className="mt-5 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+        <button
+          type="button"
+          disabled={isUploadingImage}
+          onClick={() => {
+            setIsAltDialogOpen(false);
+            setPendingImageFile(null);
+            setImageAltText("");
+          }}
+          className="rounded-xl border border-slate-300 px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          Cancel
+        </button>
+        <button
+          type="button"
+          disabled={isUploadingImage || !imageAltText.trim()}
+          onClick={handleConfirmImageUpload}
+          className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#061A2B] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#0D6E91] disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          {isUploadingImage ? (
+            <>
+              <Loader2 size={16} className="animate-spin" />
+              Uploading image...
+            </>
+          ) : (
+            "Upload and insert image"
+          )}
+        </button>
+      </div>
+    </div>
+  </div>
+)}
 
       {/* YOUTUBE */}
 
