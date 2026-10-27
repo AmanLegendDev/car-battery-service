@@ -22,7 +22,7 @@ export default function ServicesEmptyState() {
           </h1>
 
           <p className="mt-5 max-w-xl text-sm leading-7 text-[#061A2B]/50 sm:text-base">
-            Please contact Car Battery Service to discuss the assistance you
+            Please contact Rapid Auto Services to discuss the assistance you
             need.
           </p>
 

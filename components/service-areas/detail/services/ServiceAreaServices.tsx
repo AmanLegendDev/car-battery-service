@@ -71,7 +71,7 @@ export default function ServiceAreaServices({
             </div>
 
             <h2 className="mt-6 max-w-4xl text-4xl font-semibold leading-[0.92] tracking-[-0.06em] sm:text-5xl lg:text-7xl">
-              Battery help for
+              Vehicle help for
               <br />
               <span className="text-[#F8FAFC]/30">
                 {serviceAreaName}.
@@ -80,7 +80,7 @@ export default function ServiceAreaServices({
           </div>
 
           <p className="text-sm leading-7 text-[#A8BBC8]">
-            Explore the active services currently listed by Car Battery
+            Explore the active services currently listed by Rapid Auto
             Service.
           </p>
         </div>

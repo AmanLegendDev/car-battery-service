@@ -34,7 +34,7 @@ export default function VehicleStep({
 
       <p className="mt-2 max-w-2xl text-sm leading-6 text-[#A8BBC8]">
         These details help us understand the
-        vehicle and the battery issue before
+        vehicle issue before
         your service request.
       </p>
 

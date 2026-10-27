@@ -1,8 +1,11 @@
+
 import Link from "next/link";
 import {
+  ArrowRight,
   ArrowUpRight,
-  BatteryCharging,
   Check,
+  CheckCircle2,
+  ClipboardCheck,
   MapPin,
   Phone,
   ShieldCheck,
@@ -17,35 +20,35 @@ const VALUE_POINTS = [
   {
     number: "01",
     icon: MapPin,
-    title: "We come to your vehicle",
+    title: "Service options that suit your needs",
     description:
-      "Our mobile approach means battery assistance can be provided at your vehicle's location instead of requiring you to take the car to a workshop.",
+      "Every vehicle concern is different. Tell us what is happening, and our team can discuss the available services and suitable next steps.",
   },
   {
     number: "02",
-    icon: BatteryCharging,
-    title: "Battery-focused assistance",
+    icon: ShieldCheck,
+    title: "Clear communication from the start",
     description:
-      "From testing and replacement to jump start assistance, the service is focused on common battery-related situations.",
+      "We focus on understanding your requirements, explaining service options clearly and helping you confirm availability before proceeding.",
   },
   {
     number: "03",
     icon: Smartphone,
-    title: "Simple to get started",
+    title: "A straightforward booking process",
     description:
-      "Call or contact us with your vehicle details and location so we can understand what assistance you need.",
+      "Get in touch by phone or arrange a service online. Share your vehicle details and location so your enquiry can be handled more efficiently.",
   },
   {
     number: "04",
     icon: Wrench,
-    title: "Practical mobile service",
+    title: "Practical, customer-focused support",
     description:
-      "The service is designed around helping you at the place where the battery problem has happened.",
+      "Our approach starts with your situation. We help you understand the available options and coordinate the next step for your vehicle.",
   },
 ];
 
 export default async function WhyChooseUs() {
-  let businessName = "Car Battery Service";
+  let businessName = "Rapid Auto Services";
   let serviceRegion = "Melbourne West";
   let phone = "+61 467 037 886";
   let callNumber = "+61 467 037 886";
@@ -64,12 +67,9 @@ export default async function WhyChooseUs() {
 
     if (settings) {
       businessName = settings.businessName || businessName;
-
       serviceRegion =
         settings.primaryServiceRegion || serviceRegion;
-
       phone = settings.phone || phone;
-
       callNumber =
         settings.primaryCallNumber ||
         settings.phone ||
@@ -109,25 +109,29 @@ export default async function WhyChooseUs() {
         <div className="absolute right-[6%] top-0 h-full w-px bg-white/[0.035]" />
       </div>
 
-      <div className="relative mx-auto max-w-[1440px] px-5 py-20 sm:px-8 sm:py-24 lg:px-12 lg:py-28">
-        {/* =========================================================
-            HEADER
-        ========================================================== */}
-        <div className="grid gap-8 lg:grid-cols-[0.8fr_1.2fr] lg:items-end">
+      <div className="relative mx-auto max-w-[1440px] px-5 py-16 sm:px-8 sm:py-20 lg:px-12 lg:py-24">
+        {/* Section header */}
+        <div className="grid gap-6 sm:gap-8 lg:grid-cols-[0.8fr_1.2fr] lg:items-end">
           <div>
             <div className="flex items-center gap-3">
-              <span className="h-2 w-2 bg-[#FFD400]" />
+              <span
+                aria-hidden="true"
+                className="h-2 w-2 bg-[#FFD400]"
+              />
 
-              <span className="text-[10px] font-bold uppercase tracking-[0.24em] text-[#FFD400]">
+              <span className="text-[10px] font-bold uppercase tracking-[0.22em] text-[#FFD400] sm:tracking-[0.24em]">
                 Why Choose Us
               </span>
             </div>
 
-            <div className="mt-6 flex items-center gap-3">
-              <span className="h-px w-8 bg-[#0D6E91]" />
+            <div className="mt-5 flex items-center gap-3 sm:mt-6">
+              <span
+                aria-hidden="true"
+                className="h-px w-8 bg-[#0D6E91]"
+              />
 
-              <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#A8BBC8]">
-                Mobile battery assistance
+              <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-[#A8BBC8] sm:tracking-[0.18em]">
+                The Rapid Auto Approach
               </span>
             </div>
           </div>
@@ -135,39 +139,36 @@ export default async function WhyChooseUs() {
           <div className="max-w-4xl lg:ml-auto">
             <h2
               id="why-choose-us-heading"
-              className="text-4xl font-black leading-[0.94] tracking-[-0.05em] sm:text-5xl lg:text-6xl"
+              className="text-4xl font-black leading-[0.98] tracking-[-0.05em] sm:text-5xl lg:text-6xl"
             >
-              Battery help,
+              Automotive care,
               <br />
               <span className="text-[#FFD400]">
-                built around you.
+                centred around you.
               </span>
             </h2>
 
-            <p className="mt-6 max-w-2xl text-base leading-7 text-[#A8BBC8] sm:text-lg">
-              {businessName} brings a practical mobile approach to
-              battery assistance, keeping the service focused on your
-              vehicle and your situation.
+            <p className="mt-5 max-w-2xl text-sm leading-6 text-[#A8BBC8] sm:mt-6 sm:text-lg sm:leading-7">
+              {businessName} takes a customer-focused approach to
+              automotive assistance, with clear communication,
+              practical service information and support in
+              understanding your options across {serviceRegion}.
             </p>
           </div>
         </div>
 
-        {/* =========================================================
-            MAIN CONTENT
-        ========================================================== */}
-        <div className="mt-14 border-y border-white/10 lg:mt-20">
+        {/* Main value proposition */}
+        <div className="mt-10 border-y border-white/10 sm:mt-14 lg:mt-20">
           <div className="grid lg:grid-cols-[0.72fr_1.28fr]">
-            {/* =====================================================
-                LEFT BRAND / VISUAL PANEL
-            ====================================================== */}
+            {/* Left visual panel */}
             <div className="relative overflow-hidden border-b border-white/10 bg-[#08263D] lg:border-b-0 lg:border-r">
-              <div className="relative min-h-[380px] p-7 sm:min-h-[420px] sm:p-9 lg:min-h-[590px] lg:p-10">
-                {/* Technical coordinates */}
-                <div className="absolute right-7 top-7 font-mono text-[9px] tracking-[0.2em] text-[#A8BBC8]/50 sm:right-9 sm:top-9">
-                  CBS / {serviceRegion.toUpperCase()}
+              <div className="relative min-h-[340px] p-6 sm:min-h-[420px] sm:p-9 lg:min-h-[590px] lg:p-10">
+                {/* Location label */}
+                <div className="absolute right-6 top-6 font-mono text-[9px] tracking-[0.15em] text-[#A8BBC8]/60 sm:right-9 sm:top-9 sm:tracking-[0.2em]">
+                  RAS / {serviceRegion.toUpperCase()}
                 </div>
 
-                {/* Grid */}
+                {/* Technical grid */}
                 <div
                   aria-hidden="true"
                   className="pointer-events-none absolute inset-0 opacity-30"
@@ -178,21 +179,18 @@ export default async function WhyChooseUs() {
                   <div className="absolute bottom-0 left-[75%] top-0 w-px bg-white/[0.035]" />
                 </div>
 
-                {/* Main visual */}
-                <div className="absolute left-1/2 top-[48%] flex h-[190px] w-[190px] -translate-x-1/2 -translate-y-1/2 items-center justify-center sm:h-[230px] sm:w-[230px] lg:h-[260px] lg:w-[260px]">
-                  {/* Outer ring */}
+                {/* Automotive service motif */}
+                <div className="absolute left-1/2 top-[48%] flex h-[180px] w-[180px] -translate-x-1/2 -translate-y-1/2 items-center justify-center sm:h-[230px] sm:w-[230px] lg:h-[260px] lg:w-[260px]">
                   <div
                     aria-hidden="true"
                     className="absolute inset-0 rounded-full border border-[#A8BBC8]/10"
                   />
 
-                  {/* Middle ring */}
                   <div
                     aria-hidden="true"
                     className="absolute inset-[18%] rounded-full border border-[#0D6E91]/30"
                   />
 
-                  {/* Yellow marker */}
                   <div
                     aria-hidden="true"
                     className="absolute -right-1 top-1/2 h-2.5 w-2.5 -translate-y-1/2 bg-[#FFD400]"
@@ -203,21 +201,20 @@ export default async function WhyChooseUs() {
                     className="absolute -left-1 top-1/2 h-2.5 w-2.5 -translate-y-1/2 bg-[#0D6E91]"
                   />
 
-                  {/* Core */}
-                  <div className="relative flex h-[112px] w-[112px] items-center justify-center border border-[#FFD400]/30 bg-[#061A2B] shadow-[0_0_80px_rgba(13,110,145,0.18)] sm:h-[132px] sm:w-[132px]">
-                    <BatteryCharging
+                  <div className="relative flex h-[108px] w-[108px] items-center justify-center border border-[#FFD400]/30 bg-[#061A2B] shadow-[0_0_80px_rgba(13,110,145,0.18)] sm:h-[132px] sm:w-[132px]">
+                    <Wrench
                       aria-hidden="true"
-                      className="h-12 w-12 text-[#FFD400] sm:h-14 sm:w-14"
-                      strokeWidth={1.2}
+                      className="h-11 w-11 text-[#FFD400] sm:h-14 sm:w-14"
+                      strokeWidth={1.3}
                     />
 
-                    <span className="absolute bottom-2.5 left-1/2 -translate-x-1/2 text-[7px] font-bold uppercase tracking-[0.2em] text-[#A8BBC8]">
-                      Mobile
+                    <span className="absolute bottom-2.5 left-1/2 -translate-x-1/2 whitespace-nowrap text-[7px] font-bold uppercase tracking-[0.15em] text-[#A8BBC8] sm:tracking-[0.2em]">
+                      Automotive Care
                     </span>
                   </div>
                 </div>
 
-                {/* Top identity */}
+                {/* Service identity */}
                 <div className="relative z-10 flex items-center gap-3">
                   <div className="flex h-9 w-9 items-center justify-center border border-[#FFD400]/40 bg-[#061A2B]">
                     <ShieldCheck
@@ -228,30 +225,30 @@ export default async function WhyChooseUs() {
                   </div>
 
                   <div>
-                    <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-[#F8FAFC]">
-                      Service approach
+                    <p className="text-[9px] font-bold uppercase tracking-[0.16em] text-[#F8FAFC] sm:tracking-[0.2em]">
+                      Our approach
                     </p>
 
                     <p className="mt-1 text-[9px] uppercase tracking-[0.12em] text-[#A8BBC8]">
-                      Mobile-first
+                      Customer focused
                     </p>
                   </div>
                 </div>
 
-                {/* Bottom copy */}
-                <div className="absolute bottom-7 left-7 right-7 sm:bottom-9 sm:left-9 sm:right-9">
+                {/* Bottom message */}
+                <div className="absolute bottom-6 left-6 right-6 sm:bottom-9 sm:left-9 sm:right-9">
                   <div className="flex items-end justify-between gap-5">
                     <div>
                       <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-[#A8BBC8]">
-                        Our difference
+                        What matters to us
                       </p>
 
                       <p className="mt-2 max-w-xs text-xl font-black leading-tight tracking-[-0.03em] sm:text-2xl">
-                        Assistance comes to where the problem is.
+                        Clear advice. Practical next steps.
                       </p>
                     </div>
 
-                    <span className="hidden h-10 w-10 items-center justify-center border border-white/10 sm:flex">
+                    <span className="hidden h-10 w-10 shrink-0 items-center justify-center border border-white/10 sm:flex">
                       <MapPin
                         aria-hidden="true"
                         className="h-4 w-4 text-[#FFD400]"
@@ -263,9 +260,7 @@ export default async function WhyChooseUs() {
               </div>
             </div>
 
-            {/* =====================================================
-                RIGHT VALUE LIST
-            ====================================================== */}
+            {/* Right value list */}
             <div className="bg-[#061A2B]">
               {VALUE_POINTS.map((point, index) => {
                 const Icon = point.icon;
@@ -279,18 +274,18 @@ export default async function WhyChooseUs() {
                         : ""
                     }`}
                   >
-                    <div className="grid gap-5 px-6 py-7 sm:grid-cols-[64px_1fr_auto] sm:gap-7 sm:px-8 sm:py-9 lg:px-10 lg:py-10">
+                    <div className="grid gap-4 px-5 py-6 sm:grid-cols-[44px_minmax(0,1fr)_auto] sm:gap-6 sm:px-7 sm:py-8 lg:grid-cols-[48px_minmax(0,1fr)_auto] lg:gap-7 lg:px-9 lg:py-9">
                       {/* Number */}
-                      <div className="flex items-start">
+                      <div>
                         <span className="font-mono text-[11px] font-bold tracking-[0.2em] text-[#A8BBC8]/50">
                           {point.number}
                         </span>
                       </div>
 
                       {/* Content */}
-                      <div>
-                        <div className="flex items-center gap-4">
-                          <span className="flex h-10 w-10 shrink-0 items-center justify-center border border-white/10 bg-[#08263D] transition-all duration-300 group-hover:border-[#FFD400]/40 group-hover:bg-[#FFD400]">
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-3 sm:gap-4">
+                          <span className="flex h-10 w-10 shrink-0 items-center justify-center border border-white/10 bg-[#08263D] transition-colors duration-300 group-hover:border-[#FFD400]/40 group-hover:bg-[#FFD400]">
                             <Icon
                               aria-hidden="true"
                               className="h-4 w-4 text-[#FFD400] transition-colors duration-300 group-hover:text-[#061A2B]"
@@ -298,7 +293,7 @@ export default async function WhyChooseUs() {
                             />
                           </span>
 
-                          <h3 className="text-xl font-black tracking-[-0.03em] sm:text-2xl">
+                          <h3 className="text-lg font-black leading-tight tracking-[-0.03em] sm:text-xl lg:text-2xl">
                             {point.title}
                           </h3>
                         </div>
@@ -308,21 +303,20 @@ export default async function WhyChooseUs() {
                         </p>
                       </div>
 
-                      {/* Arrow */}
+                      {/* Decorative arrow */}
                       <div className="hidden items-center sm:flex">
-                        <span className="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 transition-all duration-300 group-hover:border-[#FFD400] group-hover:bg-[#FFD400]">
-                          <ArrowUpRight
-                            aria-hidden="true"
-                            className="h-4 w-4 transition-all duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-[#061A2B]"
-                          />
+                        <span
+                          aria-hidden="true"
+                          className="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 transition-colors duration-300 group-hover:border-[#FFD400] group-hover:bg-[#FFD400]"
+                        >
+                          <ArrowUpRight className="h-4 w-4 transition-colors duration-300 group-hover:text-[#061A2B]" />
                         </span>
                       </div>
                     </div>
 
-                    {/* Yellow hover rail */}
                     <span
                       aria-hidden="true"
-                      className="absolute bottom-0 left-0 top-0 w-0 bg-[#FFD400] transition-all duration-300 group-hover:w-1"
+                      className="absolute bottom-0 left-0 top-0 w-0 bg-[#FFD400] transition-all duration-300 motion-reduce:transition-none group-hover:w-1"
                     />
                   </article>
                 );
@@ -331,11 +325,9 @@ export default async function WhyChooseUs() {
           </div>
         </div>
 
-        {/* =========================================================
-            SERVICE FACTS
-        ========================================================== */}
-        <div className="mt-8 grid border border-white/10 bg-[#08263D] sm:grid-cols-3">
-          <div className="flex items-center gap-4 border-b border-white/10 px-5 py-5 sm:border-b-0 sm:border-r sm:px-7">
+        {/* Key service principles */}
+        <div className="mt-6 grid border border-white/10 bg-[#08263D] sm:mt-8 sm:grid-cols-3">
+          <div className="flex items-center gap-4 border-b border-white/10 px-5 py-5 sm:border-b-0 sm:border-r sm:px-6 lg:px-7">
             <div className="flex h-9 w-9 shrink-0 items-center justify-center bg-[#061A2B]">
               <Check
                 aria-hidden="true"
@@ -345,19 +337,19 @@ export default async function WhyChooseUs() {
             </div>
 
             <div>
-              <p className="text-[9px] font-bold uppercase tracking-[0.16em] text-[#A8BBC8]">
+              <p className="text-[9px] font-bold uppercase tracking-[0.14em] text-[#A8BBC8] sm:tracking-[0.16em]">
                 Approach
               </p>
 
               <p className="mt-1 text-xs font-bold text-[#F8FAFC]">
-                Mobile assistance
+                Customer focused
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-4 border-b border-white/10 px-5 py-5 sm:border-b-0 sm:border-r sm:px-7">
+          <div className="flex items-center gap-4 border-b border-white/10 px-5 py-5 sm:border-b-0 sm:border-r sm:px-6 lg:px-7">
             <div className="flex h-9 w-9 shrink-0 items-center justify-center bg-[#061A2B]">
-              <BatteryCharging
+              <ClipboardCheck
                 aria-hidden="true"
                 className="h-4 w-4 text-[#FFD400]"
                 strokeWidth={1.6}
@@ -365,17 +357,17 @@ export default async function WhyChooseUs() {
             </div>
 
             <div>
-              <p className="text-[9px] font-bold uppercase tracking-[0.16em] text-[#A8BBC8]">
-                Focus
+              <p className="text-[9px] font-bold uppercase tracking-[0.14em] text-[#A8BBC8] sm:tracking-[0.16em]">
+                Process
               </p>
 
               <p className="mt-1 text-xs font-bold text-[#F8FAFC]">
-                Battery assistance
+                Clear next steps
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-4 px-5 py-5 sm:px-7">
+          <div className="flex items-center gap-4 px-5 py-5 sm:px-6 lg:px-7">
             <div className="flex h-9 w-9 shrink-0 items-center justify-center bg-[#061A2B]">
               <MapPin
                 aria-hidden="true"
@@ -384,9 +376,9 @@ export default async function WhyChooseUs() {
               />
             </div>
 
-            <div>
-              <p className="text-[9px] font-bold uppercase tracking-[0.16em] text-[#A8BBC8]">
-                Region
+            <div className="min-w-0">
+              <p className="text-[9px] font-bold uppercase tracking-[0.14em] text-[#A8BBC8] sm:tracking-[0.16em]">
+                Service region
               </p>
 
               <p className="mt-1 text-xs font-bold text-[#F8FAFC]">
@@ -396,24 +388,22 @@ export default async function WhyChooseUs() {
           </div>
         </div>
 
-        {/* =========================================================
-            BOTTOM CTA
-        ========================================================== */}
-        <div className="mt-10 flex flex-col gap-6 border-t border-white/10 pt-8 sm:flex-row sm:items-center sm:justify-between">
+        {/* Bottom CTA */}
+        <div className="mt-8 flex flex-col gap-5 border-t border-white/10 pt-7 sm:mt-10 sm:flex-row sm:items-center sm:justify-between sm:gap-6 sm:pt-8">
           <div>
             <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-[#A8BBC8]">
-              Need battery assistance?
+              Need help with your vehicle?
             </p>
 
             <p className="mt-2 text-lg font-black tracking-[-0.02em] text-[#F8FAFC] sm:text-xl">
-              Tell us about your vehicle and location.
+              Let&apos;s discuss the right service for you.
             </p>
           </div>
 
           <div className="flex flex-wrap gap-3">
             <Link
               href="/services"
-              className="group inline-flex min-h-12 items-center gap-3 border border-white/15 px-5 text-xs font-bold uppercase tracking-[0.12em] text-[#F8FAFC] transition-all duration-300 hover:border-white/40 hover:bg-[#08263D]"
+              className="group inline-flex min-h-12 items-center gap-3 border border-white/15 px-4 text-[11px] font-bold uppercase tracking-[0.08em] text-[#F8FAFC] transition-colors hover:border-white/40 hover:bg-[#08263D] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FFD400] sm:px-5 sm:text-xs sm:tracking-[0.12em]"
             >
               Explore Services
 
@@ -425,15 +415,15 @@ export default async function WhyChooseUs() {
 
             <a
               href={phoneHref}
-              className="group inline-flex min-h-12 items-center gap-3 bg-[#FFD400] px-5 text-xs font-black uppercase tracking-[0.12em] text-[#061A2B] transition-all duration-300 hover:bg-[#F5B800]"
+              aria-label={`Call ${businessName} on ${phone}`}
+              className="group inline-flex min-h-12 items-center gap-3 bg-[#FFD400] px-4 text-[11px] font-black uppercase tracking-[0.08em] text-[#061A2B] transition-colors hover:bg-[#F5B800] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FFD400] sm:px-5 sm:text-xs sm:tracking-[0.12em]"
             >
               <Phone
                 aria-hidden="true"
                 className="h-4 w-4"
-                strokeWidth={2.2}
               />
 
-              Call {phone}
+              Call Our Team
 
               <ArrowUpRight
                 aria-hidden="true"

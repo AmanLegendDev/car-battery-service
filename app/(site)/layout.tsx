@@ -9,13 +9,15 @@ export default function SiteLayout({
 }) {
   return (
     <div className="flex min-h-screen flex-col">
-    
+      <Navbar />
 
       <div className="flex-1">
         {children}
       </div>
 
-     
+      <Footer />
+
+      <FloatingCallButton />
     </div>
   );
 }

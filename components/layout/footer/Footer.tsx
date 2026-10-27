@@ -1,27 +1,21 @@
-import Image from "next/image";
+
 import Link from "next/link";
 import {
   ArrowUpRight,
-  BatteryCharging,
-  CheckCircle2,
   Clock3,
   Mail,
   MapPin,
   Phone,
+  Wrench,
 } from "lucide-react";
 
 import { connectDB } from "@/lib/db";
 import Service from "@/models/Service";
 import SiteSettings from "@/models/SiteSettings";
+import FooterAnimatedLogo from "./FooterAnimatedLogo";
 
 interface FooterMedia {
-  publicId: string;
   secureUrl: string;
-  width: number;
-  height: number;
-  format: string;
-  bytes: number;
-  resourceType: "image";
   alt: string;
 }
 
@@ -34,7 +28,6 @@ interface FooterBusinessHour {
     | "Friday"
     | "Saturday"
     | "Sunday";
-
   enabled: boolean;
   open?: string;
   close?: string;
@@ -58,15 +51,11 @@ interface FooterSettings {
   tagline: string;
   description: string;
   logo: FooterMedia | null;
-
   phone: string;
   primaryCallNumber: string;
   email: string;
-
   primaryServiceRegion: string;
-
   businessHours: FooterBusinessHour[];
-
   social: FooterSocial;
 }
 
@@ -75,68 +64,68 @@ interface FooterData {
   services: FooterService[];
 }
 
+const DEFAULT_SETTINGS: FooterSettings = {
+  businessName: "Rapid Auto Services",
+  tagline: "Automotive Care & Repairs",
+  description:
+    "Get in touch with Rapid Auto Services to discuss your vehicle's needs, explore available services and find out about service availability in your area.",
+  logo: null,
+  phone: "",
+  primaryCallNumber: "",
+  email: "",
+  primaryServiceRegion: "Melbourne West",
+  businessHours: [],
+  social: {},
+};
+
 async function getFooterData(): Promise<FooterData> {
   await connectDB();
 
   const [settings, services] = await Promise.all([
     SiteSettings.findOne()
       .select(
-        "businessName tagline description logo phone primaryCallNumber email primaryServiceRegion businessHours social"
+        "businessName tagline description logo phone primaryCallNumber email primaryServiceRegion businessHours social",
       )
       .lean(),
 
-    Service.find({
-      status: "active",
-    })
+    Service.find({ status: "active" })
       .select("_id title slug")
       .sort({
         featured: -1,
         displayOrder: 1,
         title: 1,
       })
+      .limit(6)
       .lean(),
   ]);
 
+  const businessName =
+    settings?.businessName || DEFAULT_SETTINGS.businessName;
+
+  const logo = settings?.logo?.secureUrl
+    ? {
+        secureUrl: settings.logo.secureUrl,
+        alt: settings.logo.alt || businessName,
+      }
+    : null;
+
   return {
     settings: {
-      businessName:
-        settings?.businessName || "Car Battery Service",
-
-      tagline: settings?.tagline || "",
-
-      description: settings?.description || "",
-
-      logo: settings?.logo
-        ? {
-            publicId: settings.logo.publicId,
-            secureUrl: settings.logo.secureUrl,
-            width: settings.logo.width,
-            height: settings.logo.height,
-            format: settings.logo.format,
-            bytes: settings.logo.bytes,
-            resourceType: "image",
-            alt:
-              settings.logo.alt ||
-              settings.businessName ||
-              "Car Battery Service",
-          }
-        : null,
-
+      businessName,
+      tagline: settings?.tagline || DEFAULT_SETTINGS.tagline,
+      description:
+        settings?.description || DEFAULT_SETTINGS.description,
+      logo,
       phone: settings?.phone || "",
-
       primaryCallNumber:
-        settings?.primaryCallNumber ||
-        settings?.phone ||
-        "",
-
+        settings?.primaryCallNumber || settings?.phone || "",
       email: settings?.email || "",
-
       primaryServiceRegion:
-        settings?.primaryServiceRegion || "",
-
-      businessHours:
-        settings?.businessHours || [],
-
+        settings?.primaryServiceRegion ||
+        DEFAULT_SETTINGS.primaryServiceRegion,
+      businessHours: Array.isArray(settings?.businessHours)
+        ? settings.businessHours
+        : [],
       social: settings?.social || {},
     },
 
@@ -148,222 +137,206 @@ async function getFooterData(): Promise<FooterData> {
   };
 }
 
-function phoneHref(phone: string) {
-  return `tel:${phone.replace(/[^\d+]/g, "")}`;
+function phoneHref(phone: string): string | undefined {
+  const normalized = phone.replace(/[^\d+]/g, "");
+  return normalized ? `tel:${normalized}` : undefined;
 }
 
-function formatDay(
-  day: FooterBusinessHour["day"]
-) {
+function isExternalUrl(value?: string): boolean {
+  if (!value) return false;
+
+  try {
+    const url = new URL(value);
+    return url.protocol === "https:" || url.protocol === "http:";
+  } catch {
+    return false;
+  }
+}
+
+function formatDay(day: FooterBusinessHour["day"]) {
   return day.slice(0, 3);
 }
 
-function getEnabledHours(
-  hours: FooterBusinessHour[]
-) {
+function getEnabledHours(hours: FooterBusinessHour[]) {
   return hours.filter(
-    (hour) =>
-      hour.enabled &&
-      hour.open &&
-      hour.close
+    (hour) => hour.enabled && hour.open && hour.close,
   );
 }
 
-function isExternalUrl(value?: string) {
-  if (!value) {
-    return false;
-  }
 
-  return /^https?:\/\//i.test(value);
-}
 
 export default async function Footer() {
-  const { settings, services } =
-    await getFooterData();
+  
+  let data: FooterData = {
+    settings: DEFAULT_SETTINGS,
+    services: [],
+  };
 
-  const enabledHours = getEnabledHours(
-    settings.businessHours
+  try {
+    data = await getFooterData();
+  } catch (error) {
+    console.error("Failed to load footer data:", error);
+  }
+
+  const { settings, services } = data;
+  const enabledHours = getEnabledHours(settings.businessHours);
+  const callHref = phoneHref(
+    settings.primaryCallNumber || settings.phone,
   );
 
-  const hasInstagram = isExternalUrl(
-    settings.social.instagram
-  );
+  const socialLinks = [
+    {
+      label: "Instagram",
+      url: settings.social.instagram,
+      mark: "ig",
+    },
+    {
+      label: "Facebook",
+      url: settings.social.facebook,
+      mark: "f",
+    },
+    {
+      label: "Google Business Profile",
+      url: settings.social.googleBusiness,
+      mark: "G",
+    },
+    {
+      label: "Other social profile",
+      url: settings.social.other,
+      mark: "↗",
+    },
+  ].filter((item) => isExternalUrl(item.url));
 
-  const hasFacebook = isExternalUrl(
-    settings.social.facebook
-  );
-
-  const hasGoogleBusiness = isExternalUrl(
-    settings.social.googleBusiness
-  );
-
-  const hasOtherSocial = isExternalUrl(
-    settings.social.other
-  );
-
-  const hasSocial =
-    hasInstagram ||
-    hasFacebook ||
-    hasGoogleBusiness ||
-    hasOtherSocial;
+  
 
   return (
-    <footer className="relative overflow-hidden bg-[#061A2B] text-[#F8FAFC]">
-      {/* =====================================================
-          BACKGROUND
-      ====================================================== */}
-
+    <footer className="relative isolate overflow-hidden bg-[#061A2B] text-[#F8FAFC]">
+      {/* Background atmosphere */}
       <div
         aria-hidden="true"
         className="pointer-events-none absolute inset-0"
       >
-        {/* Grid */}
         <div className="absolute inset-0 opacity-[0.025] [background-image:linear-gradient(rgba(255,255,255,1)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,1)_1px,transparent_1px)] [background-size:64px_64px]" />
 
-        {/* Blue atmosphere */}
         <div className="absolute -left-64 -top-56 h-[600px] w-[600px] rounded-full bg-[#0D6E91]/[0.09] blur-[150px]" />
 
         <div className="absolute -right-64 top-[20%] h-[650px] w-[650px] rounded-full bg-[#0D6E91]/[0.07] blur-[160px]" />
 
-        {/* Yellow atmosphere */}
         <div className="absolute bottom-[-300px] left-[42%] h-[600px] w-[600px] rounded-full bg-[#FFD400]/[0.025] blur-[150px]" />
       </div>
 
-      {/* Large background word */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute -bottom-5 left-1/2 -translate-x-1/2 select-none whitespace-nowrap text-[clamp(6rem,20vw,20rem)] font-black uppercase leading-none tracking-[-0.1em] text-white/[0.018]"
+        className="pointer-events-none absolute -bottom-5 left-1/2 -translate-x-1/2 select-none whitespace-nowrap text-[clamp(5rem,16vw,18rem)] font-black uppercase leading-none tracking-[-0.1em] text-white/[0.018]"
       >
-        {settings.businessName}
+        RAPID
       </div>
 
-      <div className="relative mx-auto max-w-[1420px] px-4 sm:px-6 lg:px-8">
-        {/* =====================================================
-            TOP SECTION
-        ====================================================== */}
-
+      <div className="relative mx-auto max-w-[1420px] px-5 sm:px-6 lg:px-8">
+        {/* Brand and primary CTA */}
         <div className="border-b border-white/[0.08] py-16 sm:py-20 lg:py-24">
           <div className="grid gap-14 lg:grid-cols-[1.15fr_0.85fr] lg:items-end lg:gap-20">
-            {/* Brand */}
             <div>
-              <div className="flex items-start gap-5">
-                {/* Logo */}
-                {settings.logo?.secureUrl ? (
-                  <Link
-                    href="/"
-                    aria-label={`${settings.businessName} home`}
-                    className="group shrink-0"
-                  >
-                    <div className="relative h-[76px] w-[76px] overflow-hidden rounded-[20px] border border-white/[0.09] bg-white shadow-[0_15px_40px_rgba(0,0,0,0.18)] transition-transform duration-300 group-hover:-translate-y-1">
-                      <Image
-                        src={
-                          settings.logo.secureUrl
-                        }
-                        alt={
-                          settings.logo.alt ||
-                          settings.businessName
-                        }
-                        fill
-                        sizes="76px"
-                        className="object-contain p-2.5"
-                      />
-                    </div>
-                  </Link>
-                ) : (
-                  <Link
-                    href="/"
-                    aria-label={`${settings.businessName} home`}
-                    className="flex h-[76px] w-[76px] shrink-0 items-center justify-center rounded-[20px] border border-white/[0.09] bg-[#08263D] text-2xl font-black text-[#FFD400]"
-                  >
-                    {settings.businessName
-                      .charAt(0)
-                      .toUpperCase()}
-                  </Link>
-                )}
+              
+<div className="flex items-start gap-5">
+                <FooterAnimatedLogo
+                  businessName={settings.businessName}
+                  logo={settings.logo}
+                />
 
-                <div className="pt-1">
+                <div className="min-w-0 pt-1">
                   <p className="text-[9px] font-bold uppercase tracking-[0.25em] text-[#FFD400]">
-                    Mobile Battery Service
+                    Automotive Care &amp; Repairs
                   </p>
 
-                  <h2 className="mt-2 text-2xl font-semibold tracking-[-0.04em] sm:text-3xl">
+                  <h2 className="mt-2 break-words text-2xl font-black tracking-[-0.04em] text-[#F8FAFC] sm:text-3xl">
                     {settings.businessName}
                   </h2>
 
-                  {settings.tagline ? (
+                  {settings.tagline && (
                     <p className="mt-1 text-sm text-[#A8BBC8]">
                       {settings.tagline}
                     </p>
-                  ) : null}
+                  )}
                 </div>
               </div>
 
-              {settings.description ? (
-                <p className="mt-8 max-w-2xl text-sm leading-7 text-[#A8BBC8]/80 sm:text-[15px] sm:leading-8">
+
+              {settings.description && (
+                <p className="mt-8 max-w-2xl text-sm leading-7 text-[#A8BBC8]/90 sm:text-[15px] sm:leading-8">
                   {settings.description}
                 </p>
-              ) : null}
+              )}
 
-              {/* Contact */}
               <div className="mt-8 flex flex-wrap gap-3">
-                {settings.primaryCallNumber ? (
+                {callHref && (
                   <a
-                    href={phoneHref(
-                      settings.primaryCallNumber
-                    )}
-                    className="group inline-flex items-center gap-3 rounded-full border border-white/[0.08] bg-white/[0.025] px-3 py-2.5 transition-all duration-200 hover:border-[#FFD400]/25 hover:bg-[#FFD400]/[0.05]"
+                    href={callHref}
+                    className="group inline-flex min-h-12 items-center gap-3 rounded-full border border-white/[0.08] bg-white/[0.025] px-3 py-2 transition-colors hover:border-[#FFD400]/25 hover:bg-[#FFD400]/[0.05] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FFD400]"
                   >
                     <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#FFD400] text-[#061A2B]">
-                      <Phone className="h-3.5 w-3.5" />
+                      <Phone
+                        aria-hidden="true"
+                        className="h-3.5 w-3.5"
+                      />
                     </span>
 
                     <span className="text-xs font-semibold text-[#F8FAFC]">
-                      {settings.phone ||
-                        settings.primaryCallNumber}
+                      {settings.phone || settings.primaryCallNumber}
                     </span>
                   </a>
-                ) : null}
+                )}
 
-                {settings.primaryServiceRegion ? (
-                  <div className="inline-flex items-center gap-3 rounded-full border border-white/[0.08] bg-white/[0.025] px-3.5 py-2.5">
-                    <MapPin className="h-4 w-4 text-[#FFD400]" />
+                {settings.primaryServiceRegion && (
+                  <div className="inline-flex min-h-12 items-center gap-3 rounded-full border border-white/[0.08] bg-white/[0.025] px-3.5 py-2">
+                    <MapPin
+                      aria-hidden="true"
+                      className="h-4 w-4 text-[#FFD400]"
+                    />
 
                     <span className="text-xs font-semibold text-[#A8BBC8]">
                       {settings.primaryServiceRegion}
                     </span>
                   </div>
-                ) : null}
+                )}
               </div>
             </div>
 
-            {/* CTA */}
+            {/* Booking card */}
             <div className="lg:justify-self-end">
-              <div className="max-w-md rounded-[26px] border border-white/[0.08] bg-white/[0.035] p-5 shadow-[0_25px_70px_rgba(0,0,0,0.18)] backdrop-blur-xl sm:p-6">
+              <div className="max-w-md rounded-[26px] border border-white/[0.08] bg-white/[0.035] p-5 shadow-[0_25px_70px_rgba(0,0,0,0.18)] sm:p-6">
                 <div className="flex items-center justify-between gap-5">
                   <div className="flex h-11 w-11 items-center justify-center rounded-[13px] bg-[#FFD400] text-[#061A2B]">
-                    <BatteryCharging
+                    <Wrench
+                      aria-hidden="true"
                       className="h-5 w-5"
-                      strokeWidth={2}
+                      strokeWidth={1.8}
                     />
                   </div>
 
-                  <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-[#718895]">
-                    Need assistance?
+                  <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-[#A8BBC8]">
+                    Need automotive assistance?
                   </span>
                 </div>
 
                 <h3 className="mt-6 text-2xl font-semibold leading-tight tracking-[-0.035em] sm:text-3xl">
-                  Book a battery service at your vehicle&apos;s
-                  location.
+                  Let&apos;s discuss what your vehicle needs.
                 </h3>
+
+                <p className="mt-3 text-sm leading-6 text-[#A8BBC8]">
+                  Explore the available services and take the next step.
+                </p>
 
                 <Link
                   href="/book-service"
-                  className="group mt-6 inline-flex min-h-13 w-full items-center justify-between rounded-full bg-[#FFD400] px-5 text-sm font-extrabold text-[#061A2B] transition-all duration-200 hover:bg-[#F5B800]"
+                  className="group mt-6 inline-flex min-h-13 w-full items-center justify-between gap-3 rounded-full bg-[#FFD400] px-5 text-sm font-extrabold text-[#061A2B] transition-colors duration-200 hover:bg-[#F5B800] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F8FAFC] focus-visible:ring-offset-2 focus-visible:ring-offset-[#061A2B]"
                 >
-                  <span>Book a Battery Service</span>
+                  <span>Book a Service</span>
 
-                  <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#061A2B] text-[#FFD400] transition-transform duration-300 group-hover:rotate-45">
+                  <span
+                    aria-hidden="true"
+                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#061A2B] text-[#FFD400] transition-transform duration-300 motion-safe:group-hover:rotate-45"
+                  >
                     <ArrowUpRight className="h-4 w-4" />
                   </span>
                 </Link>
@@ -372,10 +345,7 @@ export default async function Footer() {
           </div>
         </div>
 
-        {/* =====================================================
-            NAVIGATION
-        ====================================================== */}
-
+        {/* Footer navigation */}
         <div className="grid gap-12 border-b border-white/[0.08] py-12 sm:grid-cols-2 lg:grid-cols-[1.15fr_0.85fr_0.9fr_0.75fr] lg:gap-14 lg:py-14">
           {/* Services */}
           <div>
@@ -387,39 +357,36 @@ export default async function Footer() {
               </p>
             </div>
 
-            <nav
-              aria-label="Services"
-              className="mt-5 flex flex-col gap-2"
-            >
+            <nav aria-label="Services" className="mt-5 flex flex-col gap-2">
               {services.length > 0 ? (
                 services.map((service) => (
                   <Link
                     key={service.id}
                     href={`/services/${service.slug}`}
-                    className="group flex w-full max-w-[280px] items-center justify-between rounded-xl py-2 text-sm text-[#F8FAFC] transition-all duration-200 hover:pl-1 hover:text-[#FFD400]"
+                    className="group flex w-full max-w-[280px] items-center justify-between gap-3 rounded-xl py-2 text-sm text-[#F8FAFC] transition-colors duration-200 hover:text-[#FFD400] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FFD400]"
                   >
                     <span>{service.title}</span>
 
                     <ArrowUpRight
                       aria-hidden="true"
-                      className="h-3.5 w-3.5 -translate-x-1 text-[#718895] opacity-0 transition-all duration-200 group-hover:translate-x-0 group-hover:text-[#FFD400] group-hover:opacity-100"
+                      className="h-3.5 w-3.5 shrink-0 -translate-x-1 text-[#A8BBC8] opacity-0 transition-all duration-200 group-hover:translate-x-0 group-hover:text-[#FFD400] group-hover:opacity-100"
                     />
                   </Link>
                 ))
               ) : (
-                <p className="text-sm text-[#718895]">
-                  Services currently unavailable.
+                <p className="text-sm text-[#A8BBC8]">
+                  Explore our available automotive services.
                 </p>
               )}
 
               <Link
                 href="/services"
-                className="group mt-2 inline-flex w-fit items-center gap-2 text-xs font-bold uppercase tracking-[0.12em] text-[#A8BBC8] transition-colors hover:text-[#FFD400]"
+                className="group mt-2 inline-flex w-fit items-center gap-2 text-xs font-bold uppercase tracking-[0.12em] text-[#A8BBC8] transition-colors hover:text-[#FFD400] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FFD400]"
               >
                 View all services
-
                 <ArrowUpRight
-                  className="h-3.5 w-3.5 transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
+                  aria-hidden="true"
+                  className="h-3.5 w-3.5 transition-transform duration-200 motion-safe:group-hover:-translate-y-0.5 motion-safe:group-hover:translate-x-0.5"
                 />
               </Link>
             </nav>
@@ -437,66 +404,35 @@ export default async function Footer() {
 
             <nav
               aria-label="Footer navigation"
-              className="mt-5 flex flex-col gap-2.5"
+              className="mt-5 flex flex-col items-start gap-2.5"
             >
-              <Link
-                href="/"
-                className="w-fit py-0.5 text-sm text-[#F8FAFC] transition-colors hover:text-[#FFD400]"
-              >
-                Home
-              </Link>
-
-              <Link
-                href="/about"
-                className="w-fit py-0.5 text-sm text-[#F8FAFC] transition-colors hover:text-[#FFD400]"
-              >
-                About
-              </Link>
-
-              <Link
-                href="/service-areas"
-                className="w-fit py-0.5 text-sm text-[#F8FAFC] transition-colors hover:text-[#FFD400]"
-              >
-                Service Areas
-              </Link>
-
-              <Link
-                href="/testimonials"
-                className="w-fit py-0.5 text-sm text-[#F8FAFC] transition-colors hover:text-[#FFD400]"
-              >
-                Testimonials
-              </Link>
-
-              <Link
-                href="/faqs"
-                className="w-fit py-0.5 text-sm text-[#F8FAFC] transition-colors hover:text-[#FFD400]"
-              >
-                FAQs
-              </Link>
-
-              <Link
-                href="/blog"
-                className="w-fit py-0.5 text-sm text-[#F8FAFC] transition-colors hover:text-[#FFD400]"
-              >
-                Blog
-              </Link>
-
-              <Link
-                href="/contact"
-                className="w-fit py-0.5 text-sm text-[#F8FAFC] transition-colors hover:text-[#FFD400]"
-              >
-                Contact
-              </Link>
+              {[
+                { label: "Home", href: "/" },
+                { label: "About", href: "/about" },
+                { label: "Service Areas", href: "/service-areas" },
+                { label: "Testimonials", href: "/testimonials" },
+                { label: "FAQs", href: "/faqs" },
+                { label: "Blog", href: "/blog" },
+                { label: "Contact", href: "/contact" },
+              ].map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className="py-0.5 text-sm text-[#F8FAFC] transition-colors hover:text-[#FFD400] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FFD400]"
+                >
+                  {item.label}
+                </Link>
+              ))}
             </nav>
           </div>
 
-          {/* Availability */}
+          {/* Business hours */}
           <div>
             <div className="flex items-center gap-2">
               <span className="h-1.5 w-1.5 rounded-full bg-[#FFD400]" />
 
               <p className="text-[9px] font-bold uppercase tracking-[0.25em] text-[#A8BBC8]">
-                Availability
+                Business Hours
               </p>
             </div>
 
@@ -505,20 +441,21 @@ export default async function Footer() {
                 {enabledHours.map((hour, index) => (
                   <div
                     key={hour.day}
-                    className={`flex items-center justify-between gap-4 px-4 py-2.5 ${
-                      index !==
-                      enabledHours.length - 1
+                    className={`flex items-center justify-between gap-3 px-4 py-2.5 ${
+                      index !== enabledHours.length - 1
                         ? "border-b border-white/[0.05]"
                         : ""
                     }`}
                   >
-                    <span className="flex items-center gap-2 text-[11px] font-medium text-[#718895]">
-                      <Clock3 className="h-3 w-3" />
-
+                    <span className="flex items-center gap-2 text-[11px] font-medium text-[#A8BBC8]">
+                      <Clock3
+                        aria-hidden="true"
+                        className="h-3 w-3 shrink-0"
+                      />
                       {formatDay(hour.day)}
                     </span>
 
-                    <span className="text-[11px] font-semibold text-[#F8FAFC]">
+                    <span className="text-right text-[11px] font-semibold text-[#F8FAFC]">
                       {hour.open} – {hour.close}
                     </span>
                   </div>
@@ -527,10 +464,13 @@ export default async function Footer() {
             ) : (
               <div className="mt-5 rounded-[18px] border border-white/[0.07] bg-white/[0.025] p-4">
                 <div className="flex items-start gap-3">
-                  <Clock3 className="mt-0.5 h-4 w-4 shrink-0 text-[#FFD400]" />
+                  <Clock3
+                    aria-hidden="true"
+                    className="mt-0.5 h-4 w-4 shrink-0 text-[#FFD400]"
+                  />
 
                   <p className="text-xs leading-5 text-[#A8BBC8]">
-                    Contact the team for current service
+                    Contact the team to confirm current service
                     availability.
                   </p>
                 </div>
@@ -548,273 +488,134 @@ export default async function Footer() {
               </p>
             </div>
 
-            {hasSocial ? (
+            {socialLinks.length > 0 ? (
               <div className="mt-5 flex flex-wrap gap-2.5">
-                {/* Instagram */}
-                {hasInstagram ? (
+                {socialLinks.map((item) => (
                   <a
-                    href={settings.social.instagram}
+                    key={item.label}
+                    href={item.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    aria-label="Instagram"
-                    title="Instagram"
-                    className="group flex h-11 w-11 items-center justify-center rounded-[13px] border border-white/[0.08] bg-white/[0.025] text-[#A8BBC8] transition-all duration-200 hover:border-[#FFD400]/30 hover:bg-[#FFD400]/[0.07] hover:text-[#FFD400]"
+                    aria-label={`${item.label} (opens in a new tab)`}
+                    title={item.label}
+                    className="flex h-11 w-11 items-center justify-center rounded-[13px] border border-white/[0.08] bg-white/[0.025] text-sm font-bold text-[#A8BBC8] transition-colors duration-200 hover:border-[#FFD400]/30 hover:bg-[#FFD400]/[0.07] hover:text-[#FFD400] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FFD400]"
                   >
-                   <svg
-  aria-hidden="true"
-  viewBox="0 0 24 24"
-  fill="none"
-  className="h-[18px] w-[18px]"
->
-  <rect
-    x="3"
-    y="3"
-    width="18"
-    height="18"
-    rx="5"
-    stroke="currentColor"
-    strokeWidth="1.8"
-  />
-
-  <circle
-    cx="12"
-    cy="12"
-    r="4"
-    stroke="currentColor"
-    strokeWidth="1.8"
-  />
-
-  <circle
-    cx="17.5"
-    cy="6.5"
-    r="1"
-    fill="currentColor"
-  />
-</svg>
+                    {item.mark}
                   </a>
-                ) : null}
-
-                {/* Google Business Profile */}
-                {hasGoogleBusiness ? (
-                  <a
-                    href={
-                      settings.social
-                        .googleBusiness
-                    }
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label="Google Business Profile"
-                    title="Google Business Profile"
-                    className="group flex h-11 w-11 items-center justify-center rounded-[13px] border border-white/[0.08] bg-white/[0.025] text-[#A8BBC8] transition-all duration-200 hover:border-[#FFD400]/30 hover:bg-[#FFD400]/[0.07] hover:text-[#FFD400]"
-                  >
-                    <span
-                      aria-hidden="true"
-                      className="text-[16px] font-black"
-                    >
-                      G
-                    </span>
-                  </a>
-                ) : null}
-
-                {/* Facebook */}
-                {hasFacebook ? (
-                  <a
-                    href={settings.social.facebook}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label="Facebook"
-                    title="Facebook"
-                    className="group flex h-11 w-11 items-center justify-center rounded-[13px] border border-white/[0.08] bg-white/[0.025] text-[#A8BBC8] transition-all duration-200 hover:border-[#FFD400]/30 hover:bg-[#FFD400]/[0.07] hover:text-[#FFD400]"
-                  >
-                    <span
-                      aria-hidden="true"
-                      className="text-[18px] font-black"
-                    >
-                      f
-                    </span>
-                  </a>
-                ) : null}
-
-                {/* Other */}
-                {hasOtherSocial ? (
-                  <a
-                    href={settings.social.other}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label="Social profile"
-                    title="Social profile"
-                    className="group flex h-11 w-11 items-center justify-center rounded-[13px] border border-white/[0.08] bg-white/[0.025] text-[#A8BBC8] transition-all duration-200 hover:border-[#FFD400]/30 hover:bg-[#FFD400]/[0.07] hover:text-[#FFD400]"
-                  >
-                    <ArrowUpRight
-                      aria-hidden="true"
-                      className="h-[18px] w-[18px]"
-                    />
-                  </a>
-                ) : null}
+                ))}
               </div>
             ) : (
-              <div className="mt-5">
-                <p className="max-w-[220px] text-xs leading-6 text-[#718895]">
-                  Connect with the business online for
-                  updates and useful information.
-                </p>
-              </div>
+              <p className="mt-5 max-w-[220px] text-xs leading-6 text-[#A8BBC8]">
+                Contact our team for information about available services.
+              </p>
             )}
 
-            {/* Email */}
-            {settings.email ? (
+            {settings.email && (
               <a
                 href={`mailto:${settings.email}`}
-                className="group mt-6 flex w-fit items-center gap-2.5 text-xs text-[#A8BBC8] transition-colors hover:text-[#FFD400]"
+                className="group mt-6 flex w-fit max-w-full items-start gap-2.5 break-all text-xs text-[#A8BBC8] transition-colors hover:text-[#FFD400] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FFD400]"
               >
-                <Mail className="h-3.5 w-3.5 text-[#FFD400]" />
-
+                <Mail
+                  aria-hidden="true"
+                  className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[#FFD400]"
+                />
                 <span>{settings.email}</span>
               </a>
-            ) : null}
+            )}
           </div>
         </div>
 
-
-        {/* =====================================================
-    SERVICE AREA MAP
-====================================================== */}
-
-<div className="border-b border-white/[0.08] py-12 sm:py-14 lg:py-16">
-  <div className="grid gap-7 lg:grid-cols-[0.7fr_1.3fr] lg:items-center lg:gap-12">
-
-    {/* Map intro */}
-    <div>
-      <div className="flex items-center gap-2">
-        <span className="h-1.5 w-1.5 rounded-full bg-[#FFD400]" />
-
-        <p className="text-[9px] font-bold uppercase tracking-[0.25em] text-[#A8BBC8]">
-          Service Area
-        </p>
-      </div>
-
-      <h3 className="mt-4 max-w-md text-2xl font-semibold leading-tight tracking-[-0.04em] text-[#F8FAFC] sm:text-3xl">
-        Mobile battery assistance across Melbourne West.
-      </h3>
-
-      <p className="mt-4 max-w-md text-sm leading-7 text-[#A8BBC8]">
-        View our service area and get a better idea of where our mobile
-        battery assistance is available.
-      </p>
-
-      <Link
-        href="/service-areas"
-        className="group mt-6 inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.14em] text-[#FFD400] transition-colors hover:text-[#F5B800]"
-      >
-        Explore service areas
-
-        <ArrowUpRight
-          className="h-3.5 w-3.5 transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
-        />
-      </Link>
-    </div>
-
-    {/* Google Map */}
-    <div className="relative overflow-hidden rounded-[24px] border border-white/[0.09] bg-[#08263D] shadow-[0_25px_80px_rgba(0,0,0,0.22)]">
-      <div className="absolute inset-0 z-10 pointer-events-none rounded-[24px] ring-1 ring-inset ring-white/[0.06]" />
-
-      <div className="aspect-[16/10] w-full sm:aspect-[16/8] lg:aspect-[16/9]">
-        <iframe
-          src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d201646.21925052477!2d144.7159923!3d-37.843389450000004!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0xac8724c886e17625%3A0xe64e762c466fe247!2sCar%20Battery%20Services%20West%20Melbourne!5e0!3m2!1sen!2sin!4v1790494053967!5m2!1sen!2sin"
-          title="Car Battery Services service area map"
-          className="h-full w-full border-0 grayscale-[0.15] opacity-90 transition-opacity duration-300 hover:opacity-100"
-          loading="lazy"
-          referrerPolicy="strict-origin-when-cross-origin"
-          allowFullScreen
-        />     
-      </div>
-    </div>
-  </div>
-</div>
-
-        {/* =====================================================
-            TRUST / SERVICE STRIP
-        ====================================================== */}
-
-        <div className="border-b border-white/[0.08] py-7">
-          <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex items-center gap-3">
-              <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#FFD400] text-[#061A2B]">
-                <CheckCircle2
-                  className="h-4 w-4"
-                  strokeWidth={2.2}
+        {/* Service area */}
+        <div className="border-b border-white/[0.08] py-10 sm:py-12">
+          <div className="grid gap-6 sm:grid-cols-[1fr_auto] sm:items-center">
+            <div className="flex items-start gap-4">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[14px] bg-[#FFD400] text-[#061A2B]">
+                <MapPin
+                  aria-hidden="true"
+                  className="h-5 w-5"
+                  strokeWidth={1.8}
                 />
-              </span>
+              </div>
 
               <div>
-                <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#F8FAFC]">
-                  Mobile battery assistance
+                <p className="text-[9px] font-bold uppercase tracking-[0.25em] text-[#FFD400]">
+                  Service Areas
                 </p>
 
-                <p className="mt-1 text-[10px] text-[#718895]">
-                  Battery replacement, testing and jump start
-                  assistance
+                <h3 className="mt-2 text-xl font-semibold tracking-[-0.03em] sm:text-2xl">
+                  Looking for service in your area?
+                </h3>
+
+                <p className="mt-2 max-w-2xl text-sm leading-6 text-[#A8BBC8]">
+                  Explore our published service areas to review local
+                  coverage details and find out whether the service you
+                  need is available at your location.
                 </p>
+
+                {settings.primaryServiceRegion && (
+                  <p className="mt-3 text-xs font-semibold text-[#F8FAFC]">
+                    Primary service region: {settings.primaryServiceRegion}
+                  </p>
+                )}
               </div>
             </div>
 
             <Link
-              href="/services"
-              className="group inline-flex w-fit items-center gap-2 text-[10px] font-bold uppercase tracking-[0.16em] text-[#A8BBC8] transition-colors hover:text-[#FFD400]"
+              href="/service-areas"
+              className="group inline-flex min-h-11 w-fit shrink-0 items-center gap-3 rounded-full border border-white/15 px-5 text-xs font-bold uppercase tracking-[0.1em] text-[#F8FAFC] transition-colors hover:border-[#FFD400]/50 hover:text-[#FFD400] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FFD400]"
             >
-              Explore services
-
+              Explore Areas
               <ArrowUpRight
-                className="h-3.5 w-3.5 transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
+                aria-hidden="true"
+                className="h-4 w-4 transition-transform duration-200 motion-safe:group-hover:-translate-y-0.5 motion-safe:group-hover:translate-x-0.5"
               />
             </Link>
           </div>
         </div>
 
-        {/* =====================================================
-            LEGAL + SIGNATURE
-        ====================================================== */}
-
+        {/* Legal and credit */}
         <div className="flex flex-col gap-5 py-7 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex flex-wrap items-center gap-x-4 gap-y-3">
-            <span className="text-[10px] text-[#718895]">
-              © {new Date().getFullYear()}{" "}
-              {settings.businessName}. All rights reserved.
+            <span className="text-[10px] text-[#A8BBC8]">
+              © {new Date().getFullYear()} {settings.businessName}.
+              All rights reserved.
             </span>
 
-            <span className="hidden h-1 w-1 rounded-full bg-white/[0.15] sm:block" />
+            <span
+              aria-hidden="true"
+              className="hidden h-1 w-1 rounded-full bg-white/20 sm:block"
+            />
 
             <Link
               href="/privacy-policy"
-              className="text-[10px] text-[#718895] transition-colors hover:text-[#F8FAFC]"
+              className="text-[10px] text-[#A8BBC8] transition-colors hover:text-[#F8FAFC] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FFD400]"
             >
               Privacy Policy
             </Link>
 
             <Link
               href="/terms-and-conditions"
-              className="text-[10px] text-[#718895] transition-colors hover:text-[#F8FAFC]"
+              className="text-[10px] text-[#A8BBC8] transition-colors hover:text-[#F8FAFC] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FFD400]"
             >
-              Terms & Conditions
+              Terms &amp; Conditions
             </Link>
           </div>
 
-          {/* Aman Digital Solutions */}
           <a
             href="https://amandigitalsolutions.com"
             target="_blank"
             rel="noopener noreferrer"
-            className="group inline-flex w-fit items-center gap-2 text-[10px] text-[#718895] transition-colors hover:text-[#F8FAFC]"
+            className="group inline-flex w-fit items-center gap-2 text-[10px] text-[#A8BBC8] transition-colors hover:text-[#F8FAFC] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FFD400]"
           >
             <span>Built with care by</span>
 
-            <span className="font-semibold text-[#F8FAFC] group-hover:text-[#FFD400]">
+            <span className="font-semibold text-[#F8FAFC] transition-colors group-hover:text-[#FFD400]">
               Aman Digital Solutions
             </span>
 
             <ArrowUpRight
               aria-hidden="true"
-              className="h-3 w-3 text-[#FFD400] transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
+              className="h-3 w-3 text-[#FFD400] transition-transform duration-200 motion-safe:group-hover:-translate-y-0.5 motion-safe:group-hover:translate-x-0.5"
             />
           </a>
         </div>

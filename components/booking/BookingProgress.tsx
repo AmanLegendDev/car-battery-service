@@ -19,15 +19,17 @@ export default function BookingProgress({
   return (
     <div>
       <div className="mb-4 flex items-end justify-between mt-22">
-        <div>
-          <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#FFD400]">
-            Booking request
-          </p>
+      
+<div>
+  <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#FFD400]">
+    Booking Request
+  </p>
 
-          <h1 className="mt-2 text-2xl font-black tracking-tight sm:text-3xl">
-            Book a Battery Service
-          </h1>
-        </div>
+  <h1 className="mt-2 text-2xl font-black tracking-tight sm:text-3xl">
+    Book an Automotive Service
+  </h1>
+</div>
+
 
         <span className="text-sm text-[#A8BBC8]">
           Step {currentStep} of {STEPS.length}

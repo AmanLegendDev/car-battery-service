@@ -45,21 +45,26 @@ interface BlogArticleHeroProps {
 function formatDate(date: string | null) {
   if (!date) return "";
 
+  const parsedDate = new Date(date);
+
+  if (Number.isNaN(parsedDate.getTime())) {
+    return "";
+  }
+
   return new Intl.DateTimeFormat("en-AU", {
     day: "numeric",
     month: "long",
     year: "numeric",
-  }).format(new Date(date));
+  }).format(parsedDate);
 }
 
 export default function BlogArticleHero({
   post,
 }: BlogArticleHeroProps) {
   const image = post.coverImage?.secureUrl || null;
-
-  const imageAlt =
-    post.coverImage?.alt ||
-    `${post.title} - Car Battery Service`;
+const imageAlt =
+  post.coverImage?.alt?.trim() ||
+  `${post.title} - Rapid Auto Services`;
 
   return (
     <section className="relative overflow-hidden bg-[#061A2B] text-white">

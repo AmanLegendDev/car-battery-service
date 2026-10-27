@@ -1,12 +1,13 @@
-export const SERVICE_AREAS_HERO_LABEL = "Service Coverage";
+
+export const SERVICE_AREAS_HERO_LABEL = "Service Areas";
 
 export const SERVICE_AREAS_HERO_EYEBROW = "Melbourne West";
 
 export const SERVICE_AREAS_HERO_TITLE =
-  "Battery assistance, closer to where you are.";
+  "Local automotive care, where you need it.";
 
 export const SERVICE_AREAS_HERO_DESCRIPTION =
-  "Explore the locations currently listed for mobile car battery assistance from Car Battery Service.";
+  "Explore our listed service locations across Melbourne West and find out where Rapid Auto Services may be able to assist with your vehicle. Check the locations available and choose the right next step for your service needs.";
 
 export const SERVICE_AREAS_HERO_BOTTOM_LABEL =
-  "Explore service locations";
+  "Explore our service locations";

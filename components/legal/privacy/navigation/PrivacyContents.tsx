@@ -1,3 +1,4 @@
+
 import Link from "next/link";
 import PrivacySection from "../sections/PrivacySection";
 
@@ -17,11 +18,7 @@ interface PrivacyContentsProps {
 }
 
 const sections = [
-  {
-    id: "introduction",
-    number: "01",
-    title: "Introduction",
-  },
+  { id: "introduction", number: "01", title: "Introduction" },
   {
     id: "information-we-collect",
     number: "02",
@@ -57,42 +54,45 @@ const sections = [
     number: "08",
     title: "Your Rights & Choices",
   },
-  {
-    id: "children",
-    number: "09",
-    title: "Children's Privacy",
-  },
+  { id: "children", number: "09", title: "Children's Privacy" },
   {
     id: "policy-changes",
     number: "10",
     title: "Changes to This Policy",
   },
-  {
-    id: "contact",
-    number: "11",
-    title: "Contact Us",
-  },
+  { id: "contact", number: "11", title: "Contact Us" },
 ];
 
 export default function PrivacyContents({
   business,
 }: PrivacyContentsProps) {
-  const hasContactEmail = Boolean(business.email.trim());
-  const hasPhone = Boolean(
-    business.primaryCallNumber.trim() || business.phone.trim()
-  );
+  const businessName =
+    business.businessName?.trim() || "Rapid Auto Services";
+
+  const phone =
+    business.primaryCallNumber?.trim() || business.phone?.trim() || "";
+
+  const email = business.email?.trim() || "";
+  const region = business.primaryServiceRegion?.trim() || "";
+
+  const phoneHref = phone
+    ? `tel:${phone.replace(/[^\d+]/g, "")}`
+    : "";
 
   return (
     <section className="mx-auto max-w-7xl px-5 py-14 sm:px-6 sm:py-20 lg:px-8">
       <div className="grid gap-10 lg:grid-cols-[260px_minmax(0,1fr)] lg:items-start">
-        {/* Navigation */}
+        {/* Policy Navigation */}
         <aside className="lg:sticky lg:top-28">
           <div className="rounded-3xl border border-[#08263D]/10 bg-white p-5 shadow-sm">
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#0D6E91]">
               On this page
             </p>
 
-            <nav className="mt-5 space-y-1" aria-label="Privacy Policy sections">
+            <nav
+              className="mt-5 space-y-1"
+              aria-label="Privacy Policy sections"
+            >
               {sections.map((section) => (
                 <Link
                   key={section.id}
@@ -110,22 +110,21 @@ export default function PrivacyContents({
           </div>
         </aside>
 
-        {/* Content */}
+        {/* Policy Content */}
         <article className="min-w-0">
           <div className="mb-10 rounded-3xl border border-[#08263D]/10 bg-white p-6 shadow-sm sm:p-8">
             <p className="text-sm leading-7 text-[#061A2B]/70">
               This Privacy Policy explains how{" "}
               <strong className="font-semibold text-[#061A2B]">
-                {business.businessName}
+                {businessName}
               </strong>{" "}
-              handles personal information in connection with this website,
-              enquiries, bookings and the mobile car battery services we
-              provide.
+              handles personal information in connection with its website,
+              enquiries, bookings and automotive services.
             </p>
 
             <p className="mt-4 text-sm leading-7 text-[#061A2B]/70">
-              We aim to collect only information that is reasonably necessary
-              for operating our website, responding to customers and providing
+              We aim to collect only information reasonably necessary to
+              operate our website, respond to customers and provide
               requested services.
             </p>
           </div>
@@ -136,26 +135,26 @@ export default function PrivacyContents({
             title="Introduction"
           >
             <p>
-              This Privacy Policy applies to the Car Battery Service website
-              and to personal information handled by the business in connection
-              with its services.
+              This Privacy Policy applies to the Rapid Auto Services website
+              and personal information handled by the business in connection
+              with its automotive services.
             </p>
 
             <p>
               In this policy, references to <strong>“we”</strong>,{" "}
               <strong>“us”</strong> or <strong>“our”</strong> mean{" "}
-              <strong>{business.businessName}</strong>.
+              <strong>{businessName}</strong>.
             </p>
 
             <p>
-              We respect the privacy of individuals and take reasonable steps
+              We aim to respect individual privacy and take reasonable steps
               to handle personal information appropriately and transparently.
             </p>
 
             <p>
               By using this website or providing information to us, you
-              acknowledge that your information may be handled as described in
-              this Privacy Policy.
+              acknowledge that your information may be handled as described
+              in this Privacy Policy.
             </p>
           </PrivacySection>
 
@@ -165,8 +164,8 @@ export default function PrivacyContents({
             title="Information We Collect"
           >
             <p>
-              The information we collect depends on how you interact with the
-              website and whether you request our services.
+              The information we collect depends on how you interact with
+              the website and whether you request our services.
             </p>
 
             <h3>Information you provide</h3>
@@ -179,31 +178,30 @@ export default function PrivacyContents({
 
             <ul>
               <li>Your name or other identifying details.</li>
-              <li>Phone number and contact details.</li>
-              <li>Email address, where provided.</li>
-              <li>Vehicle-related information relevant to the requested service.</li>
-              <li>Your vehicle location or service location.</li>
-              <li>Details about the battery problem or assistance required.</li>
-              <li>Information contained in messages or other communications you send us.</li>
+              <li>Your phone number and contact details.</li>
+              <li>Your email address, where provided.</li>
+              <li>Vehicle information relevant to your requested service.</li>
+              <li>Your vehicle location or requested service location.</li>
+              <li>Details about the vehicle issue or assistance required.</li>
+              <li>Information contained in messages or other communications.</li>
             </ul>
 
             <p>
-              You should avoid providing sensitive personal information unless
+              Please avoid providing sensitive personal information unless
               it is genuinely necessary for your interaction with us.
             </p>
 
             <h3>Information collected through website use</h3>
 
             <p>
-              Our website may also receive technical information associated
-              with your visit, depending on the website configuration and
-              services enabled at the time. This may include information such
-              as your IP address, browser type, device information and basic
-              interaction or diagnostic information.
+              Depending on the website configuration and enabled services,
+              we may receive technical information associated with your visit.
+              This may include your IP address, browser type, device
+              information and basic interaction or diagnostic information.
             </p>
 
             <p>
-              We do not state that every category of technical information is
+              Not every category of technical information is necessarily
               collected on every visit. Collection depends on the technologies
               actually enabled on the website.
             </p>
@@ -221,21 +219,20 @@ export default function PrivacyContents({
 
             <ul>
               <li>Responding to enquiries and service requests.</li>
-              <li>Arranging or managing requested bookings and services.</li>
+              <li>Arranging and managing requested bookings and services.</li>
               <li>Contacting you about a requested service.</li>
-              <li>Understanding the vehicle or battery issue you have described.</li>
-              <li>Providing mobile battery assistance at the requested location.</li>
-              <li>Maintaining business and service records.</li>
+              <li>Understanding the vehicle issue you have described.</li>
+              <li>Providing automotive assistance at the requested location.</li>
+              <li>Maintaining relevant business and service records.</li>
               <li>Improving the website, services and customer experience.</li>
-              <li>Protecting the website and business against misuse, fraud or security incidents.</li>
+              <li>Protecting against misuse, fraud and security incidents.</li>
               <li>Complying with applicable legal or regulatory obligations.</li>
             </ul>
 
             <p>
-              We will not use personal information for a purpose that is
-              unrelated to the reason it was collected unless permitted or
-              required by applicable law, or where appropriate consent has been
-              obtained.
+              We will not use personal information for an unrelated purpose
+              unless permitted or required by applicable law, or where
+              appropriate consent has been obtained.
             </p>
           </PrivacySection>
 
@@ -245,8 +242,8 @@ export default function PrivacyContents({
             title="Sharing Information"
           >
             <p>
-              We do not treat customer personal information as information that
-              is freely available for sale or public distribution.
+              We do not treat customer personal information as information
+              freely available for sale or public distribution.
             </p>
 
             <p>
@@ -262,7 +259,10 @@ export default function PrivacyContents({
               <li>Website or software service providers.</li>
               <li>Communication providers used to respond to customers.</li>
               <li>Professional advisers where reasonably necessary.</li>
-              <li>Government bodies, regulators or law-enforcement authorities where required or authorised by law.</li>
+              <li>
+                Government bodies, regulators or law-enforcement authorities
+                where required or authorised by law.
+              </li>
             </ul>
 
             <p>
@@ -271,9 +271,9 @@ export default function PrivacyContents({
             </p>
 
             <p>
-              We do not currently describe any specific third-party customer
-              data-sharing arrangement in this policy unless that service is
-              actually used by the website or business.
+              Specific third-party data-sharing arrangements should be
+              described in this policy when applicable to services actually
+              used by the website or business.
             </p>
           </PrivacySection>
 
@@ -289,21 +289,20 @@ export default function PrivacyContents({
 
             <p>
               We take reasonable steps appropriate to the circumstances to
-              protect personal information from misuse, interference, loss and
-              unauthorised access, modification or disclosure.
+              protect personal information from misuse, interference, loss
+              and unauthorised access, modification or disclosure.
             </p>
 
             <p>
-              Security measures may include access controls, authentication,
-              restricted administrative access and appropriate technical
-              safeguards.
+              Depending on the systems in use, security measures may include
+              access controls, authentication, restricted administrative
+              access and appropriate technical safeguards.
             </p>
 
             <p>
               No method of transmission or electronic storage can be guaranteed
-              to be completely secure. Accordingly, we cannot guarantee
-              absolute security of information transmitted to or through the
-              website.
+              to be completely secure. We therefore cannot guarantee absolute
+              security of information transmitted to or through the website.
             </p>
 
             <h3>Retention</h3>
@@ -311,14 +310,14 @@ export default function PrivacyContents({
             <p>
               We retain personal information only for as long as reasonably
               necessary for the purpose for which it was collected, for
-              legitimate business purposes, or where retention is required or
-              permitted by law.
+              legitimate business purposes, or where retention is required
+              or permitted by law.
             </p>
 
             <p>
-              When information is no longer required, reasonable steps may be
-              taken to securely delete, destroy or de-identify it, subject to
-              applicable legal and operational requirements.
+              When information is no longer required, reasonable steps may
+              be taken to securely delete, destroy or de-identify it, subject
+              to applicable legal and operational requirements.
             </p>
           </PrivacySection>
 
@@ -335,19 +334,18 @@ export default function PrivacyContents({
 
             <p>
               The specific cookies or technologies used on this website depend
-              on the website configuration and any third-party services
-              enabled.
+              on the website configuration and any third-party services enabled.
             </p>
 
             <p>
-              Where browser controls allow it, you may be able to restrict or
-              delete cookies through your browser settings. Doing so may affect
-              some website functionality.
+              Where browser controls allow it, you may be able to restrict
+              or delete cookies through your browser settings. Doing so may
+              affect some website functionality.
             </p>
 
             <p>
-              We will not describe specific analytics, advertising or tracking
-              cookies as being active unless those technologies are actually
+              Specific analytics, advertising or tracking cookies should only
+              be identified as active if those technologies are actually
               implemented on the website.
             </p>
           </PrivacySection>
@@ -359,27 +357,25 @@ export default function PrivacyContents({
           >
             <p>
               The website may rely on third-party technology providers for
-              hosting, infrastructure, media handling, communications, security
-              or other technical functions.
+              hosting, infrastructure, media handling, communications,
+              security or other technical functions.
             </p>
 
             <p>
               Where a third-party provider processes information on our behalf,
-              we expect that provider to handle information in accordance with
-              its own applicable terms, privacy documentation and legal
-              obligations.
+              that provider may also be subject to its own applicable terms,
+              privacy documentation and legal obligations.
             </p>
 
             <p>
               Some third-party services may process information outside
               Australia. Where applicable, cross-border handling of personal
-              information will be subject to the requirements of relevant
-              Australian privacy law.
+              information will be subject to relevant legal requirements.
             </p>
 
             <p>
-              This website may also contain links or communication options that
-              take you to third-party services. Once you leave our website,
+              This website may also contain links or communication options
+              that take you to third-party services. Once you leave our website,
               those services are governed by their own privacy practices.
             </p>
           </PrivacySection>
@@ -390,9 +386,9 @@ export default function PrivacyContents({
             title="Your Rights & Choices"
           >
             <p>
-              Depending on the circumstances and applicable law, you may have
-              rights or choices concerning personal information we hold about
-              you.
+              Depending on the circumstances and applicable law, you may
+              have rights or choices concerning personal information we hold
+              about you.
             </p>
 
             <p>These may include requesting:</p>
@@ -401,18 +397,20 @@ export default function PrivacyContents({
               <li>Access to personal information we hold about you.</li>
               <li>Correction of information that is inaccurate or incomplete.</li>
               <li>Information about how your personal information is handled.</li>
-              <li>Action concerning personal information where you believe it has been handled unlawfully.</li>
+              <li>
+                Action concerning personal information where you believe it
+                has been handled unlawfully.
+              </li>
             </ul>
 
             <p>
-              Requests should provide enough information for us to identify the
+              Requests should provide enough information for us to identify
               relevant records and understand what you are asking us to do.
             </p>
 
             <p>
-              We may need to verify your identity before responding to a
-              request. Some requests may be subject to legal exceptions or
-              other limitations.
+              We may need to verify your identity before responding. Some
+              requests may be subject to legal exceptions or other limitations.
             </p>
           </PrivacySection>
 
@@ -422,14 +420,14 @@ export default function PrivacyContents({
             title="Children's Privacy"
           >
             <p>
-              Our services are intended for customers seeking vehicle and
-              battery-related assistance. We do not knowingly seek to collect
-              personal information from children through the website.
+              Our services are intended for customers seeking automotive
+              services. We do not knowingly seek to collect personal
+              information from children through the website.
             </p>
 
             <p>
               If you believe a child has provided personal information to us
-              unnecessarily, you may contact us so that we can consider the
+              unnecessarily, you may contact us so that we can consider
               appropriate action.
             </p>
           </PrivacySection>
@@ -446,8 +444,8 @@ export default function PrivacyContents({
             </p>
 
             <p>
-              When changes are made, the updated version will be published on
-              this page with an updated effective or revision date where
+              When changes are made, the updated version will be published
+              on this page with an updated effective or revision date where
               appropriate.
             </p>
 
@@ -463,56 +461,52 @@ export default function PrivacyContents({
             title="Contact Us"
           >
             <p>
-              If you have a question about this Privacy Policy or want to make
-              a privacy-related enquiry, you can contact us using the details
-              available below.
+              If you have a question about this Privacy Policy or want to
+              make a privacy-related enquiry, you can contact us using
+              the details below.
             </p>
 
             <div className="mt-6 rounded-2xl border border-[#08263D]/10 bg-[#F8FAFC] p-5 sm:p-6">
               <div className="space-y-4 text-sm">
                 <div>
                   <p className="font-semibold text-[#061A2B]">
-                    {business.businessName}
+                    {businessName}
                   </p>
 
-                  {business.primaryServiceRegion && (
-                    <p className="mt-1 text-[#061A2B]/60">
-                      {business.primaryServiceRegion}
-                    </p>
-                  )}
+                  {region ? (
+                    <p className="mt-1 text-[#061A2B]/60">{region}</p>
+                  ) : null}
                 </div>
 
-                {hasPhone && (
+                {phone ? (
                   <div>
                     <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#0D6E91]">
                       Phone
                     </p>
 
                     <a
-                      href={`tel:${
-                        business.primaryCallNumber || business.phone
-                      }`}
+                      href={phoneHref}
                       className="mt-1 inline-block text-[#061A2B] transition hover:text-[#0D6E91]"
                     >
-                      {business.primaryCallNumber || business.phone}
+                      {phone}
                     </a>
                   </div>
-                )}
+                ) : null}
 
-                {hasContactEmail && (
+                {email ? (
                   <div>
                     <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#0D6E91]">
                       Email
                     </p>
 
                     <a
-                      href={`mailto:${business.email}`}
+                      href={`mailto:${email}`}
                       className="mt-1 inline-block break-all text-[#061A2B] transition hover:text-[#0D6E91]"
                     >
-                      {business.email}
+                      {email}
                     </a>
                   </div>
-                )}
+                ) : null}
 
                 <div className="pt-2">
                   <Link
@@ -526,19 +520,18 @@ export default function PrivacyContents({
             </div>
           </PrivacySection>
 
-          {/* Legal note */}
+          {/* Legal Review Notice */}
           <div className="mt-10 rounded-3xl border border-[#FFD400]/30 bg-[#FFD400]/10 p-6 sm:p-8">
             <p className="text-sm leading-7 text-[#061A2B]/75">
               <strong className="font-semibold text-[#061A2B]">
                 Important:
               </strong>{" "}
-              This Privacy Policy is intended to describe the website and
-              business&apos;s general information-handling practices. It should
-              be reviewed and adapted by the business or an appropriately
-              qualified Australian legal/privacy professional before
-              publication, particularly if the website introduces additional
-              analytics, advertising, payment, booking, messaging or other
-              third-party services.
+              This Privacy Policy describes general information-handling
+              practices and should be reviewed and adapted by the business
+              or an appropriately qualified Australian legal or privacy
+              professional before publication. In particular, verify that
+              the policy reflects the actual analytics, advertising, payment,
+              booking, messaging and third-party services used by the website.
             </p>
           </div>
         </article>

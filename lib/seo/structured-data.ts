@@ -1,9 +1,9 @@
 const SITE_URL = "https://carbatteryservices.com.au";
 
-const BUSINESS_NAME = "Car Battery Service";
+const BUSINESS_NAME = "Rapid Auto Services";
 
 const BUSINESS_DESCRIPTION =
-  "Car Battery Service provides mobile battery and vehicle electrical assistance across Melbourne West, including battery replacement, battery testing, jump start assistance, starter motor replacement and alternator replacement at your vehicle's location.";
+  "Rapid Auto Services provides mobile  vehicle electrical assistance across Melbourne West, including battery replacement, battery testing, jump start assistance, starter motor replacement and alternator replacement at your vehicle's location.";
 
 const PHONE = "+61 467 037 886";
 

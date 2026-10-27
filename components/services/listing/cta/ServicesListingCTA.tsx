@@ -33,7 +33,7 @@ async function getCTASettings() {
 
   return {
     businessName:
-      settings?.businessName || "Car Battery Service",
+      settings?.businessName || "Rapid Auto Services",
 
     tagline:
       settings?.tagline || "",
@@ -51,7 +51,7 @@ async function getCTASettings() {
 
     bookingCta:
       settings?.bookingCta ||
-      "Book a Battery Service",
+      "Book a Service",
 
     quoteCta:
       settings?.quoteCta ||

@@ -15,16 +15,16 @@ const PAGE_URL =
   `${SITE_URL}/terms-and-conditions`;
 
 const SEO_TITLE =
-  "Terms & Conditions | Car Battery Services";
+  "Terms & Conditions | Rapid Auto Services";
 
 const SEO_DESCRIPTION =
-  "Read the Terms & Conditions that apply when using the Car Battery Services website or requesting mobile car battery services in Melbourne West.";
+  "Read the Terms & Conditions that apply when using the Rapid Auto Services website or requesting mobile car services in Melbourne West.";
 
 const OG_IMAGE =
   "/images/seo/og-image.jpg";
 
 const DEFAULT_BUSINESS_NAME =
-  "Car Battery Services";
+  "Rapid Auto Services";
 
 const DEFAULT_REGION =
   "Melbourne West";
@@ -122,7 +122,7 @@ export async function generateMetadata(): Promise<Metadata> {
         PAGE_URL,
 
       siteName:
-        "Car Battery Services",
+        "Rapid Auto Services",
 
       title:
         SEO_TITLE,
@@ -142,7 +142,7 @@ export async function generateMetadata(): Promise<Metadata> {
             630,
 
           alt:
-            "Car Battery Services - Terms & Conditions",
+            "Rapid Auto Services - Terms & Conditions",
         },
       ],
     },
@@ -244,7 +244,7 @@ function getTermsStructuredData() {
             630,
 
           caption:
-            "Car Battery Services - Terms & Conditions",
+            "Rapid Auto Services - Terms & Conditions",
         },
 
         breadcrumb: {

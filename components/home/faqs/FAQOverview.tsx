@@ -93,7 +93,7 @@ export default async function FAQOverview() {
             </h2>
 
             <p className="mt-6 max-w-2xl text-base leading-7 text-[#526675] sm:text-lg sm:leading-8">
-              Find answers to common questions about mobile car battery
+              Find answers to common questions about mobile car
               assistance and requesting a service.
             </p>
           </div>

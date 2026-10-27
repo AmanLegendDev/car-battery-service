@@ -14,16 +14,16 @@ const PAGE_URL =
   `${SITE_URL}/privacy-policy`;
 
 const SEO_TITLE =
-  "Privacy Policy | Car Battery Services";
+  "Privacy Policy | Rapid Auto Services";
 
 const SEO_DESCRIPTION =
-  "Read the Privacy Policy for Car Battery Services, including how information is collected, used and handled when using our website or requesting mobile car battery services.";
+  "Read the Privacy Policy for Rapid Auto Services, including how information is collected, used and handled when using our website or requesting mobile car services.";
 
 const OG_IMAGE =
   "/images/seo/og-image.jpg";
 
 const DEFAULT_BUSINESS_NAME =
-  "Car Battery Services";
+  "Rapid Auto Services";
 
 const DEFAULT_REGION =
   "Melbourne West";
@@ -154,7 +154,7 @@ export async function generateMetadata(): Promise<Metadata> {
         PAGE_URL,
 
       siteName:
-        "Car Battery Services",
+        "Rapid Auto Services",
 
       title:
         SEO_TITLE,
@@ -174,7 +174,7 @@ export async function generateMetadata(): Promise<Metadata> {
             630,
 
           alt:
-            "Car Battery Services - Privacy Policy",
+            "Rapid Auto Services - Privacy Policy",
         },
       ],
     },
@@ -281,7 +281,7 @@ function getPrivacyStructuredData() {
             630,
 
           caption:
-            "Car Battery Services - Privacy Policy",
+            "Rapid Auto Services - Privacy Policy",
         },
 
         inLanguage:

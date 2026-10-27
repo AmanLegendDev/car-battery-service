@@ -697,7 +697,7 @@ export default function BookingPage({
                   </p>
 
                   <h2 className="mt-3 text-xl font-bold">
-                    Request a battery service
+                    Request a Automotive service
                   </h2>
 
                   <p className="mt-2 text-sm leading-6 text-[#A8BBC8]">

@@ -1,10 +1,11 @@
+
 export const NAVBAR_PHONE = "+61 467 037 886";
 
 export const NAVBAR_PHONE_HREF = "tel:+61467037886";
 
 export const NAVBAR_BRAND = {
-  name: "Car Battery Service",
-  tagline: "Mobile Battery Service",
+  name: "Rapid Auto Services",
+  tagline: "Automotive Care & Repairs",
   logoSrc: "/images/logo/logo.png",
 } as const;
 

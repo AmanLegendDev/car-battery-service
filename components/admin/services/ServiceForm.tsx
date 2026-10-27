@@ -34,6 +34,7 @@ import CloudinaryImageGallery, {
 } from "@/components/admin/media/CloudinaryImageGallery";
 
 import { createServiceSchema } from "@/validations/service";
+import TiptapEditor from "@/components/editor/TiptapEditor";
 
 interface ProcessStep {
   title: string;
@@ -776,31 +777,22 @@ export default function ServiceForm({
             <div className="md:col-span-2">
               <Label required>Service Description</Label>
 
-              <textarea
-                value={form.description}
-                onChange={(event) =>
-                  updateField(
-                    "description",
-                    event.target.value
-                  )
-                }
-                placeholder="Explain what this service is, why it is needed and what the customer receives."
-                className={textareaClass}
-                rows={8}
-                maxLength={10000}
-              />
+              <p className="mb-3 text-xs leading-5 text-[#A8BBC8]">
+                Write a well-structured service description using headings, paragraphs,
+                lists, links and text formatting. This content is saved as HTML.
+              </p>
 
-              <div className="mt-1.5 flex justify-between">
-                <FieldError
-                  message={getFirstError(
-                    errors,
-                    "description"
-                  )}
+              <div className="overflow-hidden rounded-xl border border-white/[0.08] bg-[#061A2B] focus-within:border-[#0D6E91] focus-within:ring-4 focus-within:ring-[#0D6E91]/15">
+                <TiptapEditor
+                  value={form.description}
+                  onChange={(value) => updateField("description", value)}
                 />
+              </div>
 
-                <span className="text-[11px] text-[#718895]">
-                  {form.description.length}/10000
-                </span>
+              <div className="mt-2">
+                <FieldError
+                  message={getFirstError(errors, "description")}
+                />
               </div>
             </div>
 

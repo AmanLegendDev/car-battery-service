@@ -1,3 +1,4 @@
+
 import { connectDB } from "@/lib/db";
 import SiteSettings from "@/models/SiteSettings";
 import type { IService } from "@/models/Service";
@@ -30,47 +31,55 @@ export default async function ServiceHero({
 }: ServiceHeroProps) {
   const settings = await getServiceHeroRegion();
 
+  const description =
+    service.description?.trim() ||
+    service.shortDescription?.trim() ||
+    "";
+
   return (
-    <section className="relative isolate overflow-hidden bg-[#061A2B]">
-      {/* Ambient atmosphere */}
+    <section className="relative isolate w-full overflow-hidden bg-[#061A2B]">
+      {/* Background atmosphere */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-0"
+        className="pointer-events-none absolute inset-0 overflow-hidden"
       >
-        <div className="absolute -left-40 top-20 h-[520px] w-[520px] rounded-full bg-[#0D6E91]/10 blur-[120px]" />
+        <div className="absolute -left-40 top-20 h-[420px] w-[420px] rounded-full bg-[#0D6E91]/10 blur-[120px]" />
 
-        <div className="absolute right-[-180px] top-[15%] h-[620px] w-[620px] rounded-full bg-[#0D6E91]/[0.08] blur-[140px]" />
+        <div className="absolute -right-40 top-1/3 h-[480px] w-[480px] rounded-full bg-[#0D6E91]/10 blur-[140px]" />
 
-        <div className="absolute inset-0 opacity-[0.035] [background-image:linear-gradient(rgba(255,255,255,1)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,1)_1px,transparent_1px)] [background-size:72px_72px]" />
+        <div className="absolute inset-0 opacity-[0.035] [background-image:linear-gradient(rgba(255,255,255,1)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,1)_1px,transparent_1px)] [background-size:64px_64px]" />
       </div>
 
-      <div className="relative mx-auto max-w-[1420px] px-4 pb-20 pt-10 sm:px-6 sm:pb-28 sm:pt-14 lg:px-8 lg:pb-32 lg:pt-16">
+      {/* Full-width responsive page container */}
+      <div className="relative w-full min-w-0 max-w-none px-4 pb-14 pt-7 sm:px-8 sm:pb-20 sm:pt-10 lg:px-12 lg:pb-24 lg:pt-12 xl:px-16 2xl:px-20 mt-17">
         {/* Breadcrumb */}
-        <div className="mb-12 flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-white/35 sm:mb-16">
+        <nav
+          aria-label="Breadcrumb"
+          className="mb-6 flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-white/45 sm:mb-8"
+        >
           <span>Services</span>
 
           <span className="text-white/20">/</span>
 
-          <span className="max-w-[220px] truncate text-white/60">
+          <span className="max-w-[240px] truncate text-white/75">
             {service.title}
           </span>
-        </div>
+        </nav>
 
-        <div className="grid items-center gap-14 lg:grid-cols-[minmax(0,1.05fr)_minmax(420px,0.95fr)] lg:gap-16 xl:gap-24">
+        {/* Wide service image with title overlay */}
+        <ServiceHeroVisual
+          title={service.title}
+          image={service.heroImage}
+          region={settings.region}
+        />
+
+        {/* Full-width description and CTA */}
+        <div className="mt-8 w-full min-w-0 max-w-none sm:mt-10 lg:mt-12">
           <ServiceHeroContent
             title={service.title}
-            description={
-              service.description?.trim() ||
-              service.shortDescription?.trim()
-            }
+            description={description}
             ctaText={service.ctaText}
             phone={settings.phone}
-          />
-
-          <ServiceHeroVisual
-            title={service.title}
-            image={service.heroImage}
-            region={settings.region}
           />
         </div>
       </div>

@@ -271,7 +271,7 @@ export default function FeaturedTestimonial({
                   </p>
 
                   <p className="mt-1 text-sm text-[#607580]">
-                    Shared with Car Battery Service
+                    Shared with Rapid Auto Services
                   </p>
                 </div>
 

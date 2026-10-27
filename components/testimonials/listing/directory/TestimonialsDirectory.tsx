@@ -50,7 +50,7 @@ export default function TestimonialsDirectory({
             <p className="mt-5 max-w-xl text-sm leading-6 text-[#061A2B]/45 sm:text-base sm:leading-7">
               Read additional feedback shared by
               customers about their experience with
-              Car Battery Service.
+              Rapid Auto Services.
             </p>
           </div>
 

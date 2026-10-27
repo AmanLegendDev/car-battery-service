@@ -1,5 +1,4 @@
 import {
-  BatteryCharging,
   Clock3,
   ShieldCheck,
   MapPin,
@@ -48,11 +47,9 @@ export default function ServiceSnapshot({
     });
   }
 
-  items.push({
-    label: "Category",
-    value: "Battery service",
-    icon: BatteryCharging,
-  });
+  if (items.length === 0) {
+    return null;
+  }
 
   return (
     <section className="bg-[#08263D] text-[#F8FAFC]">
@@ -61,7 +58,6 @@ export default function ServiceSnapshot({
           <div>
             <div className="flex items-center gap-3">
               <span className="h-px w-8 bg-[#FFD400]" />
-
               <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-white/45">
                 At a Glance
               </span>
@@ -77,14 +73,22 @@ export default function ServiceSnapshot({
           </span>
         </div>
 
-        <div className="grid border-y border-white/[0.1] sm:grid-cols-2 lg:grid-cols-4">
+        <div
+          className={`grid border-y border-white/[0.1] ${
+            items.length === 1
+              ? "grid-cols-1"
+              : items.length === 2
+                ? "sm:grid-cols-2"
+                : "sm:grid-cols-2 lg:grid-cols-3"
+          }`}
+        >
           {items.map((item, index) => {
             const Icon = item.icon;
 
             return (
               <div
                 key={`${item.label}-${index}`}
-                className="group border-b border-white/[0.1] px-5 py-7 last:border-b-0 sm:border-r sm:px-6 sm:py-8 sm:nth-[2n]:border-r-0 lg:border-b-0 lg:nth-[2n]:border-r lg:last:border-r-0"
+                className="group border-b border-white/[0.1] px-5 py-7 last:border-b-0 sm:px-6 sm:py-8 sm:nth-[2n]:border-r-0 lg:border-b-0 lg:border-r lg:last:border-r-0"
               >
                 <div className="flex items-start justify-between gap-5">
                   <span className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/[0.1] bg-white/[0.035] text-[#FFD400] transition-colors duration-300 group-hover:border-[#FFD400]/25 group-hover:bg-[#FFD400]/10">
@@ -92,7 +96,7 @@ export default function ServiceSnapshot({
                   </span>
 
                   <span className="text-[10px] font-bold text-white/20">
-                    0{index + 1}
+                    {String(index + 1).padStart(2, "0")}
                   </span>
                 </div>
 

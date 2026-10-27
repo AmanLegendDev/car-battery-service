@@ -45,7 +45,7 @@ export const metadata: Metadata = {
       PAGE_URL,
 
     siteName:
-      "Car Battery Services",
+      "Rapid Auto Services",
 
     title:
       SEO_TITLE,
@@ -63,7 +63,7 @@ export const metadata: Metadata = {
         height: 630,
 
         alt:
-          "Book Mobile Car Battery Replacement Online - Car Battery Services",
+          "Book Mobile Car Battery Replacement Online - Rapid Auto Services",
       },
     ],
   },

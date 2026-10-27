@@ -1,3 +1,4 @@
+
 import Link from "next/link";
 import {
   ArrowRight,
@@ -12,9 +13,12 @@ interface ContactBookingCTAProps {
 export default function ContactBookingCTA({
   businessName,
 }: ContactBookingCTAProps) {
+  const displayBusinessName =
+    businessName?.trim() || "Rapid Auto Services";
+
   return (
     <section className="relative overflow-hidden bg-[#061A2B] px-5 py-20 sm:px-6 lg:px-8 lg:py-24">
-      {/* Atmosphere */}
+      {/* Background Atmosphere */}
       <div
         aria-hidden="true"
         className="pointer-events-none absolute inset-0"
@@ -36,30 +40,31 @@ export default function ContactBookingCTA({
       <div className="relative mx-auto max-w-7xl">
         <div className="overflow-hidden rounded-[2rem] border border-white/10 bg-white/[0.045] shadow-2xl backdrop-blur-xl">
           <div className="grid lg:grid-cols-[1fr_0.72fr]">
-            {/* Main */}
+            {/* Main CTA */}
             <div className="p-7 sm:p-10 lg:p-12">
               <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#FFD400] text-[#061A2B]">
                 <CalendarCheck2 size={23} />
               </div>
 
               <p className="mt-7 text-xs font-bold uppercase tracking-[0.2em] text-[#FFD400]">
-                Online Booking
+                Book Your Service
               </p>
 
               <h2 className="mt-3 max-w-2xl text-3xl font-semibold leading-tight tracking-[-0.035em] text-[#F8FAFC] sm:text-4xl lg:text-5xl">
-                Ready to arrange your battery service?
+                Ready to get your vehicle sorted?
               </h2>
 
               <p className="mt-5 max-w-2xl text-sm leading-7 text-[#A8BBC8] sm:text-base">
-                Use the dedicated booking page to provide the
-                service details needed for your request.
+                Tell us what your vehicle needs and submit
+                your service request online. Our booking
+                process makes it easy to get started.
               </p>
 
               <Link
                 href="/book-service"
                 className="group mt-8 inline-flex min-h-13 items-center gap-2 rounded-full bg-[#FFD400] px-7 text-sm font-bold text-[#061A2B] transition duration-300 hover:-translate-y-0.5 hover:bg-[#F5B800]"
               >
-                Book a Battery Service
+                Book a Service
 
                 <ArrowRight
                   size={17}
@@ -68,14 +73,19 @@ export default function ContactBookingCTA({
               </Link>
             </div>
 
-            {/* Side */}
+            {/* Booking Information */}
             <div className="border-t border-white/10 bg-black/10 p-7 sm:p-10 lg:border-l lg:border-t-0 lg:p-12">
               <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#A8BBC8]">
-                One simple booking path
+                A Simple Booking Process
               </p>
 
               <p className="mt-4 text-xl font-semibold leading-snug text-[#F8FAFC]">
-                {businessName}
+                {displayBusinessName}
+              </p>
+
+              <p className="mt-3 text-sm leading-7 text-[#A8BBC8]">
+                Start with the details of your vehicle and
+                the service you need.
               </p>
 
               <div className="mt-7 space-y-4">
@@ -86,7 +96,7 @@ export default function ContactBookingCTA({
                   />
 
                   <p className="text-sm leading-6 text-[#A8BBC8]">
-                    Select the service you need.
+                    Choose the automotive service you need.
                   </p>
                 </div>
 
@@ -97,7 +107,7 @@ export default function ContactBookingCTA({
                   />
 
                   <p className="text-sm leading-6 text-[#A8BBC8]">
-                    Provide the relevant service details.
+                    Enter your vehicle and contact details.
                   </p>
                 </div>
 
@@ -108,9 +118,29 @@ export default function ContactBookingCTA({
                   />
 
                   <p className="text-sm leading-6 text-[#A8BBC8]">
-                    Submit your booking request.
+                    Submit your request to get started.
                   </p>
                 </div>
+              </div>
+
+              <div className="mt-8 border-t border-white/10 pt-5">
+                <p className="text-xs leading-6 text-[#A8BBC8]">
+                  Need help deciding which service is right
+                  for your vehicle? Explore our available
+                  services before booking.
+                </p>
+
+                <Link
+                  href="/services"
+                  className="group mt-4 inline-flex items-center gap-2 text-sm font-bold text-[#FFD400] transition-colors hover:text-[#F5B800]"
+                >
+                  Explore Services
+
+                  <ArrowRight
+                    size={15}
+                    className="transition-transform duration-300 group-hover:translate-x-1"
+                  />
+                </Link>
               </div>
             </div>
           </div>

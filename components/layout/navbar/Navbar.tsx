@@ -22,7 +22,9 @@ export default async function Navbar() {
     })
     .lean();
 
-  const navbarServices: NavbarService[] = services.map((service) => ({
+  const navbarServices: NavbarService[] = services
+  .slice(0, 5)
+  .map((service) => ({
     id: String(service._id),
     title: service.title,
     slug: service.slug,

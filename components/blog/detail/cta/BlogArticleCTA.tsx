@@ -1,6 +1,8 @@
+
 import Link from "next/link";
 import {
   ArrowRight,
+  ArrowUpRight,
   MessageCircle,
   Phone,
 } from "lucide-react";
@@ -12,6 +14,22 @@ interface BlogArticleCTAProps {
   primaryServiceRegion: string;
 }
 
+function getPhoneHref(phone: string) {
+  const cleanedPhone = phone.trim();
+
+  if (!cleanedPhone) {
+    return null;
+  }
+
+  const phoneNumber = cleanedPhone.replace(/[^\d+]/g, "");
+
+  if (!phoneNumber || !/\d/.test(phoneNumber)) {
+    return null;
+  }
+
+  return `tel:${phoneNumber}`;
+}
+
 function getWhatsAppHref(
   phone: string,
   businessName: string,
@@ -20,13 +38,13 @@ function getWhatsAppHref(
   const cleanNumber = phone.replace(/\D/g, "");
 
   if (!cleanNumber) {
-    return "";
+    return null;
   }
 
   const message = encodeURIComponent(
-    `Hi ${businessName}, I need mobile car battery assistance${
+    `Hi ${businessName}, I'd like to enquire about your automotive services${
       region ? ` in ${region}` : ""
-    }.`,
+    }. Could you please share the available options?`,
   );
 
   return `https://wa.me/${cleanNumber}?text=${message}`;
@@ -38,87 +56,134 @@ export default function BlogArticleCTA({
   whatsapp,
   primaryServiceRegion,
 }: BlogArticleCTAProps) {
+  const displayBusinessName =
+    businessName.trim() || "Rapid Auto Services";
+
+  const region = primaryServiceRegion.trim();
+
+  const phoneHref = getPhoneHref(phone);
+
   const whatsappHref = getWhatsAppHref(
     whatsapp,
-    businessName,
-    primaryServiceRegion,
+    displayBusinessName,
+    region,
   );
 
   return (
-    <section className="relative overflow-hidden bg-[#061A2B] px-5 py-16 text-white sm:px-6 lg:px-8 lg:py-24">
-      {/* Atmosphere */}
-      <div className="pointer-events-none absolute inset-0">
+    <section className="relative isolate overflow-hidden bg-[#061A2B] px-5 py-16 text-white sm:px-6 lg:px-8 lg:py-24">
+      {/* Background atmosphere */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 overflow-hidden"
+      >
         <div className="absolute -left-32 -top-32 h-96 w-96 rounded-full bg-[#0D6E91]/20 blur-[110px]" />
 
-        <div className="absolute -bottom-40 -right-32 h-[28rem] w-[28rem] rounded-full bg-[#FFD400]/10 blur-[120px]" />
-      </div>
+        <div className="absolute -bottom-40 -right-32 h-[28rem] w-[28rem] rounded-full bg-[#FFD400]/[0.08] blur-[120px]" />
 
-      {/* Grid */}
-      <div
-        className="pointer-events-none absolute inset-0 opacity-[0.06]"
-        style={{
-          backgroundImage:
-            "linear-gradient(rgba(255,255,255,0.8) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.8) 1px, transparent 1px)",
-          backgroundSize: "54px 54px",
-        }}
-      />
+        <div
+          className="absolute inset-0 opacity-[0.035]"
+          style={{
+            backgroundImage:
+              "linear-gradient(rgba(255,255,255,0.8) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.8) 1px, transparent 1px)",
+            backgroundSize: "54px 54px",
+          }}
+        />
+      </div>
 
       <div className="relative mx-auto max-w-6xl">
         <div className="overflow-hidden rounded-[2rem] border border-white/10 bg-white/[0.04] p-7 backdrop-blur-sm sm:p-10 lg:p-14">
           <div className="grid gap-10 lg:grid-cols-[1fr_auto] lg:items-end">
             {/* Content */}
-            <div>
+            <div className="max-w-3xl">
               <div className="mb-4 flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.22em] text-[#FFD400]">
-                <span className="h-px w-7 bg-[#FFD400]" />
-                Need Battery Help?
+                <span
+                  aria-hidden="true"
+                  className="h-px w-7 bg-[#FFD400]"
+                />
+
+                Need More Information?
               </div>
 
-              <h2 className="max-w-3xl text-3xl font-semibold leading-[1.08] tracking-[-0.035em] sm:text-4xl lg:text-5xl">
-                Read what you need. Then get the help your vehicle needs.
+              <h2 className="text-3xl font-semibold leading-[1.08] tracking-[-0.035em] sm:text-4xl lg:text-5xl">
+                Knowledge is useful.
+                <span className="text-white/40">
+                  {" "}
+                  The right support makes the difference.
+                </span>
               </h2>
 
-              <p className="mt-5 max-w-2xl text-sm leading-7 text-white/55 sm:text-base">
-                If you need mobile car battery assistance, explore the
-                available services or contact {businessName}
-                {primaryServiceRegion
-                  ? ` in ${primaryServiceRegion}`
-                  : ""}
-                .
+              <p className="mt-5 max-w-2xl text-sm leading-7 text-white/60 sm:text-base">
+                Have questions after reading this article? Contact{" "}
+                <span className="font-semibold text-white/85">
+                  {displayBusinessName}
+                </span>
+                {region ? ` in ${region}` : ""} to discuss your
+                vehicle and enquire about the services available
+                for your needs.
               </p>
             </div>
 
             {/* Actions */}
-            <div className="flex flex-col gap-3 sm:flex-row lg:flex-col">
-              {phone && (
+            <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap lg:min-w-[205px] lg:flex-col">
+              {phoneHref ? (
                 <a
-                  href={`tel:${phone.replace(/\s+/g, "")}`}
-                  className="inline-flex items-center justify-center gap-2 rounded-full bg-[#FFD400] px-6 py-3.5 text-sm font-bold text-[#061A2B] transition hover:bg-[#F5B800]"
+                  href={phoneHref}
+                  aria-label={`Call ${displayBusinessName}`}
+                  className="group inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-[#FFD400] px-6 py-3.5 text-sm font-bold text-[#061A2B] transition-colors hover:bg-[#F5B800] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FFD400] focus-visible:ring-offset-2 focus-visible:ring-offset-[#061A2B]"
                 >
-                  <Phone size={16} />
-                  Call Now
-                </a>
-              )}
+                  <Phone size={16} aria-hidden="true" />
 
-              {whatsappHref && (
+                  Call Now
+
+                  <ArrowRight
+                    size={15}
+                    aria-hidden="true"
+                    className="transition-transform duration-200 group-hover:translate-x-1"
+                  />
+                </a>
+              ) : null}
+
+              {whatsappHref ? (
                 <a
                   href={whatsappHref}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center justify-center gap-2 rounded-full border border-white/15 bg-white/[0.05] px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-white/[0.10]"
+                  aria-label={`Message ${displayBusinessName} on WhatsApp`}
+                  className="group inline-flex min-h-12 items-center justify-center gap-2 rounded-full border border-white/15 bg-white/[0.05] px-6 py-3.5 text-sm font-semibold text-white transition-colors hover:border-white/25 hover:bg-white/[0.10] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
                 >
-                  <MessageCircle size={16} />
+                  <MessageCircle size={16} aria-hidden="true" />
+
                   WhatsApp
+
+                  <ArrowUpRight
+                    size={15}
+                    aria-hidden="true"
+                    className="transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
+                  />
                 </a>
-              )}
+              ) : null}
 
               <Link
                 href="/services"
-                className="inline-flex items-center justify-center gap-2 rounded-full border border-white/10 px-6 py-3.5 text-sm font-semibold text-white/70 transition hover:border-white/20 hover:text-white"
+                className="group inline-flex min-h-12 items-center justify-center gap-2 rounded-full border border-white/10 px-6 py-3.5 text-sm font-semibold text-white/75 transition-colors hover:border-white/20 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
               >
-                View Services
-                <ArrowRight size={16} />
+                Explore Services
+
+                <ArrowRight
+                  size={16}
+                  aria-hidden="true"
+                  className="transition-transform duration-200 group-hover:translate-x-1"
+                />
               </Link>
             </div>
+          </div>
+
+          {/* Bottom note */}
+          <div className="mt-10 border-t border-white/10 pt-5">
+            <p className="text-xs leading-6 text-white/40">
+              Service availability may vary by location and vehicle
+              requirements. Contact the team to discuss your enquiry.
+            </p>
           </div>
         </div>
       </div>

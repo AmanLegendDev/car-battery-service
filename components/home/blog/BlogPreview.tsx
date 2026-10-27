@@ -260,7 +260,7 @@ export default async function BlogPreview() {
 
             <p className="mt-5 max-w-xl text-sm leading-6 text-[#526675] sm:text-base sm:leading-7 lg:ml-auto">
               Practical guides and helpful information for understanding your
-              vehicle and battery needs.
+              vehicle needs.
             </p>
           </div>
         </div>

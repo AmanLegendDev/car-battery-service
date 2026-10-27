@@ -24,7 +24,7 @@ const OG_IMAGE =
   "/images/seo/og-image.jpg";
 
 const DEFAULT_BUSINESS_NAME =
-  "Car Battery Services";
+  "Rapid Auto Services";
 
 const DEFAULT_REGION =
   "Melbourne West";
@@ -196,7 +196,7 @@ export async function generateMetadata(): Promise<Metadata> {
         PAGE_URL,
 
       siteName:
-        "Car Battery Services",
+        "Rapid Auto Services",
 
       title:
         SEO_TITLE,

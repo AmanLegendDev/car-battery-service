@@ -1,14 +1,15 @@
-export const BLOG_LISTING_HERO = {
-  eyebrow: "Car Battery Service Journal",
 
-  title: "Practical answers for everyday battery problems.",
+export const BLOG_LISTING_HERO = {
+  eyebrow: "Rapid Auto Services Journal",
+
+  title: "Practical guidance for every journey.",
 
   description:
-    "Clear, useful information about car batteries, battery replacement, battery testing and jump start assistance.",
+    "Explore useful automotive guides, vehicle maintenance advice, troubleshooting tips and practical information to help you make informed decisions about your car.",
 
   primaryCta: "Explore Articles",
 
-  secondaryCta: "View Services",
+  secondaryCta: "Explore Services",
 
   primaryHref: "#articles",
 

@@ -1,9 +1,10 @@
+
 import Link from "next/link";
 import {
   ArrowRight,
-  BatteryCharging,
   Clock3,
   MapPin,
+  Wrench,
   Zap,
 } from "lucide-react";
 
@@ -21,10 +22,14 @@ interface ContactServicesProps {
   services: ContactService[];
 }
 
+const MAX_SERVICES = 6;
+
 export default function ContactServices({
   services,
 }: ContactServicesProps) {
-  if (services.length === 0) {
+  const visibleServices = services.slice(0, MAX_SERVICES);
+
+  if (visibleServices.length === 0) {
     return null;
   }
 
@@ -39,19 +44,20 @@ export default function ContactServices({
             </span>
 
             <h2 className="mt-4 text-3xl font-semibold leading-tight tracking-[-0.04em] text-[#061A2B] sm:text-4xl lg:text-5xl">
-              Battery assistance for
-              the problem you are facing.
+              Automotive support for
+              {" "}your next journey.
             </h2>
 
             <p className="mt-5 text-base leading-8 text-[#5F7482]">
-              Explore the available battery services and
-              choose the one that matches your situation.
+              Explore our available automotive services and
+              find the right support for your vehicle.
+              Choose a service to learn more about what we offer.
             </p>
           </div>
 
           <Link
             href="/services"
-            className="group inline-flex shrink-0 items-center gap-2 text-sm font-bold text-[#061A2B]"
+            className="group inline-flex shrink-0 items-center gap-2 text-sm font-bold text-[#061A2B] transition-colors hover:text-[#0D6E91]"
           >
             View all services
 
@@ -62,9 +68,9 @@ export default function ContactServices({
           </Link>
         </div>
 
-        {/* Services */}
+        {/* Services — maximum 6 */}
         <div className="mt-10 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {services.map((service, index) => (
+          {visibleServices.map((service, index) => (
             <Link
               key={service.id}
               href={`/services/${service.slug}`}
@@ -77,7 +83,7 @@ export default function ContactServices({
 
               {/* Icon */}
               <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#061A2B] text-[#FFD400] transition duration-300 group-hover:bg-[#FFD400] group-hover:text-[#061A2B]">
-                <BatteryCharging size={22} />
+                <Wrench size={22} />
               </div>
 
               {/* Content */}
@@ -93,7 +99,7 @@ export default function ContactServices({
                 ) : null}
               </div>
 
-              {/* Meta */}
+              {/* Service Details */}
               <div className="mt-7 flex flex-wrap gap-2">
                 {service.estimatedTime ? (
                   <span className="inline-flex items-center gap-1.5 rounded-full bg-[#F8FAFC] px-3 py-1.5 text-[11px] font-semibold text-[#5F7482]">

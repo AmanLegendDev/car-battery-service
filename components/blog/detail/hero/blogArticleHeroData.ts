@@ -1,13 +1,14 @@
+
 export const BLOG_ARTICLE_HERO = {
-  eyebrow: "Car Battery Service Journal",
+  eyebrow: "Rapid Auto Services Journal",
 
   backLabel: "Back to Journal",
 
   defaultReadingLabel: "Read",
 
-  defaultAuthorRole: "Car Battery Service",
+  defaultAuthorRole: "Automotive Contributor",
 
-  imageFallbackLabel: "Car Battery Service",
+  imageFallbackLabel: "Rapid Auto Services",
 
-  scrollLabel: "Read article",
+  scrollLabel: "Read Article",
 } as const;

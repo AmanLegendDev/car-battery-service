@@ -168,7 +168,7 @@ export async function generateMetadata(): Promise<Metadata> {
         PAGE_URL,
 
       siteName:
-        "Car Battery Services",
+        "Rapid Auto Services",
 
       title:
         SEO_TITLE,
@@ -188,7 +188,7 @@ export async function generateMetadata(): Promise<Metadata> {
             630,
 
           alt:
-            "About Car Battery Services - Local Mobile Car Battery Service Melbourne West",
+            "About Rapid Auto Services - Local Mobile Car Service Melbourne West",
         },
       ],
     },

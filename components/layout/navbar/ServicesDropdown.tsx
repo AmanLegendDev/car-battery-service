@@ -1,10 +1,11 @@
+
 "use client";
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import {
   ArrowUpRight,
-  BatteryCharging,
+  Wrench,
   ChevronDown,
 } from "lucide-react";
 
@@ -25,6 +26,9 @@ export default function ServicesDropdown({
 }: ServicesDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Only five services appear in the dropdown.
+  const visibleServices = services.slice(0, 5);
 
   useEffect(() => {
     onOpenChange?.(isOpen);
@@ -67,35 +71,35 @@ export default function ServicesDropdown({
 
   return (
     <div ref={dropdownRef} className="relative">
-      {/* Trigger */}
-      <button
-        type="button"
-        aria-haspopup="menu"
-        aria-expanded={isOpen}
-        onClick={toggleDropdown}
-        className="group flex h-10 items-center gap-1.5 rounded-[13px] px-3.5 text-[12px] font-semibold tracking-[-0.01em] text-[#A8BBC8] transition-all duration-200 hover:bg-white/[0.055] hover:text-[#F8FAFC] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#FFD400]/50 xl:px-4 xl:text-[13px]"
-      >
+      {/* Services trigger */}
+      <div className="flex h-10 items-center">
         <Link
-      href="/services"
-      className="group flex h-10 items-center rounded-l-[13px] px-3.5 text-[12px] font-semibold tracking-[-0.01em] text-[#A8BBC8] transition-all duration-200 hover:bg-white/[0.055] hover:text-[#F8FAFC] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#FFD400]/50 xl:px-4 xl:text-[13px]"
-    >
-      <span>Services</span>
-    </Link>
+          href="/services"
+          onClick={() => setIsOpen(false)}
+          className="flex h-10 items-center rounded-l-[13px] pl-3.5 pr-1.5 text-[12px] font-semibold tracking-[-0.01em] text-[#A8BBC8] transition-all duration-200 hover:bg-white/[0.055] hover:text-[#F8FAFC] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#FFD400]/50 xl:pl-4 xl:text-[13px]"
+        >
+          Services
+        </Link>
 
+        <button
+          type="button"
+          aria-label="Toggle services menu"
+          aria-haspopup="true"
+          aria-expanded={isOpen}
+          onClick={toggleDropdown}
+          className="flex h-10 items-center rounded-r-[13px] px-2 text-[#718895] transition-all duration-200 hover:bg-white/[0.055] hover:text-[#FFD400] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#FFD400]/50"
+        >
+          <ChevronDown
+            aria-hidden="true"
+            className={`h-3.5 w-3.5 transition-transform duration-200 ${
+              isOpen ? "rotate-180 text-[#FFD400]" : ""
+            }`}
+          />
+        </button>
+      </div>
 
-        <ChevronDown
-          aria-hidden="true"
-          className={`h-3.5 w-3.5 transition-transform duration-200 ${
-            isOpen
-              ? "rotate-180 text-[#FFD400]"
-              : "text-[#718895]"
-          }`}
-        />
-      </button>
-
-      {/* Dropdown */}
+      {/* Dropdown panel */}
       <div
-        role="menu"
         aria-hidden={!isOpen}
         className={`absolute right-0 top-[calc(100%+12px)] w-[285px] origin-top-right transition-[opacity,transform] duration-200 ${
           isOpen
@@ -104,14 +108,11 @@ export default function ServicesDropdown({
         }`}
       >
         <div className="overflow-hidden rounded-[22px] border border-white/[0.1] bg-[#08263D]/[0.97] p-2 shadow-[0_28px_80px_rgba(0,0,0,0.42)] backdrop-blur-2xl">
-          {/* Header */}
+          {/* Dropdown heading */}
           <div className="px-3 pb-2.5 pt-3">
             <div className="flex items-center gap-2">
               <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#FFD400]/[0.1] text-[#FFD400]">
-                <BatteryCharging
-                  aria-hidden="true"
-                  className="h-3.5 w-3.5"
-                />
+                <Wrench aria-hidden="true" className="h-3.5 w-3.5" />
               </span>
 
               <div>
@@ -120,15 +121,15 @@ export default function ServicesDropdown({
                 </p>
 
                 <p className="mt-0.5 text-[9px] text-[#718895]">
-                  Mobile battery assistance
+                  Automotive care & repairs
                 </p>
               </div>
             </div>
           </div>
 
-          {/* Service links */}
+          {/* Maximum five services */}
           <div className="space-y-1">
-            {services.map((service) => (
+            {visibleServices.map((service) => (
               <Link
                 key={service.id}
                 href={`/services/${service.slug}`}
@@ -143,7 +144,7 @@ export default function ServicesDropdown({
                   </span>
 
                   <span className="mt-0.5 text-[9px] font-medium uppercase tracking-[0.12em] text-[#718895]">
-                    Mobile service
+                    Automotive service
                   </span>
                 </div>
 
@@ -156,14 +157,14 @@ export default function ServicesDropdown({
               </Link>
             ))}
 
-            {services.length === 0 && (
+            {visibleServices.length === 0 && (
               <div className="px-3 py-4 text-[11px] text-[#718895]">
                 No services currently available.
               </div>
             )}
           </div>
 
-          {/* View all */}
+          {/* View all services */}
           {services.length > 0 && (
             <div className="mt-1 border-t border-white/[0.07] pt-1">
               <Link
@@ -179,7 +180,7 @@ export default function ServicesDropdown({
                   </span>
 
                   <span className="mt-0.5 text-[9px] font-medium uppercase tracking-[0.12em] text-[#718895]">
-                    Explore all services
+                    Explore the full range
                   </span>
                 </div>
 

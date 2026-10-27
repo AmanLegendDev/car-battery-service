@@ -85,7 +85,7 @@ export default function ServiceAreasListingHero({
             </div>
 
             <h1 className="max-w-5xl text-[clamp(3.2rem,8vw,8.6rem)] font-semibold leading-[0.86] tracking-[-0.075em]">
-              Battery
+              Car
               <br />
 
               <span className="text-[#F8FAFC]/35">

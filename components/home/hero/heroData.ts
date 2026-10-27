@@ -1,13 +1,14 @@
+
 export const HERO_DATA = {
-  eyebrow: "MOBILE CAR BATTERY SERVICE",
+  eyebrow: "PROFESSIONAL AUTOMOTIVE ASSISTANCE",
 
   title: {
-    lineOne: "Your Car Battery Fails.",
-    lineTwo: "We Come To You.",
+    lineOne: "Reliable Auto Care.",
+    lineTwo: "Right Where You Are.",
   },
 
   description:
-    "Mobile car battery assistance brought directly to your vehicle's location across Melbourne West.",
+    "Need automotive assistance? Rapid Auto Services brings convenient, professional support to your location. Get in touch to discuss your vehicle's needs and arrange a service.",
 
   primaryCta: {
     label: "Book a Service",
@@ -17,17 +18,16 @@ export const HERO_DATA = {
   secondaryCta: {
     label: "Call Now",
     href: "tel:+61467037886",
-    
   },
 
   phone: {
-    label: "Call us",
+    label: "NEED ASSISTANCE?",
     number: "+61 467 037 886",
     href: "tel:+61467037886",
   },
 
   image: {
     src: "/images/home/hero/hero-main.webp",
-    alt: "Mobile car battery service vehicle",
+    alt: "Professional mobile automotive technician servicing a vehicle",
   },
 } as const;

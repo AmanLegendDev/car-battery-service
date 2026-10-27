@@ -121,10 +121,9 @@ export default function MobileMenu({
           >
             Book Now
           </a>
-
-          <p className="mt-3 text-center text-[9px] font-semibold uppercase tracking-[0.18em] text-[#718895]">
-            Mobile battery assistance
-          </p>
+<p className="mt-3 text-center text-[9px] font-semibold uppercase tracking-[0.18em] text-[#718895]">
+  Automotive Care & Repairs
+</p>
         </div>
       </aside>
     </div>

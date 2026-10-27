@@ -5,6 +5,7 @@ import {
   CheckCircle2,
   MapPin,
   Phone,
+  Wrench,
 } from "lucide-react";
 
 import { CONTACT_HERO } from "./contactHeroData";
@@ -81,7 +82,7 @@ export default function ContactHero({
             <h1 className="mt-7 max-w-3xl text-4xl font-semibold leading-[1.05] tracking-[-0.045em] text-[#F8FAFC] sm:text-5xl md:text-6xl lg:text-[4.5rem]">
               Need help with your{" "}
               <span className="relative inline-block text-[#FFD400]">
-                car battery?
+                car?
                 <span
                   aria-hidden="true"
                   className="absolute -bottom-1 left-0 h-px w-full bg-[#FFD400]/50"
@@ -102,7 +103,7 @@ export default function ContactHero({
                 />
 
                 <span>
-                  Mobile battery assistance in{" "}
+                  Automotive assistance in{" "}
                   <span className="font-semibold text-[#F8FAFC]">
                     {business.primaryServiceRegion}
                   </span>
@@ -152,7 +153,7 @@ export default function ContactHero({
                   size={15}
                   className="text-[#FFD400]"
                 />
-                Battery assistance
+               Vehicle maintenance
               </div>
             </div>
           </div>
@@ -170,7 +171,7 @@ export default function ContactHero({
               <div className="relative">
                 <div className="flex items-start justify-between gap-5">
                   <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#FFD400] text-[#061A2B] shadow-lg">
-                    <BatteryCharging size={27} />
+                    <Wrench size={27} />
                   </div>
 
                   <span className="rounded-full border border-white/10 bg-white/[0.045] px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.16em] text-[#A8BBC8]">

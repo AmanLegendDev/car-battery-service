@@ -1,16 +1,17 @@
+
 export const TESTIMONIALS_LISTING_HERO = {
   eyebrow: "Customer Experiences",
 
   title: "Real experiences. Genuine words.",
 
   description:
-    "Explore feedback shared by customers about their experience with Car Battery Service.",
+    "Discover customer feedback about their experiences with Rapid Auto Services. Explore the feedback shared and learn more about the service experience.",
 
-  primaryCta: "Read customer experiences",
+  primaryCta: "Read Customer Experiences",
 
   primaryHref: "#testimonials",
 
-  secondaryCta: "Explore services",
+  secondaryCta: "Explore Services",
 
   secondaryHref: "/services",
 } as const;

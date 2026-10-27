@@ -31,7 +31,7 @@ export default function ServiceAreasEmptyState() {
 
           <p className="mt-6 max-w-xl text-sm leading-7 text-[#061A2B]/50 sm:text-base">
             There are currently no active service areas listed.
-            Please contact Car Battery Service to discuss where you
+            Please contact Rapid Auto Services to discuss where you
             need assistance.
           </p>
 

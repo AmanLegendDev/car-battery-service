@@ -36,14 +36,14 @@ export const metadata: Metadata = {
    * so the global template does not append the brand again.
    */
   title: {
-    default: "Car Battery Services",
-    template: "%s | Car Battery Services",
+    default: "Rapid Auto Services",
+    template: "%s | Rapid Auto Services",
   },
 
   description:
-    "Mobile car battery services across Melbourne West, including battery replacement, battery testing, jump starts, starter motor replacement and alternator replacement.",
+    "Mobile Rapid Auto Services across Melbourne West, including battery replacement, battery testing, jump starts, starter motor replacement and alternator replacement.",
 
-  applicationName: "Car Battery Services",
+  applicationName: "Rapid Auto Services",
 
   generator: "Next.js",
 
@@ -60,13 +60,13 @@ export const metadata: Metadata = {
 
   authors: [
     {
-      name: "Car Battery Services",
+      name: "Rapid Auto Services",
     },
   ],
 
-  creator: "Car Battery Services",
+  creator: "Rapid Auto Services",
 
-  publisher: "Car Battery Services",
+  publisher: "Rapid Auto Services",
 
   /*
    * Keep the current site-wide canonical here as the fallback.
@@ -113,19 +113,19 @@ export const metadata: Metadata = {
     type: "website",
     locale: "en_AU",
     url: SITE_URL,
-    siteName: "Car Battery Services",
+    siteName: "Rapid Auto Services",
 
-    title: "Car Battery Services",
+    title: "Rapid Auto Services",
 
     description:
-      "Mobile car battery services across Melbourne West, including battery replacement, battery testing, jump starts, starter motor replacement and alternator replacement.",
+      "Mobile Rapid Auto Services across Melbourne West, including battery replacement, battery testing, jump starts, starter motor replacement and alternator replacement.",
 
     images: [
       {
         url: "/images/seo/og-image.jpg",
         width: 1200,
         height: 630,
-        alt: "Car Battery Services - Mobile Car Battery Service Melbourne West",
+        alt: "Rapid Auto Services - Mobile Rapid Auto Service Melbourne West",
       },
     ],
   },
@@ -136,15 +136,15 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
 
-    title: "Car Battery Services",
+    title: "Rapid Auto Services",
 
     description:
-      "Mobile car battery services across Melbourne West, including battery replacement, testing, jump starts, starter motor replacement and alternator replacement.",
+      "Mobile Rapid Auto Services across Melbourne West, including battery replacement, testing, jump starts, starter motor replacement and alternator replacement.",
 
     images: [
       {
         url: "/images/seo/og-image.jpg",
-        alt: "Car Battery Services - Melbourne West",
+        alt: "Rapid Auto Services - Melbourne West",
       },
     ],
   },

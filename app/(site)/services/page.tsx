@@ -15,7 +15,7 @@ const PAGE_URL =
   `${SITE_URL}/services`;
 
 const SEO_TITLE =
-  "Car Battery Services | Replacement, Testing & Jump Starts";
+  "Rapid Auto Services | Replacement, Testing & Jump Starts";
 
 const SEO_DESCRIPTION =
   "Battery replacement, battery testing, jump starts, starter motor and alternator replacement – all done on-site at your vehicle in Melbourne's west.";
@@ -24,7 +24,7 @@ const OG_IMAGE =
   "/images/seo/service-og.jpg";
 
 const DEFAULT_BUSINESS_NAME =
-  "Car Battery Services";
+  "Rapid Auto Services";
 
 const DEFAULT_REGION =
   "Melbourne West";
@@ -167,12 +167,12 @@ export async function generateMetadata(): Promise<Metadata> {
      * `absolute` is intentional.
      *
      * The global layout has:
-     * "%s | Car Battery Services"
+     * "%s | Rapid Auto Services"
      *
      * Using `absolute` prevents:
      *
-     * Car Battery Services | Replacement, Testing & Jump Starts
-     * | Car Battery Services
+     * Rapid Auto Services | Replacement, Testing & Jump Starts
+     * | Rapid Auto Services
      *
      * and preserves the exact title from the SEO sheet.
      */
@@ -197,7 +197,7 @@ export async function generateMetadata(): Promise<Metadata> {
         PAGE_URL,
 
       siteName:
-        "Car Battery Services",
+        "Rapid Auto Services",
 
       title:
         SEO_TITLE,
@@ -215,7 +215,7 @@ export async function generateMetadata(): Promise<Metadata> {
           height: 630,
 
           alt:
-            "Car Battery Services - Replacement, Testing and Jump Starts",
+            "Rapid Auto Services - Replacement, Testing and Jump Starts",
         },
       ],
     },
@@ -348,7 +348,7 @@ function getServicesStructuredData(
         `${PAGE_URL}#itemlist`,
 
       name:
-        "Car Battery Services",
+        "Rapid Auto Services",
 
       numberOfItems:
         services.length,

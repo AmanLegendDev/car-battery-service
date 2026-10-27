@@ -107,8 +107,8 @@ type FormErrors = Record<string, string>;
 
 const EMPTY_CONTENT = "<p></p>";
 
-const DEFAULT_AUTHOR_NAME = "Car Battery Service";
-const DEFAULT_AUTHOR_ROLE = "Mobile Car Battery Service";
+const DEFAULT_AUTHOR_NAME = "Rapid Auto Services";
+const DEFAULT_AUTHOR_ROLE = "Automotive Service Specialists";
 
 function slugify(value: string) {
   return value

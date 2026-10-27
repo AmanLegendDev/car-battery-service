@@ -1,11 +1,12 @@
+
 import Image from "next/image";
 import Link from "next/link";
 import {
   ArrowUpRight,
-  BatteryCharging,
   Clock3,
   MapPin,
   Siren,
+  Wrench,
 } from "lucide-react";
 
 interface ServiceListItemProps {
@@ -32,74 +33,86 @@ export default function ServiceListItem({
   service,
   index,
 }: ServiceListItemProps) {
+  const serviceHref = `/services/${service.slug}`;
+
   return (
     <article className="group relative border-t border-[#061A2B]/10">
-      <div className="grid gap-8 py-10 sm:py-12 lg:grid-cols-[72px_minmax(0,1fr)_minmax(300px,0.72fr)] lg:items-center lg:gap-10 lg:py-14">
-        {/* Number */}
+      <div className="grid gap-7 py-9 sm:gap-9 sm:py-12 lg:grid-cols-[64px_minmax(0,1fr)_minmax(300px,0.72fr)] lg:items-center lg:gap-10 lg:py-14">
+        {/* Service number */}
         <div className="hidden lg:block">
-          <span className="text-sm font-bold tracking-[0.12em] text-[#061A2B]/25 transition-colors duration-300 group-hover:text-[#061A2B]">
+          <span className="text-sm font-bold tracking-[0.12em] text-[#061A2B]/30 transition-colors duration-300 group-hover:text-[#0D6E91]">
             {String(index + 1).padStart(2, "0")}
           </span>
         </div>
 
-        {/* Main information */}
+        {/* Service information */}
         <div className="min-w-0">
           <div className="mb-5 flex items-center gap-3 lg:hidden">
-            <span className="text-xs font-bold tracking-[0.12em] text-[#061A2B]/25">
+            <span className="text-xs font-bold tracking-[0.12em] text-[#061A2B]/35">
               {String(index + 1).padStart(2, "0")}
             </span>
 
             <span className="h-px w-8 bg-[#FFD400]" />
           </div>
 
-          <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.2em] text-[#061A2B]/35">
-            <BatteryCharging className="h-3.5 w-3.5" />
-            <span>Battery Service</span>
+          <div className="inline-flex items-center gap-2 rounded-full border border-[#0D6E91]/15 bg-[#0D6E91]/[0.06] px-3 py-1.5 text-[9px] font-bold uppercase tracking-[0.17em] text-[#0D6E91]">
+            <Wrench aria-hidden="true" className="h-3.5 w-3.5" />
+            <span>Vehicle Service</span>
           </div>
 
-          <h2 className="mt-4 max-w-2xl text-3xl font-semibold leading-[0.98] tracking-[-0.045em] sm:text-4xl lg:text-[3.25rem]">
+          <h3 className="mt-5 max-w-2xl text-3xl font-semibold leading-[0.98] tracking-[-0.045em] sm:text-4xl lg:text-[3.25rem]">
             {service.title}
-          </h2>
+          </h3>
 
           {service.shortDescription ? (
-            <p className="mt-5 max-w-xl text-sm leading-7 text-[#061A2B]/50 sm:text-base">
+            <p className="mt-5 max-w-xl text-sm leading-7 text-[#061A2B]/65 sm:text-base sm:leading-8">
               {service.shortDescription}
             </p>
           ) : null}
 
-          {/* Service metadata */}
-          <div className="mt-7 flex flex-wrap gap-x-5 gap-y-3">
-            {service.estimatedTime ? (
-              <span className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.13em] text-[#061A2B]/40">
-                <Clock3 className="h-3.5 w-3.5 text-[#0D6E91]" />
+          {/* Service details */}
+          <div className="mt-6 flex flex-wrap gap-x-5 gap-y-3">
+            {service.estimatedTime?.trim() ? (
+              <span className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.12em] text-[#061A2B]/55">
+                <Clock3
+                  aria-hidden="true"
+                  className="h-3.5 w-3.5 shrink-0 text-[#0D6E91]"
+                />
                 {service.estimatedTime}
               </span>
             ) : null}
 
             {service.onSiteService ? (
-              <span className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.13em] text-[#061A2B]/40">
-                <MapPin className="h-3.5 w-3.5 text-[#0D6E91]" />
+              <span className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.12em] text-[#061A2B]/55">
+                <MapPin
+                  aria-hidden="true"
+                  className="h-3.5 w-3.5 shrink-0 text-[#0D6E91]"
+                />
                 At your vehicle
               </span>
             ) : null}
 
             {service.emergencyService ? (
-              <span className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.13em] text-[#061A2B]/40">
-                <Siren className="h-3.5 w-3.5 text-[#0D6E91]" />
+              <span className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.12em] text-[#061A2B]/55">
+                <Siren
+                  aria-hidden="true"
+                  className="h-3.5 w-3.5 shrink-0 text-[#0D6E91]"
+                />
                 Emergency service
               </span>
             ) : null}
           </div>
 
-          {/* CTA */}
+          {/* Service page link */}
           <Link
-            href={`/services/${service.slug}`}
-            className="group/link mt-8 inline-flex items-center gap-3 text-xs font-bold uppercase tracking-[0.16em] text-[#061A2B]/70 transition-colors hover:text-[#061A2B]"
+            href={serviceHref}
+            className="group/link mt-8 inline-flex items-center gap-3 rounded-full text-xs font-bold uppercase tracking-[0.15em] text-[#061A2B]/80 transition-colors hover:text-[#0D6E91] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0D6E91] focus-visible:ring-offset-4"
           >
             <span>{service.ctaText?.trim() || "Explore Service"}</span>
 
-            <span className="flex h-9 w-9 items-center justify-center rounded-full border border-[#061A2B]/15 transition-all duration-300 group-hover/link:rotate-45 group-hover/link:border-[#061A2B] group-hover/link:bg-[#061A2B] group-hover/link:text-[#FFD400]">
+            <span className="flex h-10 w-10 items-center justify-center rounded-full border border-[#061A2B]/15 bg-white transition-all duration-300 group-hover/link:rotate-45 group-hover/link:border-[#061A2B] group-hover/link:bg-[#061A2B] group-hover/link:text-[#FFD400]">
               <ArrowUpRight
+                aria-hidden="true"
                 className="h-4 w-4"
                 strokeWidth={1.8}
               />
@@ -107,40 +120,49 @@ export default function ServiceListItem({
           </Link>
         </div>
 
-        {/* Visual */}
+        {/* Service image */}
         <Link
-          href={`/services/${service.slug}`}
+          href={serviceHref}
           aria-label={`Explore ${service.title}`}
-          className="relative block"
+          className="relative block min-w-0 rounded-[26px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0D6E91] focus-visible:ring-offset-4 sm:rounded-[30px]"
         >
-          <div className="relative aspect-[16/10] overflow-hidden rounded-[26px] bg-[#08263D] sm:rounded-[30px] lg:aspect-[4/3]">
+          <div className="relative aspect-[16/10] overflow-hidden rounded-[26px] bg-gradient-to-br from-[#10354B] via-[#08263D] to-[#061A2B] sm:rounded-[30px] lg:aspect-[4/3]">
             {service.heroImage?.secureUrl ? (
               <Image
                 src={service.heroImage.secureUrl}
                 alt={service.heroImage.alt?.trim() || service.title}
                 fill
-                sizes="(max-width: 1024px) 100vw, 420px"
+                sizes="(max-width: 639px) 100vw, (max-width: 1023px) 90vw, 42vw"
                 className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.045]"
               />
             ) : (
-              <div className="absolute inset-0 bg-[radial-gradient(circle_at_60%_35%,rgba(13,110,145,0.4),transparent_35%),linear-gradient(145deg,#08263D_0%,#061A2B_75%)]">
-                <div className="absolute left-1/2 top-1/2 flex h-24 w-24 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-[26px] border border-[#FFD400]/20 bg-[#061A2B]/60 text-[#FFD400] backdrop-blur-xl">
-                  <BatteryCharging
-                    className="h-11 w-11"
-                    strokeWidth={1.2}
+              <div
+                aria-hidden="true"
+                className="absolute inset-0 flex items-center justify-center bg-[radial-gradient(circle_at_70%_25%,rgba(13,110,145,0.38),transparent_40%),linear-gradient(145deg,#10354B_0%,#08263D_50%,#061A2B_100%)]"
+              >
+                <div className="flex h-24 w-24 items-center justify-center rounded-[26px] border border-[#FFD400]/25 bg-white/[0.04] text-[#FFD400] shadow-2xl backdrop-blur-xl">
+                  <Wrench
+                    className="h-10 w-10"
+                    strokeWidth={1.25}
                   />
                 </div>
+
+                <div className="absolute bottom-0 left-0 h-1 w-1/3 bg-[#FFD400]" />
               </div>
             )}
 
-            <div className="absolute inset-0 bg-gradient-to-t from-[#061A2B]/65 via-transparent to-transparent opacity-70" />
+            <div
+              aria-hidden="true"
+              className="absolute inset-0 bg-gradient-to-t from-[#061A2B]/65 via-transparent to-transparent opacity-80"
+            />
 
-            <span className="absolute left-4 top-4 rounded-full border border-white/[0.12] bg-[#061A2B]/55 px-3 py-2 text-[9px] font-bold uppercase tracking-[0.17em] text-white/70 backdrop-blur-xl">
+            <span className="absolute left-4 top-4 rounded-full border border-white/15 bg-[#061A2B]/60 px-3 py-2 text-[9px] font-bold uppercase tracking-[0.15em] text-white/85 backdrop-blur-xl">
               Service {String(index + 1).padStart(2, "0")}
             </span>
 
             <span className="absolute bottom-4 right-4 flex h-11 w-11 items-center justify-center rounded-full bg-[#FFD400] text-[#061A2B] shadow-[0_10px_30px_rgba(0,0,0,0.2)] transition-transform duration-300 group-hover:rotate-45">
               <ArrowUpRight
+                aria-hidden="true"
                 className="h-4 w-4"
                 strokeWidth={2}
               />

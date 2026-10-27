@@ -1,10 +1,11 @@
+
 export const TERMS_HERO = {
   eyebrow: "Legal Information",
 
   title: "Terms & Conditions",
 
   description:
-    "Please read these terms carefully before using our website or requesting a mobile car battery service.",
+    "Please read these terms carefully before using the Rapid Auto Services website, contacting our team or requesting automotive services.",
 
   primaryCta: "Book a Service",
   primaryHref: "/book-service",

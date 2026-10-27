@@ -81,11 +81,13 @@ export default function PrivacyHero({
                 Clear information. Thoughtful handling.
               </h2>
 
-              <p className="mt-3 text-sm leading-7 text-[#A8BBC8]">
-                This policy outlines the types of information that may be
-                handled when you interact with the website or request
-                battery-related assistance.
-              </p>
+           
+<p className="mt-3 text-sm leading-7 text-[#A8BBC8]">
+  This policy outlines the types of information that may be
+  handled when you interact with our website, contact our team
+  or request automotive services.
+</p>
+
 
               <div className="mt-7 border-t border-[#F8FAFC]/10 pt-5">
                 <div className="flex items-start gap-3">

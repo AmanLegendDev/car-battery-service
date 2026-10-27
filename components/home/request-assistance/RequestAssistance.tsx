@@ -173,7 +173,7 @@ export default async function RequestAssistance() {
               {/* Bottom detail */}
               <div className="mt-8 border-t border-white/10 pt-5">
                 <p className="text-xs leading-5 text-[#A8BBC8]">
-                  {settings.businessName} · Mobile car battery assistance ·{" "}
+                  {settings.businessName} · Mobile car assistance ·{" "}
                   {settings.primaryServiceRegion}
                 </p>
               </div>
