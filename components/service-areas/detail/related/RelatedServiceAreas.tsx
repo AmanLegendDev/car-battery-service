@@ -67,7 +67,7 @@ export default function RelatedServiceAreas({
             </div>
 
             <p className="max-w-sm text-sm leading-7 text-[#061A2B]/45">
-              Explore other active service areas listed by Rapid Auto
+              Explore other active service areas listed by Mobile Car
               Service.
             </p>
           </div>

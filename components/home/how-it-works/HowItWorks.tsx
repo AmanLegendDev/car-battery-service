@@ -42,7 +42,7 @@ const PROCESS_STEPS = [
 ];
 
 export default async function HowItWorks() {
-  let businessName = "Rapid Auto Services";
+  let businessName = "Mobile Car Services";
   let serviceRegion = "Melbourne West";
   let phone = "+61 467 037 886";
   let callNumber = "+61 467 037 886";

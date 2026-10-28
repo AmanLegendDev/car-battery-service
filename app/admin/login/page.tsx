@@ -7,7 +7,7 @@ import LoginForm from "@/components/auth/LoginForm";
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "Admin Login | Car Battery Service",
+  title: "Admin Login | Mobile Car Services",
   robots: {
     index: false,
     follow: false,
@@ -55,7 +55,7 @@ export default async function AdminLoginPage() {
             </h1>
 
             <p className="mx-auto mt-2 max-w-[320px] text-sm leading-6 text-[#718895]">
-              Sign in to manage your Car Battery Service website.
+              Sign in to manage your Mobile Car Services website.
             </p>
           </div>
 

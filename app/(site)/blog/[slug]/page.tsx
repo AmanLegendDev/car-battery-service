@@ -83,7 +83,7 @@ async function getSiteSettings() {
   return {
     businessName:
       settings?.businessName ||
-      "Car Battery Service",
+      "Mobile Car Services",
 
     phone:
       settings?.primaryCallNumber ||
@@ -460,7 +460,7 @@ export async function generateMetadata({
   if (!post) {
     return {
       title:
-        "Article Not Found | Car Battery Service",
+        "Article Not Found | Mobile Car Services",
 
       robots: {
         index: false,

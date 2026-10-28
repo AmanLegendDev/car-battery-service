@@ -17,10 +17,10 @@ const SITE_URL =
   "https://carbatteryservices.com.au";
 
 const DEFAULT_BUSINESS_NAME =
-  "Car Battery Service";
+  "Mobile Car Services";
 
 const DEFAULT_DESCRIPTION =
-  "Mobile car battery assistance from Car Battery Service.";
+  "Mobile car battery assistance from Mobile Car Services.";
 
 const DEFAULT_OG_IMAGE =
   "/images/seo/service-og.jpg";
@@ -88,7 +88,7 @@ export async function generateMetadata({
   if (!service) {
     return {
       title:
-        "Service Not Found | Car Battery Service",
+        "Service Not Found | Mobile Car Services",
 
       description:
         "The requested service could not be found.",

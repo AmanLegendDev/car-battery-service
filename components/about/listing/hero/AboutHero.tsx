@@ -4,6 +4,7 @@ import {
   BatteryCharging,
   MapPin,
   Phone,
+  Wrench,
 } from "lucide-react";
 
 import { ABOUT_HERO } from "./aboutHeroData";
@@ -67,7 +68,7 @@ export default function AboutHero({
           <div className="max-w-3xl">
             <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.045] px-4 py-2 backdrop-blur-md">
               <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[#FFD400] text-[#061A2B]">
-                <BatteryCharging size={14} />
+                <Wrench size={14} />
               </span>
 
               <span className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#A8BBC8]">
@@ -138,7 +139,7 @@ export default function AboutHero({
               <div className="relative">
                 <div className="flex items-center justify-between">
                   <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#FFD400] text-[#061A2B]">
-                    <BatteryCharging size={27} />
+                    <Wrench size={27} />
                   </div>
 
                   <span className="rounded-full border border-white/10 bg-white/[0.045] px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.16em] text-[#A8BBC8]">

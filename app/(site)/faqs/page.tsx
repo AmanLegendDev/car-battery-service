@@ -21,13 +21,13 @@ const SEO_TITLE =
   "Car Battery FAQs | Signs, Testing, Replacement & Jump Starts";
 
 const SEO_DESCRIPTION =
-  "Frequently asked questions about mobile car battery service in Melbourne West, including battery replacement, battery testing and jump start assistance.";
+  "Frequently asked questions about mobile Mobile Car Services in Melbourne West, including battery replacement, battery testing and jump start assistance.";
 
 const OG_IMAGE =
   "/images/seo/og-image.jpg";
 
 const DEFAULT_BUSINESS_NAME =
-  "Rapid Auto Services";
+  "Mobile Car Services";
 
 /* ============================================================
    PUBLIC FAQ
@@ -341,7 +341,7 @@ export async function generateMetadata(): Promise<Metadata> {
         PAGE_URL,
 
       siteName:
-        "Rapid Auto Services",
+        "Mobile Car Services",
 
       title:
         SEO_TITLE,

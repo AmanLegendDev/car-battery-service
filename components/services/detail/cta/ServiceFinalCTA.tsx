@@ -25,7 +25,7 @@ async function getCTASettings() {
     .lean();
 
   return {
-    businessName: settings?.businessName || "Rapid Auto Services",
+    businessName: settings?.businessName || "Mobile Car Services",
     region: settings?.primaryServiceRegion || "",
     phone: settings?.primaryCallNumber || settings?.phone || "",
     bookingCta: settings?.bookingCta || "Book a Service",

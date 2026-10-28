@@ -1,6 +1,6 @@
 
 export const BLOG_ARTICLE_HERO = {
-  eyebrow: "Rapid Auto Services Journal",
+  eyebrow: "Mobile Car Services Journal",
 
   backLabel: "Back to Journal",
 
@@ -8,7 +8,7 @@ export const BLOG_ARTICLE_HERO = {
 
   defaultAuthorRole: "Automotive Contributor",
 
-  imageFallbackLabel: "Rapid Auto Services",
+  imageFallbackLabel: "Mobile Car Services",
 
   scrollLabel: "Read Article",
 } as const;

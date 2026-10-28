@@ -57,7 +57,7 @@ export default function RelatedBlogCard({
             src={image}
             alt={
               post.coverImage?.alt ||
-              `${post.title} - Car Battery Service`
+              `${post.title} - Mobile Car Services`
             }
             fill
             sizes="(max-width: 768px) 100vw, 33vw"

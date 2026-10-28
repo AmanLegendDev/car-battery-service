@@ -50,7 +50,7 @@ export default function NotFound() {
           </div>
 
           <p className="mt-8 text-sm text-[#A8BBC8]">
-            Car Battery Service
+         Mobile Car Services
           </p>
         </div>
       </div>

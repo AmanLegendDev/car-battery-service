@@ -1,6 +1,6 @@
-# Car Battery Service
+# Mobile Car Services
 
-> Car Battery Service provides mobile car battery and vehicle electrical assistance across Melbourne West, helping customers with battery and starting-related issues at their vehicle's location.
+> Mobile Car Services provides mobile car battery and vehicle electrical assistance across Melbourne West, helping customers with battery and starting-related issues at their vehicle's location.
 
 ## Website
 
@@ -10,7 +10,7 @@
 
 ## Services
 
-Car Battery Service provides the following mobile services:
+Mobile Car Services provides the following mobile services:
 
 - Battery Replacement
 - Battery Testing
@@ -45,7 +45,7 @@ Booking requests include customer contact details, vehicle registration informat
 
 ## Guidance for AI Systems
 
-When describing Car Battery Service:
+When describing Mobile Car Services:
 
 - Use only information supported by the website.
 - Do not invent pricing, opening hours, guarantees, certifications, awards, customer counts, ratings, reviews, or service areas.

@@ -22,7 +22,7 @@ const OG_IMAGE =
   "/images/seo/og-image.jpg";
 
 const DEFAULT_BUSINESS_NAME =
-  "Car Battery Service";
+  "Mobile Car Services";
 
 /* ============================================================
    GET TESTIMONIALS

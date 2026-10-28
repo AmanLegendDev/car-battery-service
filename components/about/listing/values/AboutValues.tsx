@@ -1,7 +1,8 @@
+
 import {
-  BatteryCharging,
+  CarFront,
+  MapPin,
   MessageCircle,
-  Navigation,
 } from "lucide-react";
 
 interface AboutValuesProps {
@@ -19,33 +20,45 @@ interface AboutValuesProps {
 
 const VALUES = [
   {
-    icon: BatteryCharging,
+    icon: CarFront,
     number: "01",
-    title: "Battery focused",
+    title: "Vehicle-focused care",
     description:
-      "The service is focused specifically on common car battery needs and assistance.",
+      "From vehicle maintenance to battery services and other automotive needs, the focus is on finding the right assistance for your vehicle.",
   },
   {
-    icon: Navigation,
+    icon: MapPin,
     number: "02",
-    title: "Mobile by nature",
+    title: "Convenient mobile service",
     description:
-      "The service model is built around helping customers at their vehicle's location.",
+      "Mobile assistance designed around your location. Contact the team to discuss your requirements and confirm service availability in your area.",
   },
   {
     icon: MessageCircle,
     number: "03",
-    title: "Simple communication",
+    title: "Clear communication",
     description:
-      "Customers can use direct contact options or the dedicated booking flow to get started.",
+      "Get in touch to explain your vehicle's needs, understand the available service options and arrange a suitable appointment.",
   },
 ] as const;
 
 export default function AboutValues({
   business,
 }: AboutValuesProps) {
+  const businessName =
+    business.businessName || "Mobile Car Services";
+
+  const serviceRegion =
+    business.primaryServiceRegion ||
+    "Melbourne West, Victoria";
+
+  const description =
+    business.description ||
+    `${businessName} provides mobile automotive assistance, including vehicle maintenance, battery services and other vehicle-related support. Contact the team to discuss your requirements and confirm availability.`;
+
   return (
     <section className="relative overflow-hidden bg-[#061A2B] px-5 py-20 sm:px-6 lg:px-8 lg:py-28">
+      {/* Background effects */}
       <div
         aria-hidden="true"
         className="pointer-events-none absolute inset-0"
@@ -65,23 +78,22 @@ export default function AboutValues({
       </div>
 
       <div className="relative mx-auto max-w-7xl">
+        {/* Section heading */}
         <div className="max-w-2xl">
           <span className="text-xs font-bold uppercase tracking-[0.2em] text-[#FFD400]">
-            How We Work
+            What Guides Us
           </span>
 
           <h2 className="mt-4 text-3xl font-semibold leading-tight tracking-[-0.04em] text-[#F8FAFC] sm:text-4xl lg:text-5xl">
-            Built around the problem in front of you.
+            Automotive support built around you.
           </h2>
 
           <p className="mt-5 text-base leading-8 text-[#A8BBC8]">
-            {business.businessName} keeps its service focus
-            straightforward: mobile battery assistance for
-            customers who need help with a battery-related
-            problem.
+            {description}
           </p>
         </div>
 
+        {/* Core values */}
         <div className="mt-12 grid gap-4 md:grid-cols-3">
           {VALUES.map((value) => {
             const Icon = value.icon;
@@ -92,8 +104,8 @@ export default function AboutValues({
                 className="group rounded-[1.75rem] border border-white/10 bg-white/[0.045] p-7 backdrop-blur-md transition duration-300 hover:-translate-y-1 hover:border-white/20 hover:bg-white/[0.07]"
               >
                 <div className="flex items-center justify-between">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#FFD400] text-[#061A2B]">
-                    <Icon size={21} />
+                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#FFD400] text-[#061A2B] transition-transform duration-300 group-hover:scale-105">
+                    <Icon size={21} aria-hidden="true" />
                   </div>
 
                   <span className="text-[11px] font-bold tracking-[0.16em] text-[#A8BBC8]">
@@ -112,6 +124,33 @@ export default function AboutValues({
             );
           })}
         </div>
+
+        {/* Service region */}
+        {business.primaryServiceRegion ? (
+          <div className="mt-8 flex flex-col gap-4 rounded-[1.5rem] border border-white/10 bg-white/[0.045] p-6 sm:flex-row sm:items-center sm:justify-between sm:p-7">
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#FFD400]">
+                Where We Operate
+              </p>
+
+              <p className="mt-2 text-lg font-semibold text-[#F8FAFC] sm:text-xl">
+                {serviceRegion}
+              </p>
+
+              <p className="mt-2 max-w-2xl text-sm leading-7 text-[#A8BBC8]">
+                Contact our team to discuss your vehicle's
+                requirements and confirm service availability
+                in your area.
+              </p>
+            </div>
+
+            <MapPin
+              size={25}
+              className="shrink-0 text-[#FFD400]"
+              aria-hidden="true"
+            />
+          </div>
+        ) : null}
       </div>
     </section>
   );

@@ -80,7 +80,7 @@ export default function ServiceAreaServices({
           </div>
 
           <p className="text-sm leading-7 text-[#A8BBC8]">
-            Explore the active services currently listed by Rapid Auto
+            Explore the active services currently listed by Mobile Car
             Service.
           </p>
         </div>

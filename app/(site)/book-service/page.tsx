@@ -17,7 +17,7 @@ const SEO_TITLE =
   "Book Mobile Car Battery Replacement Online | 7 Days";
 
 const SEO_DESCRIPTION =
-  "Book a mobile car battery service in Melbourne West. Choose your service, provide your vehicle and location details, and request an appointment online.";
+  "Book a Mobile Car Services in Melbourne West. Choose your service, provide your vehicle and location details, and request an appointment online.";
 
 const OG_IMAGE =
   "/images/seo/og-image.jpg";
@@ -45,7 +45,7 @@ export const metadata: Metadata = {
       PAGE_URL,
 
     siteName:
-      "Rapid Auto Services",
+      "Mobile Car Services",
 
     title:
       SEO_TITLE,
@@ -63,7 +63,7 @@ export const metadata: Metadata = {
         height: 630,
 
         alt:
-          "Book Mobile Car Battery Replacement Online - Rapid Auto Services",
+          "Book Mobile Car Battery Replacement Online - Mobile Car Services",
       },
     ],
   },

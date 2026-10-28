@@ -4,11 +4,14 @@ import {
   ArrowUpRight,
   BatteryCharging,
   CalendarCheck,
+  CarFront,
   CircleAlert,
+  ClipboardCheck,
   Gauge,
   Lightbulb,
   Phone,
   SearchCheck,
+  Settings2,
   Wrench,
   Zap,
 } from "lucide-react";
@@ -24,35 +27,43 @@ interface HomepageService {
   shortDescription: string;
 }
 
-const DEFAULT_SIGNS = [
+const VEHICLE_SIGNS = [
   {
     number: "01",
-    title: "Starting feels different",
+    title: "Unusual noises or vibrations",
     description:
-      "Slow or hesitant engine cranking can be a sign of a weak battery, although other starting-system issues can cause similar symptoms.",
+      "New rattling, grinding, squealing or unusual vibrations can indicate a problem with brakes, suspension, tyres, the engine or another component. Note when the symptoms occur.",
+    icon: Settings2,
+    label: "Noise & vibration",
   },
   {
     number: "02",
-    title: "The vehicle won't start",
+    title: "Starting or electrical problems",
     description:
-      "A flat battery is one possible cause. The starter, charging system or another vehicle issue may also need to be checked.",
+      "Difficulty starting, dim lights or intermittent electrical issues may relate to the battery, starter motor, alternator or electrical connections. The underlying cause needs to be checked.",
+    icon: BatteryCharging,
+    label: "Starting & electrical",
   },
   {
     number: "03",
-    title: "Electrical behaviour changes",
+    title: "Dashboard warning lights",
     description:
-      "Dimming lights or unusual electrical behaviour may indicate a battery or charging-system concern that needs investigation.",
+      "Warning lights can indicate anything from routine maintenance needs to a system fault. Check your vehicle handbook and seek appropriate assistance, especially for red warnings.",
+    icon: Lightbulb,
+    label: "Vehicle warning lights",
   },
   {
     number: "04",
-    title: "You are unsure what is wrong",
+    title: "Changes in vehicle performance",
     description:
-      "Describe what happens when you try to start the vehicle and any warning signs you have noticed. This can help determine the next step.",
+      "Reduced power, unusual braking, steering changes, overheating or fluid leaks should not be ignored. Describe the symptoms clearly when arranging an inspection.",
+    icon: Gauge,
+    label: "Performance & safety",
   },
 ];
 
 export default async function VehicleBatteryInformation() {
-  let businessName = "Rapid Auto Services";
+  let businessName = "Mobile Car Services";
   let phone = "+61 467 037 886";
   let callNumber = "+61 467 037 886";
   let services: HomepageService[] = [];
@@ -89,16 +100,14 @@ export default async function VehicleBatteryInformation() {
       businessName = settings.businessName || businessName;
       phone = settings.phone || phone;
       callNumber =
-        settings.primaryCallNumber ||
-        settings.phone ||
-        callNumber;
+        settings.primaryCallNumber || settings.phone || callNumber;
     }
 
     services = serviceResults as unknown as HomepageService[];
   } catch (error) {
     console.error(
-      "Failed to load vehicle and battery information:",
-      error,
+      "Failed to load vehicle information:",
+      error
     );
   }
 
@@ -106,10 +115,10 @@ export default async function VehicleBatteryInformation() {
 
   return (
     <section
-      aria-labelledby="vehicle-battery-heading"
+      aria-labelledby="vehicle-information-heading"
       className="relative isolate overflow-hidden bg-[#F8FAFC] text-[#061A2B]"
     >
-      {/* Background */}
+      {/* Subtle brand atmosphere */}
       <div
         aria-hidden="true"
         className="pointer-events-none absolute -left-48 top-24 h-[500px] w-[500px] rounded-full bg-[#0D6E91]/[0.045] blur-3xl"
@@ -131,7 +140,7 @@ export default async function VehicleBatteryInformation() {
       />
 
       <div className="relative mx-auto max-w-[1440px] px-5 py-20 sm:px-8 sm:py-24 lg:px-12 lg:py-28">
-        {/* Header */}
+        {/* Introduction */}
         <div className="grid gap-8 lg:grid-cols-[0.7fr_1.3fr] lg:items-end">
           <div>
             <div className="flex items-center gap-3">
@@ -141,47 +150,48 @@ export default async function VehicleBatteryInformation() {
               />
 
               <span className="text-[10px] font-bold uppercase tracking-[0.24em] text-[#0D6E91]">
-                Vehicle Information
+                Vehicle Care &amp; Assistance
               </span>
             </div>
 
             <div className="mt-6 flex items-center gap-3">
-              <BatteryCharging
+              <CarFront
                 aria-hidden="true"
-                className="h-4 w-4 text-[#0D6E91]"
-                strokeWidth={1.5}
+                className="h-5 w-5 text-[#0D6E91]"
+                strokeWidth={1.7}
               />
 
               <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500">
-                Understand the warning signs
+                Understand your vehicle
               </span>
             </div>
           </div>
 
           <div className="max-w-4xl lg:ml-auto">
             <h2
-              id="vehicle-battery-heading"
+              id="vehicle-information-heading"
               className="text-4xl font-black leading-[0.98] tracking-[-0.05em] sm:text-5xl lg:text-6xl"
             >
-              Know the signs.
+              Know your vehicle.
               <br />
               <span className="text-[#0D6E91]">
-                Understand your options.
+                Know when to act.
               </span>
             </h2>
 
             <p className="mt-6 max-w-2xl text-base leading-7 text-slate-600 sm:text-lg">
-              Starting trouble can have several causes. Learn about
-              common battery warning signs, what they may mean and
-              how to explain the problem when seeking automotive
-              assistance.
+              From unexpected starting problems to unusual noises
+              and dashboard warnings, recognising changes in your
+              vehicle can help you decide when to seek professional
+              assistance. Understand common warning signs and explore
+              the services that may help.
             </p>
           </div>
         </div>
 
-        {/* Diagnostic information */}
+        {/* Vehicle information panel */}
         <div className="mt-14 grid border-y border-[#061A2B]/10 lg:mt-20 lg:grid-cols-[0.9fr_1.1fr]">
-          {/* Technical visual */}
+          {/* Visual panel */}
           <div className="relative min-h-[430px] overflow-hidden border-b border-[#061A2B]/10 bg-[#061A2B] lg:min-h-[570px] lg:border-b-0 lg:border-r">
             <div
               aria-hidden="true"
@@ -197,7 +207,7 @@ export default async function VehicleBatteryInformation() {
 
             <div className="absolute left-6 right-6 top-6 flex items-center justify-between sm:left-8 sm:right-8 sm:top-8">
               <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-[#A8BBC8]">
-                Battery &amp; Starting System
+                Automotive Care
               </span>
 
               <span className="font-mono text-[9px] tracking-[0.16em] text-[#A8BBC8]/60">
@@ -205,7 +215,7 @@ export default async function VehicleBatteryInformation() {
               </span>
             </div>
 
-            {/* Battery illustration */}
+            {/* Vehicle emblem */}
             <div
               aria-hidden="true"
               className="absolute left-1/2 top-1/2 h-[250px] w-[250px] -translate-x-1/2 -translate-y-1/2 sm:h-[310px] sm:w-[310px]"
@@ -213,97 +223,111 @@ export default async function VehicleBatteryInformation() {
               <div className="absolute inset-0 rounded-full border border-white/[0.07]" />
               <div className="absolute inset-[12%] rounded-full border border-[#0D6E91]/25" />
               <div className="absolute inset-[24%] rounded-full border border-[#FFD400]/20" />
+
               <div className="absolute left-1/2 top-0 h-2.5 w-2.5 -translate-x-1/2 bg-[#FFD400]" />
 
               <div className="absolute left-1/2 top-1/2 flex h-[110px] w-[110px] -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center border border-[#FFD400]/35 bg-[#08263D] shadow-[0_0_90px_rgba(13,110,145,0.2)] sm:h-[135px] sm:w-[135px]">
-                <BatteryCharging
-                  className="h-11 w-11 text-[#FFD400] sm:h-14 sm:w-14"
-                  strokeWidth={1.1}
+                <CarFront
+                  className="h-12 w-12 text-[#FFD400] sm:h-16 sm:w-16"
+                  strokeWidth={1.3}
                 />
 
                 <span className="mt-2 text-[7px] font-bold uppercase tracking-[0.2em] text-[#A8BBC8]">
-                  Battery
+                  Vehicle Care
                 </span>
               </div>
             </div>
 
             <div className="absolute bottom-0 left-0 right-0 border-t border-white/10 bg-[#08263D]/90 px-6 py-6 sm:px-8">
               <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-[#FFD400]">
-                Start with the symptoms
+                Look beyond the symptoms
               </p>
 
               <p className="mt-2 max-w-md text-lg font-black leading-tight tracking-[-0.025em] text-[#F8FAFC] sm:text-xl">
-                Clear information helps you discuss the problem and
-                the assistance that may be appropriate.
+                The right service starts with understanding what
+                your vehicle is telling you.
               </p>
             </div>
           </div>
 
-          {/* Warning signs */}
+          {/* Common vehicle warning signs */}
           <div className="bg-white">
             <div className="border-b border-[#061A2B]/10 px-6 py-7 sm:px-8 sm:py-9 lg:px-10">
               <div className="flex items-center gap-3">
                 <CircleAlert
                   aria-hidden="true"
                   className="h-5 w-5 text-[#0D6E91]"
-                  strokeWidth={1.5}
+                  strokeWidth={1.7}
                 />
 
                 <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#0D6E91]">
-                  Common Warning Signs
+                  Common Vehicle Warning Signs
                 </p>
               </div>
 
               <p className="mt-3 max-w-lg text-sm leading-6 text-slate-600 sm:text-base sm:leading-7">
-                These symptoms can be useful clues, but they do not
-                confirm a battery fault on their own.
+                Warning signs can have several causes. A proper
+                assessment helps identify the issue before deciding
+                which repair or service is appropriate.
               </p>
             </div>
 
             <div>
-              {DEFAULT_SIGNS.map((sign, index) => (
-                <article
-                  key={sign.number}
-                  className={`group relative ${
-                    index !== DEFAULT_SIGNS.length - 1
-                      ? "border-b border-[#061A2B]/10"
-                      : ""
-                  }`}
-                >
-                  <div className="grid gap-5 px-6 py-7 sm:grid-cols-[55px_1fr_auto] sm:items-start sm:px-8 sm:py-8 lg:px-10">
-                    <span className="font-mono text-[10px] font-bold tracking-[0.2em] text-slate-500">
-                      {sign.number}
-                    </span>
+              {VEHICLE_SIGNS.map((sign, index) => {
+                const SignIcon = sign.icon;
 
-                    <div>
-                      <h3 className="text-lg font-black tracking-[-0.025em] sm:text-xl">
-                        {sign.title}
-                      </h3>
+                return (
+                  <article
+                    key={sign.number}
+                    className={`group relative ${
+                      index !== VEHICLE_SIGNS.length - 1
+                        ? "border-b border-[#061A2B]/10"
+                        : ""
+                    }`}
+                  >
+                    <div className="grid gap-4 px-6 py-7 sm:grid-cols-[44px_1fr_auto] sm:items-start sm:gap-5 sm:px-8 sm:py-8 lg:px-10">
+                      <div className="flex h-10 w-10 items-center justify-center border border-[#0D6E91]/15 bg-[#0D6E91]/[0.06] transition-colors duration-300 group-hover:border-[#FFD400] group-hover:bg-[#FFD400]/10">
+                        <SignIcon
+                          aria-hidden="true"
+                          className="h-5 w-5 text-[#0D6E91]"
+                          strokeWidth={1.7}
+                        />
+                      </div>
 
-                      <p className="mt-3 max-w-xl text-sm leading-6 text-slate-600">
-                        {sign.description}
-                      </p>
+                      <div>
+                        <div className="mb-2 font-mono text-[9px] font-bold uppercase tracking-[0.16em] text-slate-500">
+                          {sign.label}
+                        </div>
+
+                        <h3 className="text-lg font-black tracking-[-0.025em] sm:text-xl">
+                          {sign.title}
+                        </h3>
+
+                        <p className="mt-3 max-w-xl text-sm leading-6 text-slate-600">
+                          {sign.description}
+                        </p>
+                      </div>
+
+                      <span
+                        aria-hidden="true"
+                        className="hidden h-8 w-8 items-center justify-center border border-[#061A2B]/10 transition-colors duration-300 motion-safe:group-hover:border-[#FFD400] motion-safe:group-hover:bg-[#FFD400] sm:flex"
+                      >
+                        <ArrowUpRight className="h-4 w-4" />
+                      </span>
                     </div>
 
-                    <div
+                    <span
                       aria-hidden="true"
-                      className="hidden h-8 w-8 items-center justify-center border border-[#061A2B]/10 transition-colors duration-300 motion-safe:group-hover:border-[#FFD400] motion-safe:group-hover:bg-[#FFD400] sm:flex"
-                    >
-                      <ArrowUpRight className="h-4 w-4" />
-                    </div>
-                  </div>
-
-                  <span
-                    aria-hidden="true"
-                    className="absolute bottom-0 left-0 top-0 w-0 bg-[#FFD400] transition-[width] duration-300 motion-safe:group-hover:w-1"
-                  />
-                </article>
-              ))}
+                      className="absolute bottom-0 left-0 top-0 w-0 bg-[#FFD400] transition-[width] duration-300 motion-safe:group-hover:w-1"
+                    />
+                  </article>
+                );
+              })}
             </div>
           </div>
         </div>
 
-        {/* Related services */}
+        {/* Dynamic automotive services */}
         <div className="mt-14 lg:mt-20">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div>
@@ -314,19 +338,20 @@ export default async function VehicleBatteryInformation() {
                 />
 
                 <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#0D6E91]">
-                  Explore Your Options
+                  Explore Our Services
                 </span>
               </div>
 
               <h3 className="mt-4 text-2xl font-black tracking-[-0.035em] sm:text-3xl">
-                Find a relevant service.
+                Support for your vehicle.
               </h3>
             </div>
 
             <p className="max-w-lg text-sm leading-6 text-slate-600">
-              Explore the automotive services listed by Rapid Auto
-              Services. The right option depends on your vehicle,
-              symptoms and the services available.
+              Explore the automotive services available from{" "}
+              {businessName}. From battery assistance to other
+              vehicle-related needs, our team can help you discuss
+              suitable options and confirm availability.
             </p>
           </div>
 
@@ -336,7 +361,7 @@ export default async function VehicleBatteryInformation() {
                 <Link
                   key={String(service._id)}
                   href={`/services/${service.slug}`}
-                  className="group grid gap-5 border-b border-[#061A2B]/10 py-6 transition-colors duration-300 hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#0D6E91] sm:grid-cols-[55px_1fr_auto] sm:items-center sm:px-5"
+                  className="group grid gap-4 border-b border-[#061A2B]/10 py-6 transition-colors duration-300 hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#0D6E91] sm:grid-cols-[44px_1fr_auto] sm:items-center sm:gap-5 sm:px-5"
                 >
                   <span className="font-mono text-[10px] font-bold tracking-[0.2em] text-slate-500">
                     {String(index + 1).padStart(2, "0")}
@@ -346,8 +371,8 @@ export default async function VehicleBatteryInformation() {
                     <div className="flex items-center gap-3">
                       <Wrench
                         aria-hidden="true"
-                        className="h-4 w-4 shrink-0 text-[#0D6E91]"
-                        strokeWidth={1.6}
+                        className="h-5 w-5 shrink-0 text-[#0D6E91]"
+                        strokeWidth={1.7}
                       />
 
                       <h4 className="text-base font-black tracking-[-0.02em] sm:text-lg">
@@ -373,6 +398,13 @@ export default async function VehicleBatteryInformation() {
             </div>
           )}
 
+          {services.length === 0 && (
+            <p className="mt-6 border-t border-[#061A2B]/10 py-6 text-sm leading-6 text-slate-600">
+              Contact our team to discuss your vehicle and the
+              services currently available in your area.
+            </p>
+          )}
+
           <Link
             href="/services"
             className="mt-6 inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.12em] text-[#061A2B] outline-none focus-visible:ring-2 focus-visible:ring-[#0D6E91] focus-visible:ring-offset-4"
@@ -384,39 +416,39 @@ export default async function VehicleBatteryInformation() {
           </Link>
         </div>
 
-        {/* Helpful reminder strip */}
+        {/* Helpful process strip */}
         <div className="mt-10 grid border border-[#061A2B]/10 bg-[#061A2B] sm:grid-cols-3">
           <div className="flex items-center gap-4 border-b border-white/10 px-5 py-5 sm:border-b-0 sm:border-r sm:px-7">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center bg-[#08263D]">
-              <SearchCheck
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center bg-[#08263D]">
+              <ClipboardCheck
                 aria-hidden="true"
-                className="h-4 w-4 text-[#FFD400]"
-                strokeWidth={1.6}
+                className="h-5 w-5 text-[#FFD400]"
+                strokeWidth={1.7}
               />
             </div>
 
             <div>
               <p className="text-[9px] font-bold uppercase tracking-[0.16em] text-[#A8BBC8]">
-                First
+                Step 01
               </p>
               <p className="mt-1 text-xs font-bold text-[#F8FAFC]">
-                Describe the symptoms
+                Describe the problem
               </p>
             </div>
           </div>
 
           <div className="flex items-center gap-4 border-b border-white/10 px-5 py-5 sm:border-b-0 sm:border-r sm:px-7">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center bg-[#08263D]">
-              <Gauge
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center bg-[#08263D]">
+              <SearchCheck
                 aria-hidden="true"
-                className="h-4 w-4 text-[#FFD400]"
-                strokeWidth={1.6}
+                className="h-5 w-5 text-[#FFD400]"
+                strokeWidth={1.7}
               />
             </div>
 
             <div>
               <p className="text-[9px] font-bold uppercase tracking-[0.16em] text-[#A8BBC8]">
-                Then
+                Step 02
               </p>
               <p className="mt-1 text-xs font-bold text-[#F8FAFC]">
                 Discuss possible causes
@@ -425,17 +457,17 @@ export default async function VehicleBatteryInformation() {
           </div>
 
           <div className="flex items-center gap-4 px-5 py-5 sm:px-7">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center bg-[#FFD400]">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center bg-[#FFD400]">
               <CalendarCheck
                 aria-hidden="true"
-                className="h-4 w-4 text-[#061A2B]"
+                className="h-5 w-5 text-[#061A2B]"
                 strokeWidth={1.8}
               />
             </div>
 
             <div>
               <p className="text-[9px] font-bold uppercase tracking-[0.16em] text-[#A8BBC8]">
-                Next
+                Step 03
               </p>
               <p className="mt-1 text-xs font-bold text-[#F8FAFC]">
                 Confirm the next step
@@ -444,25 +476,25 @@ export default async function VehicleBatteryInformation() {
           </div>
         </div>
 
-        {/* CTA */}
+        {/* Final call to action */}
         <div className="mt-10 flex flex-col gap-6 border-t border-[#061A2B]/10 pt-8 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-start gap-4">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center bg-[#FFD400]">
-              <Lightbulb
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center border border-[#FFD400]/30 bg-[#FFD400]/10">
+              <CircleAlert
                 aria-hidden="true"
-                className="h-5 w-5 text-[#061A2B]"
+                className="h-5 w-5 text-[#0D6E91]"
                 strokeWidth={1.7}
               />
             </div>
 
             <div>
               <p className="text-sm font-black text-[#061A2B]">
-                Not sure what your vehicle needs?
+                Need help with your vehicle?
               </p>
 
-              <p className="mt-1 text-xs leading-5 text-slate-600 sm:text-sm">
-                Contact {businessName} with your vehicle details and
-                location to discuss the available options.
+              <p className="mt-1 max-w-xl text-xs leading-5 text-slate-600 sm:text-sm">
+                Contact {businessName} with your vehicle details,
+                symptoms and location to discuss available services.
               </p>
             </div>
           </div>
@@ -481,6 +513,7 @@ export default async function VehicleBatteryInformation() {
 
             <a
               href={phoneHref}
+              aria-label={`Call ${businessName} on ${phone}`}
               className="group inline-flex min-h-12 items-center gap-3 bg-[#FFD400] px-5 text-xs font-black uppercase tracking-[0.12em] text-[#061A2B] transition-colors duration-300 hover:bg-[#F5B800] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0D6E91] focus-visible:ring-offset-2"
             >
               <Phone
@@ -489,7 +522,7 @@ export default async function VehicleBatteryInformation() {
                 strokeWidth={2.2}
               />
 
-              Call {phone}
+              Call Now
 
               <ArrowUpRight
                 aria-hidden="true"
@@ -500,10 +533,10 @@ export default async function VehicleBatteryInformation() {
         </div>
 
         <p className="mt-6 max-w-3xl text-xs leading-5 text-slate-500">
-          Note: These warning signs are general information, not a
-          diagnosis. If your vehicle will not start, the cause should
-          be assessed before deciding which repair or service is
-          needed.
+          Note: This information is general guidance and is not a
+          diagnosis. If a vehicle shows a serious warning light,
+          overheating, braking problems or unsafe handling, stop
+          driving when safe to do so and seek appropriate assistance.
         </p>
       </div>
     </section>

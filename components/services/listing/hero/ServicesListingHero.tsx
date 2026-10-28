@@ -66,7 +66,7 @@ export default function ServicesListingHero({
           </div>
 
           <span className="hidden text-[10px] font-bold uppercase tracking-[0.2em] text-white/30 sm:block">
-            RAPID AUTO SERVICES
+           Mobile Car Services
           </span>
         </div>
 
@@ -244,7 +244,7 @@ export default function ServicesListingHero({
                   {SERVICES_LISTING_HERO_LABEL}
                 </span>
                 <span className="ml-auto text-[9px] font-semibold text-white/30">
-                  RAPID AUTO SERVICES
+                  MOBILE CAR SERVICES
                 </span>
               </div>
             </div>

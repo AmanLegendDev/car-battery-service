@@ -14,7 +14,7 @@ export default function ContactBookingCTA({
   businessName,
 }: ContactBookingCTAProps) {
   const displayBusinessName =
-    businessName?.trim() || "Rapid Auto Services";
+    businessName?.trim() || "Mobile Car Services";
 
   return (
     <section className="relative overflow-hidden bg-[#061A2B] px-5 py-20 sm:px-6 lg:px-8 lg:py-24">

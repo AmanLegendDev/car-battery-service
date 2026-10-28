@@ -102,7 +102,7 @@ export default function ServiceHeroVisual({
               <span className="h-[2px] w-9 bg-[#FFD400] sm:w-12" />
 
               <span className="text-[10px] font-bold uppercase tracking-[0.22em] text-white/75 sm:text-xs sm:tracking-[0.28em]">
-                Rapid Auto Services
+                Mobile Car Services
               </span>
             </div>
 

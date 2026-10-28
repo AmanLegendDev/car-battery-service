@@ -102,7 +102,7 @@ export default async function ServicesOverview() {
             </h2>
 
             <p className="mt-5 max-w-2xl text-sm leading-6 text-slate-600 sm:mt-6 sm:text-base sm:leading-7">
-              Explore the automotive services available from Rapid Auto
+              Explore the automotive services available from Mobile Car 
               Services. Find the option that suits your vehicle and
               contact our team to discuss your requirements.
             </p>

@@ -15,16 +15,16 @@ const PAGE_URL =
   `${SITE_URL}/terms-and-conditions`;
 
 const SEO_TITLE =
-  "Terms & Conditions | Rapid Auto Services";
+  "Terms & Conditions | Mobile Car Services";
 
 const SEO_DESCRIPTION =
-  "Read the Terms & Conditions that apply when using the Rapid Auto Services website or requesting mobile car services in Melbourne West.";
+  "Read the Terms & Conditions that apply when using the Mobile Car Services website or requesting mobile car services in Melbourne West.";
 
 const OG_IMAGE =
   "/images/seo/og-image.jpg";
 
 const DEFAULT_BUSINESS_NAME =
-  "Rapid Auto Services";
+  "Mobile Car Services";
 
 const DEFAULT_REGION =
   "Melbourne West";
@@ -122,7 +122,7 @@ export async function generateMetadata(): Promise<Metadata> {
         PAGE_URL,
 
       siteName:
-        "Rapid Auto Services",
+        "Mobile Car Services",
 
       title:
         SEO_TITLE,
@@ -142,7 +142,7 @@ export async function generateMetadata(): Promise<Metadata> {
             630,
 
           alt:
-            "Rapid Auto Services - Terms & Conditions",
+            "Mobile Car Services - Terms & Conditions",
         },
       ],
     },
@@ -244,7 +244,7 @@ function getTermsStructuredData() {
             630,
 
           caption:
-            "Rapid Auto Services - Terms & Conditions",
+            "Mobile Car Services - Terms & Conditions",
         },
 
         breadcrumb: {

@@ -62,7 +62,7 @@ export default function TestimonialsListingHero({
           </div>
 
           <span className="hidden text-[10px] font-bold uppercase tracking-[0.2em] text-white/30 sm:block">
-            RAPID AUTO SERVICES
+            Mobile Car Services
           </span>
         </div>
 

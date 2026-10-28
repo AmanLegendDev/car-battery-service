@@ -64,7 +64,7 @@ export default function BlogArticleHero({
   const image = post.coverImage?.secureUrl || null;
 const imageAlt =
   post.coverImage?.alt?.trim() ||
-  `${post.title} - Rapid Auto Services`;
+  `${post.title} - Mobile Car Services`;
 
   return (
     <section className="relative overflow-hidden bg-[#061A2B] text-white">

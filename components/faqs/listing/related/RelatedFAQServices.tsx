@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowUpRight, BatteryCharging } from "lucide-react";
+import { ArrowUpRight, BatteryCharging, Wrench } from "lucide-react";
 
 export interface RelatedFAQService {
   id: string;
@@ -76,7 +76,7 @@ export default function RelatedFAQServices({
                   />
                 ) : (
                   <div className="flex h-full items-center justify-center bg-[#061A2B] text-[#FFD400]">
-                    <BatteryCharging
+                    <Wrench
                       size={38}
                       strokeWidth={1.5}
                     />

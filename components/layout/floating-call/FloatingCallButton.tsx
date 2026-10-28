@@ -39,7 +39,7 @@ export default async function FloatingCallButton() {
       <a
         href={phoneHref(settings.primaryCallNumber)}
         aria-label={`Call ${
-          settings.phone || "Car Battery Service"
+          settings.phone || "Mobile Car Services"
         }`}
         className="
           pointer-events-auto

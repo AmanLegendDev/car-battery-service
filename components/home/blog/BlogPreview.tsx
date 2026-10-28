@@ -107,7 +107,7 @@ function BlogPlaceholder() {
 
       <div className="absolute inset-0 flex items-center justify-center">
         <span className="font-mono text-[9px] tracking-[0.3em] text-[#A8BBC8]/40">
-          CAR BATTERY SERVICE
+          Mobile Car Services
         </span>
       </div>
     </div>

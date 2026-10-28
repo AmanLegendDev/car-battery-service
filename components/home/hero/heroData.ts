@@ -1,14 +1,14 @@
 
 export const HERO_DATA = {
-  eyebrow: "PROFESSIONAL AUTOMOTIVE ASSISTANCE",
+  eyebrow: "PROFESSIONAL MOBILE AUTOMOTIVE ASSISTANCE",
 
   title: {
-    lineOne: "Reliable Auto Care.",
+    lineOne: "Mobile Car Care.",
     lineTwo: "Right Where You Are.",
   },
 
   description:
-    "Need automotive assistance? Rapid Auto Services brings convenient, professional support to your location. Get in touch to discuss your vehicle's needs and arrange a service.",
+    "Mobile Car Services provides convenient, professional automotive assistance across Melbourne West. From battery services to vehicle maintenance and roadside assistance, contact our team to discuss your vehicle's needs and confirm service availability.",
 
   primaryCta: {
     label: "Book a Service",
@@ -28,6 +28,6 @@ export const HERO_DATA = {
 
   image: {
     src: "/images/home/hero/hero-main.webp",
-    alt: "Professional mobile automotive technician servicing a vehicle",
+    alt: "Mobile automotive assistance for a vehicle in Melbourne West",
   },
 } as const;

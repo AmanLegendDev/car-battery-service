@@ -32,7 +32,7 @@ const TERMS_SECTIONS = [
     number: "01",
     title: "Introduction",
     paragraphs: [
-      "These Terms and Conditions set out the general terms that apply when you use this website or request products or services from Rapid Auto Services.",
+      "These Terms and Conditions set out the general terms that apply when you use this website or request products or services from Mobile Car Services.",
       "By using this website, submitting a booking request or engaging the business for a service, you acknowledge that you have had an opportunity to review these terms.",
     ],
   },
@@ -41,7 +41,7 @@ const TERMS_SECTIONS = [
     number: "02",
     title: "Our Services",
     paragraphs: [
-      "Rapid Auto Services provides automotive services and assistance according to the services offered by the business at the time of your request.",
+      "Mobile Car Services provides automotive services and assistance according to the services offered by the business at the time of your request.",
       "Available services may include vehicle maintenance, inspections, repairs, roadside assistance or other automotive work where offered. The services available to you depend on the business's actual service offering and your vehicle's requirements.",
       "The appropriate service may depend on the condition of the vehicle, the information you provide and the circumstances identified during assessment.",
     ],
@@ -216,7 +216,7 @@ export default function TermsAndConditionsPage({
   business,
 }: TermsAndConditionsPageProps) {
   const businessName =
-    business.businessName?.trim() || "Rapid Auto Services";
+    business.businessName?.trim() || "Mobile Car Services";
 
   const phone =
     business.primaryCallNumber?.trim() ||

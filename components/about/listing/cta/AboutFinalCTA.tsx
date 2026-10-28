@@ -1,8 +1,10 @@
+
 import Link from "next/link";
 import {
   ArrowRight,
-  BatteryCharging,
   CheckCircle2,
+  ClipboardCheck,
+  Wrench,
 } from "lucide-react";
 
 interface AboutFinalCTAProps {
@@ -14,8 +16,11 @@ export default function AboutFinalCTA({
   businessName,
   region,
 }: AboutFinalCTAProps) {
+  const name = businessName || "Mobile Car Services";
+
   return (
     <section className="relative overflow-hidden bg-[#061A2B] px-5 py-20 sm:px-6 lg:px-8 lg:py-28">
+      {/* Background effects */}
       <div
         aria-hidden="true"
         className="pointer-events-none absolute inset-0"
@@ -40,63 +45,86 @@ export default function AboutFinalCTA({
             {/* Main CTA */}
             <div className="p-7 sm:p-10 lg:p-14">
               <div className="flex h-13 w-13 items-center justify-center rounded-2xl bg-[#FFD400] text-[#061A2B]">
-                <BatteryCharging size={24} />
+                <Wrench size={24} aria-hidden="true" />
               </div>
 
               <p className="mt-7 text-xs font-bold uppercase tracking-[0.2em] text-[#FFD400]">
-                Ready When You Are
+                Let's Get You Moving
               </p>
 
               <h2 className="mt-4 max-w-2xl text-3xl font-semibold leading-tight tracking-[-0.04em] text-[#F8FAFC] sm:text-4xl lg:text-5xl">
-                Need battery assistance?
+                Need help with your vehicle?
               </h2>
 
               <p className="mt-5 max-w-2xl text-sm leading-7 text-[#A8BBC8] sm:text-base">
-                Use the dedicated booking page to provide the
-                details for your service request.
+                From vehicle maintenance and battery services
+                to other automotive needs, we're here to help
+                you explore the right service for your vehicle.
+                Submit a request and our team can confirm
+                availability and the next steps.
               </p>
 
               {region ? (
                 <p className="mt-4 text-sm font-medium text-[#F8FAFC]/75">
-                  Mobile battery assistance in{" "}
+                  Mobile automotive assistance in{" "}
                   <span className="font-semibold text-[#F8FAFC]">
                     {region}
                   </span>
                 </p>
               ) : null}
 
-              <Link
-                href="/book-service"
-                className="group mt-8 inline-flex min-h-13 items-center justify-center gap-2 rounded-full bg-[#FFD400] px-7 text-sm font-bold text-[#061A2B] shadow-[0_12px_35px_rgba(255,212,0,0.12)] transition duration-300 hover:-translate-y-0.5 hover:bg-[#F5B800]"
-              >
-                Book a Battery Service
+              <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+                <Link
+                  href="/book-service"
+                  className="group inline-flex min-h-13 items-center justify-center gap-2 rounded-full bg-[#FFD400] px-7 text-sm font-bold text-[#061A2B] shadow-[0_12px_35px_rgba(255,212,0,0.12)] transition duration-300 hover:-translate-y-0.5 hover:bg-[#F5B800]"
+                >
+                  Book a Service
 
-                <ArrowRight
-                  size={17}
-                  className="transition-transform duration-300 group-hover:translate-x-1"
-                />
-              </Link>
+                  <ArrowRight
+                    size={17}
+                    className="transition-transform duration-300 group-hover:translate-x-1"
+                    aria-hidden="true"
+                  />
+                </Link>
+
+                <Link
+                  href="/services"
+                  className="inline-flex min-h-13 items-center justify-center gap-2 rounded-full border border-white/15 px-7 text-sm font-bold text-[#F8FAFC] transition duration-300 hover:border-white/30 hover:bg-white/[0.06]"
+                >
+                  View All Services
+                </Link>
+              </div>
             </div>
 
             {/* Supporting panel */}
             <div className="border-t border-white/10 bg-black/10 p-7 sm:p-10 lg:border-l lg:border-t-0 lg:p-14">
               <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#A8BBC8]">
-                {businessName}
+                {name}
               </p>
 
-              <h3 className="mt-4 text-2xl font-semibold leading-tight tracking-[-0.025em] text-[#F8FAFC]">
-                One dedicated booking path.
+              <div className="mt-5 flex h-12 w-12 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.06] text-[#FFD400]">
+                <ClipboardCheck size={22} aria-hidden="true" />
+              </div>
+
+              <h3 className="mt-5 text-2xl font-semibold leading-tight tracking-[-0.025em] text-[#F8FAFC]">
+                Getting started is straightforward.
               </h3>
+
+              <p className="mt-3 text-sm leading-7 text-[#A8BBC8]">
+                Tell us what your vehicle needs and provide
+                the details required for your service request.
+              </p>
 
               <div className="mt-8 space-y-4">
                 <div className="flex items-start gap-3">
                   <CheckCircle2
                     size={18}
                     className="mt-0.5 shrink-0 text-[#FFD400]"
+                    aria-hidden="true"
                   />
 
                   <p className="text-sm leading-6 text-[#A8BBC8]">
-                    Choose the service you need.
+                    Explore the available automotive services.
                   </p>
                 </div>
 
@@ -104,10 +132,11 @@ export default function AboutFinalCTA({
                   <CheckCircle2
                     size={18}
                     className="mt-0.5 shrink-0 text-[#FFD400]"
+                    aria-hidden="true"
                   />
 
                   <p className="text-sm leading-6 text-[#A8BBC8]">
-                    Provide the relevant service details.
+                    Share your vehicle and service details.
                   </p>
                 </div>
 
@@ -115,24 +144,26 @@ export default function AboutFinalCTA({
                   <CheckCircle2
                     size={18}
                     className="mt-0.5 shrink-0 text-[#FFD400]"
+                    aria-hidden="true"
                   />
 
                   <p className="text-sm leading-6 text-[#A8BBC8]">
-                    Submit your booking request.
+                    Submit your request to discuss the next steps.
                   </p>
                 </div>
               </div>
 
               <div className="mt-8 border-t border-white/10 pt-6">
                 <Link
-                  href="/services"
+                  href="/contact"
                   className="group inline-flex items-center gap-2 text-sm font-bold text-[#F8FAFC] transition hover:text-[#FFD400]"
                 >
-                  Explore services
+                  Have a question? Contact us
 
                   <ArrowRight
                     size={16}
                     className="transition-transform duration-300 group-hover:translate-x-1"
+                    aria-hidden="true"
                   />
                 </Link>
               </div>

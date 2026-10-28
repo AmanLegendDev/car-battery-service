@@ -29,7 +29,7 @@ async function getFinalCTASettings(): Promise<FinalCTASettings> {
 
   return {
     businessName:
-      settings?.businessName || "Rapid Auto Services",
+      settings?.businessName || "Mobile Car Services",
     primaryServiceRegion:
       settings?.primaryServiceRegion || "Melbourne West",
     phone: settings?.phone || "",
@@ -46,7 +46,7 @@ function phoneHref(phone: string) {
 
 export default async function FinalCTA() {
   let settings: FinalCTASettings = {
-    businessName: "Rapid Auto Services",
+    businessName: "Mobile Car Services",
     primaryServiceRegion: "Melbourne West",
     phone: "",
     primaryCallNumber: "",

@@ -848,7 +848,7 @@ export default function ServiceAreaForm({
   const previewDescription =
     form.seoDescription.trim() ||
     form.shortDescription.trim() ||
-    "Mobile car battery service information.";
+    "Mobile Car Services information.";
 
   const pageHeading = isEditMode
     ? "Edit Service Area"
@@ -1289,7 +1289,7 @@ export default function ServiceAreaForm({
                     event.target.value
                   )
                 }
-                placeholder="Werribee Mobile Car Battery Service | Car Battery Service"
+                placeholder="Werribee | Mobile Car Services"
                 maxLength={70}
                 disabled={isSubmitting}
                 className="w-full rounded-xl border border-white/[0.10] bg-[#061A2B] px-4 py-3.5 text-sm font-medium text-[#F8FAFC] outline-none transition placeholder:text-[#718895] focus:border-[#0D6E91] focus:ring-4 focus:ring-[#0D6E91]/10 disabled:bg-[#061A2B]/70"

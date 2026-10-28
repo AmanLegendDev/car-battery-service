@@ -15,7 +15,7 @@ const PAGE_URL =
   `${SITE_URL}/service-areas`;
 
 const SEO_TITLE =
-  "Service Areas | Mobile Car Battery Service Western Suburbs";
+  "Service Areas | Mobile Mobile Car Services Western Suburbs";
 
 const SEO_DESCRIPTION =
   "We provide mobile car battery replacement, testing and jump starts across Melbourne's western suburbs. Check your area.";
@@ -24,7 +24,7 @@ const OG_IMAGE =
   "/images/seo/og-image.jpg";
 
 const DEFAULT_BUSINESS_NAME =
-  "Rapid Auto Services";
+  "Mobile Car Services";
 
 const DEFAULT_REGION =
   "Melbourne West";
@@ -196,7 +196,7 @@ export async function generateMetadata(): Promise<Metadata> {
         PAGE_URL,
 
       siteName:
-        "Rapid Auto Services",
+        "Mobile Car Services",
 
       title:
         SEO_TITLE,
@@ -214,7 +214,7 @@ export async function generateMetadata(): Promise<Metadata> {
           height: 630,
 
           alt:
-            "Service Areas - Mobile Car Battery Service Western Suburbs",
+            "Service Areas - Mobile Car Services Western Suburbs",
         },
       ],
     },

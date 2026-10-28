@@ -15,16 +15,16 @@ const PAGE_URL =
   `${SITE_URL}/contact`;
 
 const SEO_TITLE =
-  "Contact Rapid Auto Services | Call 0467 037 886";
+  "Contact Mobile Car Services | Call 0467 037 886";
 
 const SEO_DESCRIPTION =
-  "Contact Rapid Auto Services for mobile car battery assistance in Melbourne West. Call, message on WhatsApp or book a battery service online.";
+  "Contact Mobile Car Services for mobile car battery assistance in Melbourne West. Call, message on WhatsApp or book a battery service online.";
 
 const OG_IMAGE =
   "/images/seo/og-image.jpg";
 
 const DEFAULT_BUSINESS_NAME =
-  "Rapid Auto Services";
+  "Mobile Car Services";
 
 /* ============================================================
    BUSINESS SETTINGS
@@ -160,7 +160,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     /*
      * Use absolute so the global layout template does not
-     * append "| Rapid Auto Services" again.
+     * append "| Mobile Car Services" again.
      */
     title: {
       absolute:
@@ -184,7 +184,7 @@ export async function generateMetadata(): Promise<Metadata> {
         PAGE_URL,
 
       siteName:
-        "Rapid Auto Services",
+        "Mobile Car Services",
 
       title:
         SEO_TITLE,
@@ -202,7 +202,7 @@ export async function generateMetadata(): Promise<Metadata> {
           height: 630,
 
           alt:
-            "Contact Rapid Auto Services - Mobile Car Battery Service Melbourne West",
+            "Contact Mobile Car Services - Mobile Mobile Car Services Melbourne West",
         },
       ],
     },

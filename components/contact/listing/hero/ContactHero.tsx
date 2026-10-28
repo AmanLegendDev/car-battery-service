@@ -71,7 +71,7 @@ export default function ContactHero({
           <div className="max-w-3xl mt-8">
             <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.045] px-4 py-2 backdrop-blur-md">
               <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[#FFD400] text-[#061A2B]">
-                <BatteryCharging size={14} />
+                <Wrench size={14} />
               </span>
 
               <span className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#A8BBC8]">

@@ -65,10 +65,10 @@ interface FooterData {
 }
 
 const DEFAULT_SETTINGS: FooterSettings = {
-  businessName: "Rapid Auto Services",
+  businessName: "Mobile Car Services",
   tagline: "Automotive Care & Repairs",
   description:
-    "Get in touch with Rapid Auto Services to discuss your vehicle's needs, explore available services and find out about service availability in your area.",
+    "Get in touch with Mobile Car Services to discuss your vehicle's needs, explore available services and find out about service availability in your area.",
   logo: null,
   phone: "",
   primaryCallNumber: "",

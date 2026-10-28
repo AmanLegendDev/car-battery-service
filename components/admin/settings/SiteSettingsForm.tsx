@@ -835,7 +835,7 @@ export default function SiteSettingsForm() {
                 )
               }
               maxLength={150}
-              placeholder="Car Battery Service"
+              placeholder="Mobile Car Services"
               className={inputClass(
                 Boolean(
                   errors.businessName
@@ -1436,7 +1436,7 @@ export default function SiteSettingsForm() {
                 )
               }
               maxLength={160}
-              placeholder="Car Battery Service | Melbourne West"
+              placeholder="Mobile Car Services | Melbourne West"
               className={inputClass(
                 Boolean(
                   errors.defaultSiteTitle

@@ -16,10 +16,10 @@ const PAGE_URL =
   `${SITE_URL}/about`;
 
 const SEO_TITLE =
-  "About Us | Local Mobile Car Battery Service Melbourne West";
+  "About Us | Local Mobile Mobile Car Services Melbourne West";
 
 const SEO_DESCRIPTION =
-  "Learn about our local mobile car battery service in Melbourne West, providing battery replacement, battery testing and jump start assistance at your vehicle's location.";
+  "Learn about our local mobile Mobile Car Services in Melbourne West, providing battery replacement, battery testing and jump start assistance at your vehicle's location.";
 
 const OG_IMAGE =
   "/images/seo/og-image.jpg";
@@ -58,7 +58,7 @@ async function getBusinessSettings(): Promise<AboutBusiness> {
   return {
     businessName:
       settings?.businessName ||
-      "Car Battery Service",
+      "Mobile Car Services",
 
     tagline:
       settings?.tagline ||
@@ -168,7 +168,7 @@ export async function generateMetadata(): Promise<Metadata> {
         PAGE_URL,
 
       siteName:
-        "Rapid Auto Services",
+        "Mobile Car Services",
 
       title:
         SEO_TITLE,
@@ -188,7 +188,7 @@ export async function generateMetadata(): Promise<Metadata> {
             630,
 
           alt:
-            "About Rapid Auto Services - Local Mobile Car Service Melbourne West",
+            "About Mobile Car Services - Local Mobile Car Service Melbourne West",
         },
       ],
     },

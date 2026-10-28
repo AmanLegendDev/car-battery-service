@@ -51,7 +51,7 @@ async function getSiteSettings() {
  *
  * IMPORTANT:
  * `absolute` prevents the global layout title template
- * from appending "| Rapid Auto Services to this exact
+ * from appending "|Mobile Car Services to this exact
  * homepage SEO title.
  */
 export async function generateMetadata(): Promise<Metadata> {
@@ -72,7 +72,7 @@ export async function generateMetadata(): Promise<Metadata> {
       type: "website",
       locale: "en_AU",
       url: canonicalUrl,
-      siteName: "Rapid Auto Services",
+      siteName: "Mobile Car Services",
 
       title: HOME_TITLE,
       description: HOME_DESCRIPTION,

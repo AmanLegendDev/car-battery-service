@@ -1,6 +1,6 @@
 
 export const BLOG_LISTING_HERO = {
-  eyebrow: "Rapid Auto Services Journal",
+  eyebrow: "Mobile Car Services Journal",
 
   title: "Practical guidance for every journey.",
 

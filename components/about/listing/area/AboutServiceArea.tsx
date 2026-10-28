@@ -1,3 +1,4 @@
+
 import Link from "next/link";
 import {
   ArrowRight,
@@ -11,7 +12,7 @@ interface AboutServiceAreaProps {
 export default function AboutServiceArea({
   region,
 }: AboutServiceAreaProps) {
-  if (!region) {
+  if (!region?.trim()) {
     return null;
   }
 
@@ -19,6 +20,7 @@ export default function AboutServiceArea({
     <section className="relative overflow-hidden bg-[#F8FAFC] px-5 py-20 sm:px-6 lg:px-8 lg:py-28">
       <div className="mx-auto max-w-7xl">
         <div className="relative overflow-hidden rounded-[2rem] bg-[#08263D] p-7 sm:p-10 lg:p-14">
+          {/* Background effects */}
           <div
             aria-hidden="true"
             className="pointer-events-none absolute inset-0"
@@ -38,28 +40,32 @@ export default function AboutServiceArea({
           </div>
 
           <div className="relative grid items-center gap-10 lg:grid-cols-[1fr_auto]">
+            {/* Service area information */}
             <div className="max-w-2xl">
               <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#FFD400] text-[#061A2B]">
-                <MapPin size={22} />
+                <MapPin size={22} aria-hidden="true" />
               </div>
 
               <p className="mt-7 text-xs font-bold uppercase tracking-[0.2em] text-[#A8BBC8]">
-                Primary Service Region
+                Our Service Area
               </p>
 
               <h2 className="mt-3 text-3xl font-semibold tracking-[-0.035em] text-[#F8FAFC] sm:text-4xl lg:text-5xl">
-                Mobile battery assistance in{" "}
+                Mobile automotive assistance in{" "}
                 <span className="text-[#FFD400]">
                   {region}.
                 </span>
               </h2>
 
               <p className="mt-5 text-sm leading-7 text-[#A8BBC8] sm:text-base">
-                View the available service areas to learn
-                more about local coverage and services.
+                Explore our service areas to learn more about
+                local coverage and the automotive services
+                available for your vehicle. Contact our team
+                to confirm availability in your location.
               </p>
             </div>
 
+            {/* Service area CTA */}
             <Link
               href="/service-areas"
               className="group inline-flex min-h-12 items-center justify-center gap-2 rounded-full border border-white/15 bg-white/[0.05] px-6 text-sm font-semibold text-[#F8FAFC] transition duration-300 hover:border-white/25 hover:bg-white/[0.09]"
@@ -69,6 +75,7 @@ export default function AboutServiceArea({
               <ArrowRight
                 size={17}
                 className="transition-transform duration-300 group-hover:translate-x-1"
+                aria-hidden="true"
               />
             </Link>
           </div>

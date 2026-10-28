@@ -18,7 +18,7 @@ const SITE_URL =
 const POSTS_PER_PAGE = 6;
 
 const SEO_TITLE =
-  "Car Battery Tips & Guides | Rapid Auto Services Blog";
+  "Car Battery Tips & Guides | Mobile Car Services Blog";
 
 const SEO_DESCRIPTION =
   "Practical car battery tips and guides covering battery replacement, battery testing, jump starts, starter motors and alternators in Melbourne West.";
@@ -45,7 +45,7 @@ async function getSiteSettings() {
   return {
     businessName:
       settings?.businessName ||
-      "Rapid Auto Services",
+      "Mobile Car Services",
 
     tagline:
       settings?.tagline ||
@@ -113,7 +113,7 @@ export async function generateMetadata({
         canonicalUrl,
 
       siteName:
-        "Rapid Auto Services",
+        "Mobile Car Services",
 
       title:
         title,
@@ -131,7 +131,7 @@ export async function generateMetadata({
           height: 630,
 
           alt:
-            "Car Battery Tips & Guides - Rapid Auto Services Blog",
+            "Car Battery Tips & Guides - Mobile Car Services Blog",
         },
       ],
     },
@@ -451,7 +451,7 @@ function getBlogStructuredData({
           `${blogUrl}#itemlist`,
 
         name:
-          "Rapid Auto Services Blog Articles",
+          "Mobile Car Services Blog Articles",
 
         numberOfItems:
           posts.length,

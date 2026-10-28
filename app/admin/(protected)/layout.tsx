@@ -24,7 +24,7 @@ export default async function AdminProtectedLayout({
     .lean();
 
   const businessName =
-    settings?.businessName || "Car Battery Service";
+    settings?.businessName || "Mobile Car Services";
 
   const logoUrl =
     settings?.logo?.secureUrl || undefined;

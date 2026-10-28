@@ -57,7 +57,7 @@ export default function BlogArticleCTA({
   primaryServiceRegion,
 }: BlogArticleCTAProps) {
   const displayBusinessName =
-    businessName.trim() || "Rapid Auto Services";
+    businessName.trim() || "Mobile Car Services";
 
   const region = primaryServiceRegion.trim();
 

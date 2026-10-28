@@ -3,6 +3,7 @@
 import {
   BatteryCharging,
   Check,
+  Wrench,
 } from "lucide-react";
 
 import type {
@@ -68,7 +69,7 @@ export default function ServiceStep({
             >
               <div className="flex items-start gap-4">
                 <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[#0D6E91]/20 text-[#FFD400]">
-                  <BatteryCharging
+                  <Wrench
                     size={22}
                   />
                 </div>

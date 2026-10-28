@@ -13,9 +13,9 @@ import {
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Booking Request Received | Car Battery Service",
+  title: "Booking Request Received | Mobile Car Services",
   description:
-    "Your car battery service booking request has been received.",
+    "Your Mobile Car Services booking request has been received.",
 };
 
 interface BookingSuccessPageProps {
@@ -67,7 +67,7 @@ export default async function BookingSuccessPage({
             </h1>
 
             <p className="mx-auto mt-5 max-w-2xl text-base leading-7 text-[#A8BBC8] sm:text-lg">
-              Your car battery service booking request has been submitted
+              Your Mobile Car Services booking request has been submitted
               successfully. Please keep your booking reference for future
               communication.
             </p>

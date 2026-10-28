@@ -1,9 +1,10 @@
+
 import Link from "next/link";
 import {
   ArrowRight,
-  BatteryCharging,
   Clock3,
   MapPin,
+  Wrench,
   Zap,
 } from "lucide-react";
 
@@ -39,12 +40,14 @@ export default function AboutServices({
             </span>
 
             <h2 className="mt-4 text-3xl font-semibold leading-tight tracking-[-0.04em] text-[#061A2B] sm:text-4xl">
-              Focused services for common battery problems.
+              Practical automotive services for your vehicle.
             </h2>
 
             <p className="mt-5 text-base leading-8 text-[#5F7482]">
-              Explore the battery services currently available
-              through the business.
+              Explore the services offered by Mobile Car Services,
+              from vehicle maintenance and battery assistance to
+              other automotive needs. Find a suitable service and
+              contact our team to confirm availability.
             </p>
 
             <Link
@@ -56,11 +59,12 @@ export default function AboutServices({
               <ArrowRight
                 size={17}
                 className="transition-transform duration-300 group-hover:translate-x-1"
+                aria-hidden="true"
               />
             </Link>
           </div>
 
-          {/* Service list */}
+          {/* Dynamic service list */}
           <div className="grid gap-4">
             {services.map((service, index) => (
               <Link
@@ -71,16 +75,13 @@ export default function AboutServices({
                 <div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
                   <div className="flex min-w-0 gap-5">
                     <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#061A2B] text-[#FFD400] transition duration-300 group-hover:bg-[#FFD400] group-hover:text-[#061A2B]">
-                      <BatteryCharging size={21} />
+                      <Wrench size={21} aria-hidden="true" />
                     </div>
 
                     <div className="min-w-0">
                       <div className="flex items-center gap-3">
                         <span className="text-[10px] font-bold tracking-[0.16em] text-[#A8BBC8]">
-                          {String(index + 1).padStart(
-                            2,
-                            "0",
-                          )}
+                          {String(index + 1).padStart(2, "0")}
                         </span>
 
                         <h3 className="text-xl font-semibold tracking-[-0.025em] text-[#061A2B]">
@@ -97,21 +98,21 @@ export default function AboutServices({
                       <div className="mt-5 flex flex-wrap gap-2">
                         {service.estimatedTime ? (
                           <span className="inline-flex items-center gap-1.5 rounded-full border border-[#08263D]/10 bg-white px-3 py-1.5 text-[11px] font-semibold text-[#5F7482]">
-                            <Clock3 size={13} />
+                            <Clock3 size={13} aria-hidden="true" />
                             {service.estimatedTime}
                           </span>
                         ) : null}
 
                         {service.onSiteService ? (
                           <span className="inline-flex items-center gap-1.5 rounded-full border border-[#08263D]/10 bg-white px-3 py-1.5 text-[11px] font-semibold text-[#5F7482]">
-                            <MapPin size={13} />
+                            <MapPin size={13} aria-hidden="true" />
                             On-site
                           </span>
                         ) : null}
 
                         {service.emergencyService ? (
                           <span className="inline-flex items-center gap-1.5 rounded-full bg-[#FFF7CC] px-3 py-1.5 text-[11px] font-semibold text-[#705D00]">
-                            <Zap size={13} />
+                            <Zap size={13} aria-hidden="true" />
                             Emergency service
                           </span>
                         ) : null}
@@ -120,7 +121,7 @@ export default function AboutServices({
                   </div>
 
                   <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#061A2B]/[0.04] text-[#061A2B] transition duration-300 group-hover:bg-[#061A2B] group-hover:text-[#FFD400]">
-                    <ArrowRight size={16} />
+                    <ArrowRight size={16} aria-hidden="true" />
                   </span>
                 </div>
               </Link>

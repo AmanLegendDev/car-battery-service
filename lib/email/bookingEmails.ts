@@ -7,7 +7,7 @@ const SITE_URL =
   "https://carbatteryservices.com.au";
 
 const DEFAULT_BUSINESS_NAME =
-  "Rapid Auto Services";
+  "Mobile Car Services";
 
 const DEFAULT_REGION =
   "Melbourne West";
@@ -996,7 +996,7 @@ export async function sendCustomerBookingStatusEmail(
         >
           ${
             completed
-              ? "Thank you for choosing Rapid Auto Services."
+              ? "Thank you for choosing Mobile Car Services."
               : "If you still need assistance, please contact us and our team can help with your next service request."
           }
         </div>

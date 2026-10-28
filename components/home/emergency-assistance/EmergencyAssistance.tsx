@@ -13,16 +13,18 @@ import { connectDB } from "@/lib/db";
 import SiteSettings from "@/models/SiteSettings";
 
 export default async function EmergencyAssistance() {
+  let businessName = "Mobile Car Services";
   let phone = "+61 467 037 886";
   let callNumber = "+61 467 037 886";
   let bookingCta = "Book a Service";
-  let serviceRegion = "Melbourne West";
+  let serviceRegion = "Melbourne West, Victoria";
 
   try {
     await connectDB();
 
     const settings = await SiteSettings.findOne()
       .select({
+        businessName: 1,
         phone: 1,
         primaryCallNumber: 1,
         bookingCta: 1,
@@ -31,6 +33,7 @@ export default async function EmergencyAssistance() {
       .lean();
 
     if (settings) {
+      businessName = settings.businessName || businessName;
       phone = settings.phone || phone;
       callNumber = settings.primaryCallNumber || phone;
       bookingCta = settings.bookingCta || bookingCta;
@@ -65,7 +68,7 @@ export default async function EmergencyAssistance() {
 
       <div className="relative mx-auto max-w-[1440px] px-5 py-8 sm:px-8 sm:py-10 lg:px-12 lg:py-14">
         <div className="relative overflow-hidden rounded-[24px] border border-white/[0.10] bg-[#08263D] shadow-[0_24px_80px_rgba(0,0,0,0.20)] sm:rounded-[30px]">
-          {/* Yellow brand accent */}
+          {/* Brand accent */}
           <div
             aria-hidden="true"
             className="absolute inset-y-0 left-0 w-1 bg-[#FFD400] sm:w-1.5"
@@ -74,7 +77,6 @@ export default async function EmergencyAssistance() {
           <div className="grid lg:grid-cols-[minmax(0,1fr)_330px]">
             {/* Main message */}
             <div className="relative px-6 py-8 sm:px-9 sm:py-10 lg:px-12 lg:py-12">
-              {/* Eyebrow and service region */}
               <div className="flex flex-wrap items-center gap-x-4 gap-y-3">
                 <span className="inline-flex items-center gap-2.5 rounded-full border border-[#FFD400]/20 bg-[#FFD400]/[0.07] px-3 py-2">
                   <Wrench
@@ -83,7 +85,7 @@ export default async function EmergencyAssistance() {
                   />
 
                   <span className="text-[9px] font-extrabold uppercase tracking-[0.17em] text-[#FFD400] sm:text-[10px]">
-                    Automotive Assistance
+                    Mobile Automotive Assistance
                   </span>
                 </span>
 
@@ -118,10 +120,11 @@ export default async function EmergencyAssistance() {
                   </h2>
 
                   <p className="mt-4 max-w-2xl text-sm leading-6 text-[#B5C5D0] sm:mt-5 sm:text-base sm:leading-7">
-                    From vehicle concerns to service enquiries, Rapid
-                    Auto Services helps you take the next step. Contact
-                    our team to discuss your vehicle&apos;s needs,
-                    available services and booking options.
+                    {businessName} provides convenient automotive
+                    assistance across {serviceRegion}. From battery
+                    services to vehicle maintenance and roadside
+                    assistance, contact our team to discuss your
+                    vehicle&apos;s needs and confirm service availability.
                   </p>
                 </div>
               </div>
@@ -141,7 +144,7 @@ export default async function EmergencyAssistance() {
                     aria-hidden="true"
                     className="h-4 w-4 shrink-0 text-[#FFD400]"
                   />
-                  Availability confirmation
+                  Service availability confirmation
                 </li>
               </ul>
 
@@ -161,7 +164,7 @@ export default async function EmergencyAssistance() {
 
                   <a
                     href={phoneHref}
-                    aria-label={`Call ${phone}`}
+                    aria-label={`Call ${businessName} on ${phone}`}
                     className="mt-1 inline-block text-base font-extrabold tracking-[-0.02em] text-[#F8FAFC] transition-colors hover:text-[#FFD400] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FFD400] sm:text-lg"
                   >
                     {phone}
@@ -185,14 +188,11 @@ export default async function EmergencyAssistance() {
 
               <a
                 href={phoneHref}
-                aria-label={`Call Rapid Auto Services on ${phone}`}
+                aria-label={`Call ${businessName} on ${phone}`}
                 className="group flex min-h-[56px] items-center justify-between gap-3 rounded-xl bg-[#FFD400] px-4 text-sm font-extrabold text-[#061A2B] shadow-[0_10px_30px_rgba(255,212,0,0.10)] transition-colors hover:bg-[#F5B800] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FFD400] focus-visible:ring-offset-2 focus-visible:ring-offset-[#061A2B]"
               >
                 <span className="flex items-center gap-3">
-                  <Phone
-                    aria-hidden="true"
-                    className="h-4 w-4"
-                  />
+                  <Phone aria-hidden="true" className="h-4 w-4" />
                   Call Our Team
                 </span>
 

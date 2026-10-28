@@ -62,7 +62,7 @@ export default function FeaturedBlogPost({
 
   const imageAlt =
     post.coverImage?.alt?.trim() ||
-    `${post.title} - Rapid Auto Services`;
+    `${post.title} - Mobile Car Services`;
 
   const publishedDate = formatDate(post.publishedAt);
 
@@ -100,7 +100,7 @@ export default function FeaturedBlogPost({
           </div>
 
           <p className="max-w-md text-sm leading-6 text-[#647783] sm:text-right">
-            Discover a featured guide from the Rapid Auto Services
+            Discover a featured guide from the Mobile Car Services
             journal, with practical information to help you make
             informed decisions about your vehicle.
           </p>

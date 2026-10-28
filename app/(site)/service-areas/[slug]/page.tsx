@@ -231,7 +231,7 @@ async function getSiteSettings() {
 
   return {
     businessName:
-      settings?.businessName || "Car Battery Service",
+      settings?.businessName || "Mobile Car Services",
 
     phone:
       settings?.primaryCallNumber ||
@@ -258,7 +258,7 @@ export async function generateMetadata({
 
   if (!serviceArea) {
     return {
-      title: "Service Area Not Found | Car Battery Service",
+      title: "Service Area Not Found | Mobile Car Services",
       description:
         "The requested service area could not be found.",
     };
@@ -266,7 +266,7 @@ export async function generateMetadata({
 
   const title =
     serviceArea.seoTitle ||
-    `${serviceArea.name} | Car Battery Service`;
+    `${serviceArea.name} | Mobile Car Services`;
 
   const description =
     serviceArea.seoDescription ||

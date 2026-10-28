@@ -67,7 +67,7 @@ export default function PrivacyContents({
   business,
 }: PrivacyContentsProps) {
   const businessName =
-    business.businessName?.trim() || "Rapid Auto Services";
+    business.businessName?.trim() || "Mobile Car Services";
 
   const phone =
     business.primaryCallNumber?.trim() || business.phone?.trim() || "";
@@ -135,7 +135,7 @@ export default function PrivacyContents({
             title="Introduction"
           >
             <p>
-              This Privacy Policy applies to the Rapid Auto Services website
+              This Privacy Policy applies to the Mobile Car Services website
               and personal information handled by the business in connection
               with its automotive services.
             </p>

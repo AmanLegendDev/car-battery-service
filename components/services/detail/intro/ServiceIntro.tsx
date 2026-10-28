@@ -40,7 +40,7 @@ export default function ServiceIntro({
             </p>
 
             <p className="mt-8 max-w-xl text-sm leading-7 text-[#061A2B]/55 sm:text-base">
-              {title} is one of the services available through Rapid Auto Services
+              {title} is one of the services available through Mobile Car Services
               . Service details and availability depend on the vehicle
               and situation.
             </p>

@@ -45,7 +45,7 @@ export default async function ServiceAreasListingCTA({
     .lean();
 
   const businessName =
-    settings?.businessName || "Rapid Auto Services";
+    settings?.businessName || "Mobile Car Services";
 
   const phone =
     settings?.primaryCallNumber ||

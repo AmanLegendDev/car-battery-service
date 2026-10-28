@@ -5,7 +5,7 @@ export const FAQS_LISTING_HERO = {
   title: "Clear answers for every journey.",
 
   description:
-    "Find practical answers about our automotive services, vehicle maintenance, service availability, bookings and what to expect when arranging assistance with Rapid Auto Services.",
+    "Find practical answers about our automotive services, vehicle maintenance, service availability, bookings and what to expect when arranging assistance with Mobile Car Services.",
 
   primaryCta: "Browse FAQs",
   primaryHref: "#faqs",

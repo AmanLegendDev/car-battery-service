@@ -12,7 +12,7 @@ export default function BookingHeader() {
         {/* Brand */}
         <Link
           href="/"
-          aria-label="Rapid Auto Services home"
+          aria-label="Mobile Car Services home"
           className="group flex min-w-0 items-center gap-3"
         >
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#FFD400] text-[#061A2B] transition-transform duration-300 group-hover:scale-105">
@@ -21,7 +21,7 @@ export default function BookingHeader() {
 
           <div className="min-w-0">
             <p className="truncate text-sm font-bold text-white">
-              Rapid Auto Services
+Mobile Car Services
             </p>
 
             <p className="text-xs text-[#A8BBC8]">
@@ -42,7 +42,7 @@ export default function BookingHeader() {
 
           <a
             href={PHONE_HREF}
-            aria-label={`Call Rapid Auto Services at ${PHONE}`}
+            aria-label={`Call Mobile Car Services at ${PHONE}`}
             className="flex h-10 items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 text-sm font-semibold text-white transition hover:border-white/20 hover:bg-white/10"
           >
             <Phone size={15} className="shrink-0 text-[#FFD400]" />
