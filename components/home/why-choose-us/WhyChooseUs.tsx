@@ -131,7 +131,7 @@ export default async function WhyChooseUs() {
               />
 
               <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-[#A8BBC8] sm:tracking-[0.18em]">
-                The Rapid Auto Approach
+                The Mobile Car Services Approach
               </span>
             </div>
           </div>

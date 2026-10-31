@@ -229,7 +229,7 @@ export default async function Footer() {
         aria-hidden="true"
         className="pointer-events-none absolute -bottom-5 left-1/2 -translate-x-1/2 select-none whitespace-nowrap text-[clamp(5rem,16vw,18rem)] font-black uppercase leading-none tracking-[-0.1em] text-white/[0.018]"
       >
-        RAPID
+        CAR 
       </div>
 
       <div className="relative mx-auto max-w-[1420px] px-5 sm:px-6 lg:px-8">
