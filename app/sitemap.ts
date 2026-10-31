@@ -7,7 +7,7 @@ import Service from "@/models/Service";
 import ServiceArea from "@/models/ServiceArea";
 
 const SITE_URL =
-  "https://carbatteryservices.com.au";
+  "https://www.mobilecarservices.com.au";
 
 export const dynamic =
   "force-dynamic";

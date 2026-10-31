@@ -1,4 +1,4 @@
-const SITE_URL = "https://carbatteryservices.com.au";
+const SITE_URL = "https://www.mobilecarservices.com.au/";
 
 const BUSINESS_NAME = "Mobile Car Services";
 

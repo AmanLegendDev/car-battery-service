@@ -9,7 +9,7 @@ import ServicesListingPage from "@/components/services/listing/ServicesListingPa
 export const dynamic = "force-dynamic";
 
 const SITE_URL =
-  "https://carbatteryservices.com.au";
+  "https://www.mobilecarservices.com.au/";
 
 const PAGE_URL =
   `${SITE_URL}/services`;

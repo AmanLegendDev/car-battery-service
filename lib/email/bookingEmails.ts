@@ -4,7 +4,7 @@ import SiteSettings from "@/models/SiteSettings";
 
 const SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL ||
-  "https://carbatteryservices.com.au";
+  "https://www.mobilecarservices.com.au/";
 
 const DEFAULT_BUSINESS_NAME =
   "Mobile Car Services";
@@ -447,7 +447,7 @@ function emailShell({
             text-decoration:none;
           "
         >
-          carbatteryservices.com.au
+          https://www.mobilecarservices.com.au/
         </a>
 
         <div

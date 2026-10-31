@@ -13,7 +13,7 @@ import BlogDetailPage from "@/components/blog/detail/BlogDetailPage";
 export const dynamic = "force-dynamic";
 
 const SITE_URL =
-  "https://carbatteryservices.com.au";
+  "https://www.mobilecarservices.com.au";
 
 const BLOG_RELATED_POST_LIMIT = 6;
 const BLOG_RELATED_SERVICE_LIMIT = 3;

@@ -19,7 +19,7 @@ import PaymentOptions from "@/components/home/payment-options/PaymentOptions";
 
 export const dynamic = "force-dynamic";
 
-const SITE_URL = "https://carbatteryservices.com.au";
+const SITE_URL = "https://www.mobilecarservices.com.au";
 
 const HOME_TITLE =
   "Mobile Car Battery Replacement Melbourne West | 7 Days";

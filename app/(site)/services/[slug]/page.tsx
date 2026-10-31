@@ -14,7 +14,7 @@ interface ServicePageProps {
 }
 
 const SITE_URL =
-  "https://carbatteryservices.com.au";
+  "https://www.mobilecarservices.com.au/";
 
 const DEFAULT_BUSINESS_NAME =
   "Mobile Car Services";

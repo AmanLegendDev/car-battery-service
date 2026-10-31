@@ -13,7 +13,7 @@ import BlogListingPage from "@/components/blog/listing/BlogListingPage";
 export const dynamic = "force-dynamic";
 
 const SITE_URL =
-  "https://carbatteryservices.com.au";
+  "https://www.mobilecarservices.com.au";
 
 const POSTS_PER_PAGE = 6;
 

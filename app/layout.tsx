@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-const SITE_URL = "https://carbatteryservices.com.au";
+const SITE_URL = "https://www.mobilecarservices.com.au";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
