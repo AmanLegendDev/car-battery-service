@@ -154,7 +154,7 @@ export default function HeroContent({
           aria-label={`Call ${phoneNumber}`}
           className="group inline-flex h-[54px] w-full items-center justify-center gap-2.5 rounded-2xl border border-white/[0.15] bg-[#08263D]/45 px-6 text-[14px] font-bold text-[#F8FAFC] shadow-[0_10px_30px_rgba(0,0,0,0.12)] backdrop-blur-md transition-all duration-200 hover:border-white/[0.24] hover:bg-[#08263D]/65 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#FFD400]/50 active:scale-[0.985] sm:h-14 sm:w-auto sm:min-w-[175px]"
         >
-          <span>Call Now</span>
+          <span>Call Now +61 467 037 886</span>
 
           <ArrowRight
             aria-hidden="true"
