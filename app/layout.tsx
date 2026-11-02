@@ -190,10 +190,7 @@ export default function RootLayout({
     >
       <head>
         {/* Google Search Console Verification */}
-        <meta
-          name="google-site-verification"
-          content="diUTaZzt0mlFvO4CwYHMs7g2cbi4aNrPP6NlSOm89b0"
-        />
+        <meta name="google-site-verification" content="jV4EXGEJcQzKFC1hkGN9yy7tEL-oc5jYXlegXGp1KL4" />
 
         {/* Bing Webmaster Tools Verification */}
         <meta
