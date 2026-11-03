@@ -13,6 +13,21 @@ import {
 } from "./booking.constants";
 
 /* =========================================
+   REGISTRATION STATES
+========================================= */
+
+export const REGISTRATION_STATES = [
+  "ACT",
+  "NSW",
+  "NT",
+  "QLD",
+  "SA",
+  "TAS",
+  "VIC",
+  "WA",
+] as const;
+
+/* =========================================
    COMMON VALIDATION
 ========================================= */
 
@@ -46,6 +61,10 @@ export const bookingVehicleSchema = z.object({
     .max(20, "Registration number is too long.")
     .default(""),
 
+  registrationState: z
+    .enum(REGISTRATION_STATES)
+    .default("VIC"),
+
   make: z
     .string()
     .trim()
@@ -58,21 +77,14 @@ export const bookingVehicleSchema = z.object({
     .min(1, "Please enter your vehicle model.")
     .max(100, "Vehicle model is too long."),
 
-  year: z
+  notes: z
     .string()
     .trim()
-    .regex(
-      /^\d{4}$/,
-      "Please enter a valid 4-digit vehicle year."
-    ),
-    notes: z
-  .string()
-  .trim()
-  .max(
-    BOOKING_MAX_NOTES_LENGTH,
-    "Vehicle notes are too long."
-  )
-  .default(""),
+    .max(
+      BOOKING_MAX_NOTES_LENGTH,
+      "Vehicle notes are too long."
+    )
+    .default(""),
 });
 
 /* =========================================
@@ -106,10 +118,10 @@ export const bookingCustomerSchema = z.object({
 ========================================= */
 
 export const bookingServiceSchema = z.object({
- serviceId: z
-  .string()
-  .trim()
-  .default(""),
+  serviceId: z
+    .string()
+    .trim()
+    .default(""),
 
   serviceName: z
     .string()

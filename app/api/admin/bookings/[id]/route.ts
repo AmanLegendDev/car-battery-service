@@ -354,7 +354,7 @@ if (
       booking.vehicle.registrationNumber,
     make: booking.vehicle.make,
     model: booking.vehicle.model,
-    year: booking.vehicle.year,
+    registrationState: booking.vehicle.registrationState,
     notes: booking.vehicle.notes,
 
     // Backward compatibility with existing email template.

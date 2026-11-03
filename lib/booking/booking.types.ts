@@ -5,6 +5,24 @@ import type {
 } from "./booking.constants";
 
 /* =========================================
+   REGISTRATION STATES
+========================================= */
+
+export const REGISTRATION_STATES = [
+  "ACT",
+  "NSW",
+  "NT",
+  "QLD",
+  "SA",
+  "TAS",
+  "VIC",
+  "WA",
+] as const;
+
+export type RegistrationState =
+  (typeof REGISTRATION_STATES)[number];
+
+/* =========================================
    SHARED TYPES
 ========================================= */
 
@@ -20,9 +38,9 @@ export type BookingTimeSlot =
 
 export interface BookingVehicleData {
   registrationNumber: string;
+  registrationState: RegistrationState;
   make: string;
   model: string;
-  year: string;
   notes: string;
 }
 

@@ -110,17 +110,16 @@ export default function CustomerStep({
   };
 
   return (
-    <div>
+     <div className="w-full min-w-0 max-w-full">
       {/* HEADER */}
 
       <p className="text-sm font-semibold text-[#FFD400]">
         Step 2 of 4
       </p>
 
-      <h2 className="mt-2 text-2xl font-black text-white sm:text-3xl">
-        Contact & Service Details
-      </h2>
-
+    <h2 className="mt-2 max-w-full break-words text-2xl font-black leading-tight text-white sm:text-3xl">
+  Contact & Service Details
+</h2>
       <p className="mt-2 max-w-xl text-sm leading-6 text-[#A8BBC8]">
         Tell us how to contact you and choose the service
         you need for your vehicle.
@@ -267,35 +266,34 @@ export default function CustomerStep({
               setDropdownOpen((current) => !current)
             }
             className={[
-              "flex min-h-14 w-full items-center justify-between gap-3 rounded-xl border px-4 py-3 text-left transition",
-              dropdownOpen
-                ? "border-[#FFD400]/60 bg-[#08263D]"
-                : "border-white/10 bg-[#08263D] hover:border-white/20",
-            ].join(" ")}
+  "flex min-h-14 w-full min-w-0 max-w-full items-center justify-between gap-3 rounded-xl border px-4 py-3 text-left transition",
+  dropdownOpen
+    ? "border-[#FFD400]/60 bg-[#08263D]"
+    : "border-white/10 bg-[#08263D] hover:border-white/20",
+].join(" ")}
           >
-            <span className="flex min-w-0 items-center gap-3">
-              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#0D6E91]/20 text-[#FFD400]">
-                <Wrench size={17} />
-              </span>
+         <span className="flex min-w-0 flex-1 items-center gap-3">
+  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#0D6E91]/20 text-[#FFD400]">
+    <Wrench size={17} />
+  </span>
 
-              <span className="min-w-0">
-                <span
-                  className={[
-                    "block truncate text-sm font-semibold",
-                    selectedService
-                      ? "text-white"
-                      : "text-[#8298A7]",
-                  ].join(" ")}
-                >
-                  {selectedService?.title ||
-                    "Choose a service"}
-                </span>
+  <span className="min-w-0 flex-1">
+    <span
+      className={[
+        "block whitespace-normal break-words text-sm font-semibold leading-5 [overflow-wrap:anywhere]",
+        selectedService
+          ? "text-white"
+          : "text-[#8298A7]",
+      ].join(" ")}
+    >
+      {selectedService?.title || "Choose a service"}
+    </span>
 
-                <span className="mt-0.5 block text-[11px] text-[#8298A7]">
-                  {services.length} services available
-                </span>
-              </span>
-            </span>
+    <span className="mt-1 block text-[11px] text-[#8298A7]">
+      {services.length} services available
+    </span>
+  </span>
+</span>
 
             <ChevronDown
               size={19}
@@ -309,7 +307,7 @@ export default function CustomerStep({
           {/* DROPDOWN PANEL */}
 
           {dropdownOpen && (
-            <div className="absolute left-0 right-0 top-full z-30 mt-2 overflow-hidden rounded-2xl border border-white/10 bg-[#08263D] shadow-2xl shadow-black/40">
+           <div className="absolute left-0 right-0 top-full z-30 mt-2 w-full min-w-0 max-w-full overflow-hidden rounded-2xl border border-white/10 bg-[#08263D] shadow-2xl shadow-black/40">
               {/* SEARCH */}
 
               <div className="border-b border-white/10 p-3">
@@ -377,15 +375,11 @@ export default function CustomerStep({
                         )}
                       </span>
 
-                      <span className="min-w-0 flex-1">
-                        <span className="block text-sm font-semibold text-white">
-                          {item.title}
-                        </span>
-
-                        <span className="mt-1 block text-xs leading-5 text-[#8298A7]">
-                          {item.shortDescription}
-                        </span>
-                      </span>
+   <span className="min-w-0 flex-1">
+  <span className="block break-words text-sm font-semibold leading-5 text-white">
+    {item.title}
+  </span>
+</span>
 
                       {isSelected && (
                         <Check
@@ -427,14 +421,10 @@ export default function CustomerStep({
                   </span>
 
                   <span className="min-w-0 flex-1">
-                    <span className="block text-sm font-bold text-white">
-                      Not sure — I need help
-                    </span>
-
-                    <span className="mt-0.5 block text-xs text-[#8298A7]">
-                      Let our team help identify the right service.
-                    </span>
-                  </span>
+  <span className="block text-sm font-bold text-white">
+    Not sure — I need help
+  </span>
+</span>
 
                   {service.serviceId === "not-sure" && (
                     <Check
@@ -448,39 +438,35 @@ export default function CustomerStep({
           )}
         </div>
 
-        {/* SELECTED SERVICE */}
+       {/* SELECTED SERVICE */}
 
-        {selectedService && (
-          <div className="mt-4 rounded-2xl border border-[#FFD400]/25 bg-[#FFD400]/[0.06] p-4">
-            <div className="flex items-start gap-3">
-              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#FFD400] text-[#061A2B]">
-                <Check size={18} />
-              </span>
+{selectedService && (
+  <div className="mt-4 w-full min-w-0 max-w-full overflow-hidden rounded-2xl border border-[#FFD400]/25 bg-[#FFD400]/[0.06] p-4">
+    <div className="flex w-full min-w-0 items-start gap-3">
+      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#FFD400] text-[#061A2B]">
+        <Check size={18} />
+      </span>
 
-              <div className="min-w-0 flex-1">
-                <p className="text-[10px] font-bold uppercase tracking-wider text-[#FFD400]">
-                  Service Selected
-                </p>
+      <div className="min-w-0 flex-1">
+        <p className="text-[10px] font-bold uppercase tracking-wider text-[#FFD400]">
+          Service Selected
+        </p>
 
-                <h4 className="mt-1 font-bold text-white">
-                  {selectedService.title}
-                </h4>
+        <h4 className="mt-1 break-words text-sm font-bold leading-5 text-white [overflow-wrap:anywhere]">
+          {selectedService.title}
+        </h4>
+      </div>
 
-                <p className="mt-1 text-xs leading-5 text-[#A8BBC8]">
-                  {selectedService.shortDescription}
-                </p>
-              </div>
-
-              <button
-                type="button"
-                onClick={() => setDropdownOpen(true)}
-                className="shrink-0 text-xs font-semibold text-[#FFD400] hover:underline"
-              >
-                Change
-              </button>
-            </div>
-          </div>
-        )}
+      <button
+        type="button"
+        onClick={() => setDropdownOpen(true)}
+        className="shrink-0 text-xs font-semibold text-[#FFD400] hover:underline"
+      >
+        Change
+      </button>
+    </div>
+  </div>
+)}
       </section>
 
       {/* FOOTNOTE */}

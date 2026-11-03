@@ -53,20 +53,20 @@ type Booking = {
   };
 
   vehicle: {
-    registrationNumber: string;
-    make?: string;
-    model?: string;
-    year?: string;
-    issue?:
-      | "Car won't start"
-      | "Battery appears flat"
-      | "Needs a jump start"
-      | "Battery testing"
-      | "Battery replacement"
-      | "Not sure / Need help"
-      | "";
-    notes?: string;
-  };
+  registrationNumber: string;
+  registrationState?: string;
+  make?: string;
+  model?: string;
+  issue?:
+    | "Car won't start"
+    | "Battery appears flat"
+    | "Needs a jump start"
+    | "Battery testing"
+    | "Battery replacement"
+    | "Not sure / Need help"
+    | "";
+  notes?: string;
+};
 
   service: {
     serviceId: string | null;
@@ -352,6 +352,7 @@ export default function BookingsPage() {
   };
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadBookings();
   }, [activeFilter]);
 
@@ -779,21 +780,20 @@ function BookingCard({
             }
           />
 
-          <InfoItem
-            icon={CarFront}
-            label="Vehicle"
-            value={[
-              booking.vehicle.make,
-              booking.vehicle.model,
-              booking.vehicle.year,
-              booking.vehicle.registrationNumber
-                ? `(${booking.vehicle.registrationNumber})`
-                : "",
-            ]
-              .filter(Boolean)
-              .join(" ") || "Vehicle details unavailable"}
-          />
-
+       <InfoItem
+  icon={CarFront}
+  label="Vehicle"
+  value={[
+    booking.vehicle.make,
+    booking.vehicle.model,
+    booking.vehicle.registrationState,
+    booking.vehicle.registrationNumber
+      ? `(${booking.vehicle.registrationNumber})`
+      : "",
+  ]
+    .filter(Boolean)
+    .join(" ") || "Vehicle details unavailable"}
+/>
           <InfoItem
             icon={CalendarDays}
             label="Appointment"
@@ -1004,28 +1004,31 @@ function BookingDetailsModal({
               title="Vehicle"
               icon={CarFront}
             >
-              <DetailRow
-                label="Registration"
-                value={
-                  booking.vehicle.registrationNumber ||
-                  "Not provided"
-                }
-              />
+            <DetailRow
+  label="Registration Number"
+  value={
+    booking.vehicle.registrationNumber ||
+    "Not provided"
+  }
+/>
 
-              <DetailRow
-                label="Make"
-                value={booking.vehicle.make || "Not provided"}
-              />
+<DetailRow
+  label="Registration State"
+  value={
+    booking.vehicle.registrationState ||
+    "Not provided"
+  }
+/>
 
-              <DetailRow
-                label="Model"
-                value={booking.vehicle.model || "Not provided"}
-              />
+<DetailRow
+  label="Make"
+  value={booking.vehicle.make || "Not provided"}
+/>
 
-              <DetailRow
-                label="Year"
-                value={booking.vehicle.year || "Not provided"}
-              />
+<DetailRow
+  label="Model"
+  value={booking.vehicle.model || "Not provided"}
+/>
 
               <DetailRow
                 label="Legacy Issue"

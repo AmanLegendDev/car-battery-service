@@ -116,7 +116,7 @@ export default function LocationStep({
             </h3>
 
             <p className="text-xs text-[#6F8796]">
-              Enter your vehicle's service location.
+              Enter your vehicle&apos;s service location.
             </p>
           </div>
         </div>

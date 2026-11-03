@@ -225,41 +225,44 @@ export default function ReviewStep({
       <div className="mt-8 space-y-4">
 
         {/* VEHICLE INFORMATION */}
-        <Section
-          icon={<Car size={19} />}
-          title="Vehicle Information"
-          step={1}
-          onEdit={onEdit}
-        >
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Info
-              label="Registration Number"
-              value={vehicle.registrationNumber}
-            />
+       
+{/* VEHICLE INFORMATION */}
+<Section
+  icon={<Car size={19} />}
+  title="Vehicle Information"
+  step={1}
+  onEdit={onEdit}
+>
+  <div className="grid gap-4 sm:grid-cols-2">
+    <Info
+      label="Registration Number"
+      value={vehicle.registrationNumber}
+    />
 
-            <Info
-              label="Vehicle Make"
-              value={vehicle.make}
-            />
+    <Info
+      label="Registration State"
+      value={vehicle.registrationState}
+    />
 
-            <Info
-              label="Vehicle Model"
-              value={vehicle.model}
-            />
+    <Info
+      label="Vehicle Make"
+      value={vehicle.make}
+    />
 
-            <Info
-              label="Vehicle Year"
-              value={vehicle.year}
-            />
-          </div>
+    <Info
+      label="Vehicle Model"
+      value={vehicle.model}
+    />
+  </div>
 
-          <div className="border-t border-white/10 pt-4">
-            <Info
-              label="Additional Vehicle Notes"
-              value={vehicle.notes}
-            />
-          </div>
-        </Section>
+  <div className="border-t border-white/10 pt-4">
+    <Info
+      label="Additional Vehicle Notes"
+      value={vehicle.notes}
+    />
+  </div>
+</Section>
+
 
         {/* CONTACT INFORMATION */}
         <Section

@@ -5,13 +5,13 @@ import { BOOKING_TIMEZONE } from "@/lib/booking/booking.constants";
 
 export const INITIAL_BOOKING_DATA: BookingFormData = {
   // STEP 1 — VEHICLE
-vehicle: {
-  registrationNumber: "",
-  make: "",
-  model: "",
-  year: "",
-  notes: "",
-},
+  vehicle: {
+    registrationNumber: "",
+    registrationState: "VIC",
+    make: "",
+    model: "",
+    notes: "",
+  },
 
   // STEP 2 — CONTACT
   customer: {

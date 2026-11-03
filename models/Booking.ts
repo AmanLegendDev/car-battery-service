@@ -1,9 +1,28 @@
+
 import mongoose, {
   Schema,
   type Document,
   type Model,
   type Types,
 } from "mongoose";
+
+/* =========================================
+   REGISTRATION STATES
+========================================= */
+
+export const REGISTRATION_STATES = [
+  "ACT",
+  "NSW",
+  "NT",
+  "QLD",
+  "SA",
+  "TAS",
+  "VIC",
+  "WA",
+] as const;
+
+export type RegistrationState =
+  (typeof REGISTRATION_STATES)[number];
 
 /* =========================================
    BOOKING STATUS
@@ -33,9 +52,9 @@ export interface IBookingCustomer {
 
 export interface IBookingVehicle {
   registrationNumber: string;
+  registrationState: RegistrationState;
   make: string;
   model: string;
-  year: string;
   notes: string;
 }
 
@@ -149,6 +168,13 @@ const BookingVehicleSchema =
         maxlength: 20,
       },
 
+      registrationState: {
+        type: String,
+        enum: REGISTRATION_STATES,
+        default: "VIC",
+        required: true,
+      },
+
       make: {
         type: String,
         required: true,
@@ -163,25 +189,17 @@ const BookingVehicleSchema =
         maxlength: 100,
       },
 
-      year: {
-        type: String,
-        required: true,
-        trim: true,
-        maxlength: 4,
-      },
       notes: {
-  type: String,
-  default: "",
-  trim: true,
-  maxlength: 2000,
-},
+        type: String,
+        default: "",
+        trim: true,
+        maxlength: 2000,
+      },
     },
     {
       _id: false,
     }
   );
-
-  
 
 /* =========================================
    SERVICE SCHEMA
@@ -373,11 +391,6 @@ const BookingSchema = new Schema<IBooking>(
       index: true,
     },
 
-    /*
-     * Archive is separate from booking status.
-     * Original booking status remains unchanged.
-     */
-
     archived: {
       type: Boolean,
       default: false,
@@ -398,11 +411,6 @@ const BookingSchema = new Schema<IBooking>(
    AVAILABILITY INDEXES
 ========================================= */
 
-/*
- * Used to find bookings for a specific date
- * and appointment start time.
- */
-
 BookingSchema.index({
   "appointment.date": 1,
   "appointment.startTime": 1,
@@ -410,19 +418,11 @@ BookingSchema.index({
   archived: 1,
 });
 
-/*
- * Used to fetch bookings by date and status.
- */
-
 BookingSchema.index({
   "appointment.date": 1,
   status: 1,
   archived: 1,
 });
-
-/*
- * Used for customer booking history.
- */
 
 BookingSchema.index({
   "customer.phone": 1,

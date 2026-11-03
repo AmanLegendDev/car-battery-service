@@ -8,6 +8,17 @@ interface VehicleStepProps {
   onChange: (value: Partial<BookingVehicleData>) => void;
 }
 
+const REGISTRATION_STATES = [
+  "ACT",
+  "NSW",
+  "NT",
+  "QLD",
+  "SA",
+  "TAS",
+  "VIC",
+  "WA",
+] as const;
+
 const inputClass =
   "mt-2 h-12 w-full rounded-xl border border-white/10 bg-white/[0.05] px-4 text-sm text-white outline-none transition placeholder:text-[#667E8D] focus:border-[#FFD400]/60 focus:bg-white/[0.07]";
 
@@ -31,7 +42,9 @@ export default function VehicleStep({
       </p>
 
       <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2">
-        <label className="block sm:col-span-2">
+
+        {/* REGISTRATION NUMBER */}
+        <label className="block">
           <span className="text-sm font-semibold">
             Registration Number
             <span className="ml-2 text-xs font-normal text-[#A8BBC8]">
@@ -54,6 +67,36 @@ export default function VehicleStep({
           />
         </label>
 
+        {/* REGISTRATION STATE */}
+        <label className="block">
+          <span className="text-sm font-semibold">
+            Registration State *
+          </span>
+
+          <select
+            required
+            value={value.registrationState}
+            onChange={(event) =>
+              onChange({
+                registrationState:
+                  event.target.value as BookingVehicleData["registrationState"],
+              })
+            }
+            className={`${inputClass} cursor-pointer`}
+          >
+            {REGISTRATION_STATES.map((state) => (
+              <option
+                key={state}
+                value={state}
+                className="bg-[#08263D] text-white"
+              >
+                {state}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        {/* VEHICLE MAKE */}
         <label className="block">
           <span className="text-sm font-semibold">
             Vehicle Make *
@@ -70,6 +113,7 @@ export default function VehicleStep({
           />
         </label>
 
+        {/* VEHICLE MODEL */}
         <label className="block">
           <span className="text-sm font-semibold">
             Vehicle Model *
@@ -85,27 +129,9 @@ export default function VehicleStep({
             className={inputClass}
           />
         </label>
-
-        <label className="block sm:col-span-2">
-          <span className="text-sm font-semibold">
-            Vehicle Year *
-          </span>
-
-          <input
-            type="text"
-            inputMode="numeric"
-            value={value.year}
-            onChange={(event) =>
-              onChange({
-                year: event.target.value,
-              })
-            }
-            placeholder="e.g. 2018"
-            className={inputClass}
-          />
-        </label>
       </div>
 
+      {/* ADDITIONAL VEHICLE NOTES */}
       <label className="mt-8 block">
         <span className="text-sm font-semibold">
           Additional Vehicle Notes

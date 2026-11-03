@@ -299,7 +299,7 @@ export async function POST(request: Request) {
 
         make: data.vehicle.make,
         model: data.vehicle.model,
-        year: data.vehicle.year,
+        registrationState: parsed.data.vehicle.registrationState,
         notes: data.vehicle.notes || "",
       },
 
@@ -343,19 +343,19 @@ export async function POST(request: Request) {
         email: createdBooking.customer.email,
       },
 
-      vehicle: {
-        registrationNumber:
-          createdBooking.vehicle.registrationNumber,
+    vehicle: {
+  registrationNumber:
+    createdBooking.vehicle.registrationNumber,
 
-        make: createdBooking.vehicle.make,
-        model: createdBooking.vehicle.model,
-        year: createdBooking.vehicle.year,
-        notes: createdBooking.vehicle.notes,
+  registrationState:
+    createdBooking.vehicle.registrationState,
 
-        // Backward-compatible field for existing email templates.
-        issue: createdBooking.service.issueDescription,
-      },
+  make: createdBooking.vehicle.make,
+  model: createdBooking.vehicle.model,
+  notes: createdBooking.vehicle.notes,
 
+  issue: createdBooking.service.issueDescription,
+},
       service: {
         serviceName: createdBooking.service.serviceName,
         issueDescription: createdBooking.service.issueDescription,

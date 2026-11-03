@@ -41,7 +41,7 @@ export default function ServiceStep({
 
       <p className="mt-2 text-sm leading-6 text-[#A8BBC8]">
         Select the service that best matches
-        what you need at your vehicle's
+        what you need at your vehicle&apos;s
         location.
       </p>
 
@@ -87,9 +87,7 @@ export default function ServiceStep({
                     )}
                   </div>
 
-                  <p className="mt-1 text-sm leading-6 text-[#A8BBC8]">
-                    {service.shortDescription}
-                  </p>
+                  
                 </div>
               </div>
             </button>
@@ -116,10 +114,7 @@ export default function ServiceStep({
             Not sure — I need help
           </h3>
 
-          <p className="mt-1 text-sm text-[#A8BBC8]">
-            Choose this if you are unsure which
-            service you need.
-          </p>
+         
         </button>
       </div>
     </div>
