@@ -1,8 +1,11 @@
+
 import FeaturedTestimonial from "./featured/FeaturedTestimonial";
 import TestimonialsDirectory from "./directory/TestimonialsDirectory";
 import TestimonialsEmptyState from "./empty/TestimonialsEmptyState";
 import TestimonialsListingCTA from "./cta/TestimonialsListingCTA";
 import TestimonialsListingHero from "./hero/TestimonialsListingHero";
+
+import FAQOverview from "@/components/home/faqs/FAQOverview";
 
 interface TestimonialPhoto {
   publicId: string;
@@ -45,8 +48,7 @@ export default function TestimonialsListingPage({
 }: TestimonialsListingPageProps) {
   const featuredTestimonials =
     testimonials.filter(
-      (testimonial) =>
-        testimonial.featured,
+      (testimonial) => testimonial.featured,
     );
 
   const featuredTestimonial =
@@ -58,8 +60,7 @@ export default function TestimonialsListingPage({
     featuredTestimonial
       ? testimonials.filter(
           (testimonial) =>
-            testimonial.id !==
-            featuredTestimonial.id,
+            testimonial.id !== featuredTestimonial.id,
         )
       : testimonials;
 
@@ -86,33 +87,23 @@ export default function TestimonialsListingPage({
         <FeaturedTestimonial
           testimonial={{
             id: featuredTestimonial.id,
-
             name: featuredTestimonial.name,
-
             businessName:
-              featuredTestimonial.businessName ??
-              "",
-
+              featuredTestimonial.businessName ?? "",
             role:
-              featuredTestimonial.role ??
-              "",
-
+              featuredTestimonial.role ?? "",
             photo:
-              featuredTestimonial.photo ??
-              null,
-
+              featuredTestimonial.photo ?? null,
             testimonial:
               featuredTestimonial.testimonial,
-
             rating:
-              featuredTestimonial.rating ??
-              null,
+              featuredTestimonial.rating ?? null,
           }}
         />
       ) : null}
 
       {/* =====================================================
-          DIRECTORY
+          TESTIMONIALS DIRECTORY
       ====================================================== */}
 
       {remainingTestimonials.length > 0 ? (
@@ -130,6 +121,14 @@ export default function TestimonialsListingPage({
           businessName={business.businessName}
         />
       ) : null}
+
+      {/* =====================================================
+          TESTIMONIALS FAQs
+      ====================================================== */}
+
+      <FAQOverview
+        pageUrl="https://www.mobilecarservices.com.au/testimonials"
+      />
 
       {/* =====================================================
           FINAL CTA

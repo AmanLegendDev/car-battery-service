@@ -5,6 +5,7 @@ import { connectDB } from "@/lib/db";
 import Service from "@/models/Service";
 
 import BookingPage from "@/components/booking/BookingPage";
+import FAQOverview from "@/components/home/faqs/FAQOverview";
 
 export const dynamic = "force-dynamic";
 
@@ -69,6 +70,10 @@ export const metadata: Metadata = {
     },
   },
 };
+
+/* ============================================================
+   BOOKING PAGE STRUCTURED DATA
+============================================================ */
 
 function getBookingStructuredData() {
   return {
@@ -146,6 +151,10 @@ function getBookingStructuredData() {
   };
 }
 
+/* ============================================================
+   BOOK SERVICE PAGE
+============================================================ */
+
 export default async function BookServicePage() {
   await connectDB();
 
@@ -175,10 +184,12 @@ export default async function BookServicePage() {
 
   return (
     <>
-      <main>
-        <BookingPage services={publicServices} />
-      </main>
+      <BookingPage services={publicServices} />
 
+      {/* Booking Page FAQs */}
+      <FAQOverview pageUrl={PAGE_URL} />
+
+      {/* Booking Page Structured Data */}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{

@@ -1,7 +1,10 @@
+
 import ServicesListingHero from "./hero/ServicesListingHero";
 import ServicesDirectory from "./directory/ServicesDirectory";
 import ServicesEmptyState from "./empty/ServicesEmptyState";
 import ServicesListingCTA from "./cta/ServicesListingCTA";
+
+import FAQOverview from "@/components/home/faqs/FAQOverview";
 
 interface ServiceListingItem {
   id: string;
@@ -47,13 +50,21 @@ export default function ServicesListingPage({
 
   return (
     <>
+      {/* Services Hero */}
       <ServicesListingHero
         serviceCount={services.length}
         region={region}
       />
 
+      {/* Services Directory */}
       <ServicesDirectory services={services} />
 
+      {/* Services FAQs */}
+      <FAQOverview
+        pageUrl="https://www.mobilecarservices.com.au/services"
+      />
+
+      {/* Final CTA */}
       <ServicesListingCTA
         serviceCount={services.length}
       />

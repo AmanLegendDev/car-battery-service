@@ -1,8 +1,11 @@
+
 import ContactHero from "./hero/ContactHero";
 import ContactInformation from "./information/ContactInformation";
 import ContactBookingCTA from "./booking/ContactBookingCTA";
 import ContactServices from "./services/ContactServices";
 import ContactServiceArea from "./area/ContactServiceArea";
+
+import FAQOverview from "@/components/home/faqs/FAQOverview";
 
 export interface ContactBusiness {
   businessName: string;
@@ -52,6 +55,11 @@ export default function ContactPage({
 
       <ContactServiceArea
         business={business}
+      />
+
+      {/* Contact Page FAQs */}
+      <FAQOverview
+        pageUrl="https://www.mobilecarservices.com.au/contact"
       />
     </div>
   );

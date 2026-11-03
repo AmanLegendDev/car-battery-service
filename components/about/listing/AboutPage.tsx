@@ -1,9 +1,12 @@
+
 import AboutHero from "./hero/AboutHero";
 import AboutStory from "./story/AboutStory";
 import AboutValues from "./values/AboutValues";
 import AboutServices from "./services/AboutServices";
 import AboutServiceArea from "./area/AboutServiceArea";
 import AboutFinalCTA from "./cta/AboutFinalCTA";
+
+import FAQOverview from "@/components/home/faqs/FAQOverview";
 
 export interface AboutBusiness {
   businessName: string;
@@ -54,18 +57,17 @@ export default function AboutPage({
       />
 
       <AboutServiceArea
-        region={
-          business.primaryServiceRegion
-        }
+        region={business.primaryServiceRegion}
+      />
+
+      {/* About Page FAQs */}
+      <FAQOverview
+        pageUrl="https://www.mobilecarservices.com.au/about"
       />
 
       <AboutFinalCTA
-        businessName={
-          business.businessName
-        }
-        region={
-          business.primaryServiceRegion
-        }
+        businessName={business.businessName}
+        region={business.primaryServiceRegion}
       />
     </div>
   );

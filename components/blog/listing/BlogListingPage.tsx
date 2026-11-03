@@ -1,7 +1,10 @@
+
 import BlogDirectory from "./directory/BlogDirectory";
 import FeaturedBlogPost from "./featured/FeaturedBlogPost";
 import BlogEmptyState from "./empty/BlogEmptyState";
 import BlogListingHero from "./hero/BlogListingHero";
+
+import FAQOverview from "@/components/home/faqs/FAQOverview";
 
 interface BlogMedia {
   publicId: string;
@@ -44,10 +47,9 @@ export default function BlogListingPage({
 }: BlogListingPageProps) {
   const isFirstPage = currentPage === 1;
 
-  const featuredPost =
-    isFirstPage
-      ? posts.find((post) => post.featured) ?? posts[0] ?? null
-      : null;
+  const featuredPost = isFirstPage
+    ? posts.find((post) => post.featured) ?? posts[0] ?? null
+    : null;
 
   const normalizedFeaturedPost = featuredPost
     ? {
@@ -60,8 +62,10 @@ export default function BlogListingPage({
 
   return (
     <>
+      {/* Blog Listing Hero */}
       <BlogListingHero postCount={totalPosts} />
 
+      {/* Blog Content */}
       {posts.length === 0 ? (
         <BlogEmptyState />
       ) : (
@@ -80,6 +84,11 @@ export default function BlogListingPage({
           />
         </>
       )}
+
+      {/* Blog Listing FAQs */}
+      <FAQOverview
+        pageUrl="https://www.mobilecarservices.com.au/blog"
+      />
     </>
   );
 }

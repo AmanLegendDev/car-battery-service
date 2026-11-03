@@ -1,7 +1,10 @@
+
 import ServiceAreasEmptyState from "./empty/ServiceAreasEmptyState";
 import ServiceAreasListingHero from "./hero/ServiceAreasListingHero";
 import ServiceAreasDirectory from "./directory/ServiceAreasDirectory";
 import ServiceAreasListingCTA from "./cta/ServiceAreasListingCTA";
+
+import FAQOverview from "@/components/home/faqs/FAQOverview";
 
 export interface ServiceAreaListingItem {
   id: string;
@@ -51,6 +54,11 @@ export default function ServiceAreasListingPage({
 
       <ServiceAreasDirectory
         serviceAreas={serviceAreas}
+      />
+
+      {/* Service Areas FAQs */}
+      <FAQOverview
+        pageUrl="https://www.mobilecarservices.com.au/service-areas"
       />
 
       <ServiceAreasListingCTA
