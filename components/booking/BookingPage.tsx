@@ -26,7 +26,6 @@ import BookingProgress from "./BookingProgress";
 
 import VehicleStep from "./steps/VehicleStep";
 import CustomerStep from "./steps/CustomerStep";
-import MediaUpload from "./steps/MediaUpload";
 import LocationStep from "./steps/LocationStep";
 import ReviewStep from "./steps/ReviewStep";
 
@@ -66,12 +65,12 @@ interface BookingPageProps {
 }
 
 /*
- * Four customer-facing steps.
+ * Three customer-facing steps.
  * Review is a separate final screen.
  */
 
-const TOTAL_STEPS = 4;
-const REVIEW_STEP = 5;
+const TOTAL_STEPS = 3;
+const REVIEW_STEP = 4;
 
 export default function BookingPage({
   services,
@@ -235,6 +234,7 @@ export default function BookingPage({
   );
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadAvailability();
   }, [loadAvailability]);
 
@@ -311,29 +311,9 @@ export default function BookingPage({
       return true;
     }
 
-    // STEP 3 — ISSUE + MEDIA
+    // STEP 3 — LOCATION + APPOINTMENT
 
     if (currentStep === 3) {
-      const result =
-        bookingServiceSchema.safeParse(
-          booking.service
-        );
-
-      if (!result.success) {
-        setError(
-          result.error.issues[0]?.message ||
-            "Please check your service details and uploads."
-        );
-
-        return false;
-      }
-
-      return true;
-    }
-
-    // STEP 4 — LOCATION + APPOINTMENT
-
-    if (currentStep === 4) {
       const locationResult =
         bookingLocationSchema.safeParse(
           booking.location
@@ -530,7 +510,7 @@ export default function BookingPage({
 
     setError("");
 
-    // Revalidate all four customer steps.
+    // Revalidate all three customer steps.
 
     for (let currentStep = 1; currentStep <= TOTAL_STEPS; currentStep++) {
       if (!validateStep(currentStep)) {
@@ -657,82 +637,24 @@ export default function BookingPage({
                   />
                 )}
 
-                {/* STEP 3 — MEDIA + ISSUE */}
+                {/* STEP 3 — LOCATION + APPOINTMENT */}
 
                 {step === 3 && (
-                  <div>
-                    <p className="text-sm font-semibold text-[#FFD400]">
-                      Step 3
-                    </p>
-
-                    <h2 className="mt-2 text-2xl font-black">
-                      Tell Us About The Issue
-                    </h2>
-
-                    <p className="mt-2 text-sm leading-6 text-[#A8BBC8]">
-                      Describe the problem and upload photos
-                      or a short video to help our mechanic
-                      prepare before arriving.
-                    </p>
-
-                    <label className="mt-8 block">
-                      <span className="text-sm font-semibold">
-                        Describe the issue
-                      </span>
-
-                      <textarea
-                        value={booking.service.issueDescription}
-                        onChange={(event) =>
-                          updateService({
-                            issueDescription:
-                              event.target.value,
-                          })
-                        }
-                        rows={4}
-                        maxLength={3000}
-                        placeholder="Tell us what is happening with your vehicle..."
-                        className="mt-2 w-full resize-none rounded-xl border border-white/10 bg-white/[0.05] px-4 py-3 text-sm text-white outline-none placeholder:text-[#667E8D] focus:border-[#FFD400]/60"
-                      />
-
-                      <span className="mt-1 block text-right text-[11px] text-[#6F8796]">
-                        {booking.service.issueDescription.length}/3000
-                      </span>
-                    </label>
-
-                    <div className="mt-8 rounded-2xl bg-white p-4 sm:p-6">
-                      <MediaUpload
-                        images={booking.service.images}
-                        video={booking.service.video}
-                        onImagesChange={(images) =>
-                          updateService({ images })
-                        }
-                        onVideoChange={(video) =>
-                          updateService({ video })
-                        }
-                        disabled={submitting}
-                      />
-                    </div>
-                  </div>
+                  <LocationStep
+                    location={booking.location}
+                    appointment={booking.appointment}
+                    availability={availability}
+                    loading={loadingAvailability}
+                    error={availabilityError}
+                    selectedMonth={selectedMonth}
+                    onLocationChange={updateLocation}
+                    onAppointmentChange={updateAppointment}
+                    onMonthChange={setSelectedMonth}
+                    onDateSelect={selectDate}
+                    onTimeSelect={selectTime}
+                    onRetry={() => loadAvailability()}
+                  />
                 )}
-
-                {/* STEP 4 — LOCATION + APPOINTMENT */}
-
-               {step === 4 && (
-  <LocationStep
-    location={booking.location}
-    appointment={booking.appointment}
-    availability={availability}
-    loading={loadingAvailability}
-    error={availabilityError}
-    selectedMonth={selectedMonth}
-    onLocationChange={updateLocation}
-    onAppointmentChange={updateAppointment}
-    onMonthChange={setSelectedMonth}
-    onDateSelect={selectDate}
-    onTimeSelect={selectTime}
-    onRetry={() => loadAvailability()}
-  />
-)}
 
                 {/* FINAL REVIEW */}
 
@@ -832,7 +754,7 @@ export default function BookingPage({
 
                   <p className="mt-2 text-sm leading-6 text-[#A8BBC8]">
                     Tell us about your vehicle, choose
-                    a service, share the issue and select
+                    a service, describe the issue and select
                     your preferred appointment.
                   </p>
                 </div>

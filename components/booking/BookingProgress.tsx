@@ -1,12 +1,10 @@
-
 "use client";
 
 const STEPS = [
   "Vehicle",
   "Contact & Service",
-  "Issue & Media",
   "Location & Time",
-];
+] as const;
 
 interface BookingProgressProps {
   currentStep: number;
@@ -17,16 +15,17 @@ export default function BookingProgress({
   currentStep,
   totalSteps,
 }: BookingProgressProps) {
-  const safeTotalSteps = STEPS.length;
+  const safeTotalSteps = Math.max(
+    1,
+    Math.min(totalSteps, STEPS.length)
+  );
+
   const activeStep = Math.min(
     Math.max(currentStep, 1),
     safeTotalSteps
   );
 
-  const progress = Math.min(
-    (activeStep / safeTotalSteps) * 100,
-    100
-  );
+  const progress = (activeStep / safeTotalSteps) * 100;
 
   return (
     <div>
@@ -60,8 +59,8 @@ export default function BookingProgress({
         />
       </div>
 
-      <div className="mt-4 grid grid-cols-4 gap-2">
-        {STEPS.map((step, index) => {
+      <div className="mt-4 grid grid-cols-3 gap-2">
+        {STEPS.slice(0, safeTotalSteps).map((step, index) => {
           const number = index + 1;
           const active = number === activeStep;
           const complete = number < activeStep;

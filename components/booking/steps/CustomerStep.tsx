@@ -118,119 +118,11 @@ export default function CustomerStep({
       </p>
 
     <h2 className="mt-2 max-w-full break-words text-2xl font-black leading-tight text-white sm:text-3xl">
-  Contact & Service Details
+  Service & Booking Details
 </h2>
       <p className="mt-2 max-w-xl text-sm leading-6 text-[#A8BBC8]">
-        Tell us how to contact you and choose the service
-        you need for your vehicle.
+        Select your service, share your contact details and describe the issue.
       </p>
-
-      {/* CONTACT DETAILS */}
-
-      <section className="mt-8">
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#0D6E91]/20 text-[#FFD400]">
-            <UserRound size={19} />
-          </div>
-
-          <div>
-            <h3 className="font-bold text-white">
-              Your Contact Details
-            </h3>
-
-            <p className="mt-0.5 text-xs text-[#8298A7]">
-              So we can confirm your booking.
-            </p>
-          </div>
-        </div>
-
-        <div className="mt-5 grid gap-5 sm:grid-cols-2">
-          {/* FULL NAME */}
-
-          <label className="block">
-            <span className="text-sm font-semibold text-white">
-              Full Name <span className="text-[#FFD400]">*</span>
-            </span>
-
-            <input
-              type="text"
-              autoComplete="name"
-              value={customer.fullName}
-              onChange={(event) =>
-                onCustomerChange({
-                  fullName: event.target.value,
-                })
-              }
-              placeholder="Enter your full name"
-              maxLength={120}
-              className={inputClass}
-            />
-          </label>
-
-          {/* PHONE */}
-
-          <label className="block">
-            <span className="flex items-center gap-2 text-sm font-semibold text-white">
-              Mobile Number
-              <span className="text-[#FFD400]">*</span>
-            </span>
-
-            <div className="relative">
-              <Phone
-                size={16}
-                className="absolute left-4 top-1/2 -translate-y-1/2 text-[#8298A7]"
-              />
-
-              <input
-                type="tel"
-                autoComplete="tel"
-                value={customer.phone}
-                onChange={(event) =>
-                  onCustomerChange({
-                    phone: event.target.value,
-                  })
-                }
-                placeholder="+61 4XX XXX XXX"
-                maxLength={30}
-                className={`${inputClass} pl-11`}
-              />
-            </div>
-          </label>
-
-          {/* EMAIL */}
-
-          <label className="block sm:col-span-2">
-            <span className="flex items-center gap-2 text-sm font-semibold text-white">
-              Email Address
-
-              <span className="text-xs font-normal text-[#8298A7]">
-                Optional
-              </span>
-            </span>
-
-            <div className="relative">
-              <Mail
-                size={16}
-                className="absolute left-4 top-1/2 -translate-y-1/2 text-[#8298A7]"
-              />
-
-              <input
-                type="email"
-                autoComplete="email"
-                value={customer.email}
-                onChange={(event) =>
-                  onCustomerChange({
-                    email: event.target.value,
-                  })
-                }
-                placeholder="you@example.com"
-                maxLength={254}
-                className={`${inputClass} pl-11`}
-              />
-            </div>
-          </label>
-        </div>
-      </section>
 
       {/* DIVIDER */}
 
@@ -469,6 +361,156 @@ export default function CustomerStep({
 )}
       </section>
 
+      {/* CONTACT DETAILS */}
+
+      <section className="mt-8">
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#0D6E91]/20 text-[#FFD400]">
+            <UserRound size={19} />
+          </div>
+
+          <div>
+            <h3 className="font-bold text-white">
+              Your Contact Details
+            </h3>
+
+            <p className="mt-0.5 text-xs text-[#8298A7]">
+              So we can confirm your booking.
+            </p>
+          </div>
+        </div>
+
+        <div className="mt-5 grid gap-5 sm:grid-cols-2">
+          {/* FULL NAME */}
+
+          <label className="block">
+            <span className="text-sm font-semibold text-white">
+              Full Name <span className="text-[#FFD400]">*</span>
+            </span>
+
+            <input
+              type="text"
+              autoComplete="name"
+              value={customer.fullName}
+              onChange={(event) =>
+                onCustomerChange({
+                  fullName: event.target.value,
+                })
+              }
+              placeholder="Enter your full name"
+              maxLength={120}
+              className={inputClass}
+            />
+          </label>
+
+          {/* PHONE */}
+
+          <label className="block">
+            <span className="flex items-center gap-2 text-sm font-semibold text-white">
+              Mobile Number
+              <span className="text-[#FFD400]">*</span>
+            </span>
+
+            <div className="relative">
+              <Phone
+                size={16}
+                className="absolute left-4 top-1/2 -translate-y-1/2 text-[#8298A7]"
+              />
+
+              <input
+                type="tel"
+                autoComplete="tel"
+                value={customer.phone}
+                onChange={(event) =>
+                  onCustomerChange({
+                    phone: event.target.value,
+                  })
+                }
+                placeholder="+61 4XX XXX XXX"
+                maxLength={30}
+                className={`${inputClass} pl-11`}
+              />
+            </div>
+          </label>
+
+          {/* EMAIL */}
+
+          <label className="block sm:col-span-2">
+            <span className="flex items-center gap-2 text-sm font-semibold text-white">
+              Email Address
+
+              <span className="text-xs font-normal text-[#8298A7]">
+                Optional
+              </span>
+            </span>
+
+            <div className="relative">
+              <Mail
+                size={16}
+                className="absolute left-4 top-1/2 -translate-y-1/2 text-[#8298A7]"
+              />
+
+              <input
+                type="email"
+                autoComplete="email"
+                value={customer.email}
+                onChange={(event) =>
+                  onCustomerChange({
+                    email: event.target.value,
+                  })
+                }
+                placeholder="you@example.com"
+                maxLength={254}
+                className={`${inputClass} pl-11`}
+              />
+            </div>
+          </label>
+        </div>
+      </section>
+
+
+
+      {/* ISSUE DESCRIPTION */}
+
+      <div className="my-9 border-t border-white/10" />
+
+      <section>
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#0D6E91]/20 text-[#FFD400]">
+            <Sparkles size={19} />
+          </div>
+
+          <div>
+            <h3 className="font-bold text-white">
+              Describe the Issue
+            </h3>
+            <p className="mt-0.5 text-xs text-[#8298A7]">
+              Tell us what is happening with your vehicle.
+            </p>
+          </div>
+        </div>
+
+        <label className="mt-5 block">
+          <span className="text-sm font-semibold text-white">
+            Issue Description <span className="text-xs font-normal text-[#8298A7]">Optional</span>
+          </span>
+          <textarea
+            value={service.issueDescription ?? ""}
+            onChange={(event) =>
+              onServiceChange({
+                issueDescription: event.target.value,
+              })
+            }
+            placeholder="Describe the problem, warning lights, symptoms or any other details..."
+            rows={5}
+            maxLength={2000}
+            className="mt-2 min-h-32 w-full resize-y rounded-xl border border-white/10 bg-[#08263D] px-4 py-3 text-sm leading-6 text-white outline-none transition placeholder:text-[#667E8D] focus:border-[#FFD400]/60 focus:ring-2 focus:ring-[#FFD400]/10"
+          />
+          <span className="mt-2 block text-right text-xs text-[#8298A7]">
+            {(service.issueDescription ?? "").length}/2000
+          </span>
+        </label>
+      </section>
       {/* FOOTNOTE */}
 
       <div className="mt-8 rounded-xl border border-white/10 bg-white/[0.03] p-4">
