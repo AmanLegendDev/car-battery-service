@@ -26,12 +26,18 @@ interface BookingEmailData {
 
   vehicle: {
     registrationNumber: string;
+    make?: string;
+    model?: string;
+    year?: string;
     issue: string;
     notes?: string;
   };
 
   service: {
     serviceName: string;
+    issueDescription?: string;
+    images?: string[];
+    video?: string;
   };
 
   location: {
@@ -39,6 +45,7 @@ interface BookingEmailData {
     suburb: string;
     state: string;
     postcode: string;
+    serviceArea?: string;
     accessNotes?: string;
   };
 
@@ -478,6 +485,85 @@ function emailShell({
 function bookingDetailsHtml(
   booking: BookingEmailData
 ) {
+  const issueDescription =
+    booking.service.issueDescription?.trim() ||
+    booking.vehicle.issue?.trim() ||
+    "Not specified";
+
+  const images = booking.service.images || [];
+  const video = booking.service.video || "";
+
+  const mediaHtml =
+    images.length > 0 || video
+      ? `
+        <div
+          style="
+            margin-bottom:18px;
+            padding:18px;
+            border:1px solid #12344a;
+            border-radius:18px;
+            background:#061A2B;
+          "
+        >
+          <div
+            style="
+              margin-bottom:13px;
+              color:#FFD400;
+              font-size:10px;
+              font-weight:800;
+              letter-spacing:1.5px;
+              text-transform:uppercase;
+            "
+          >
+            Uploaded Media
+          </div>
+
+          ${
+            images.length > 0
+              ? `
+                <div style="margin-bottom:12px;color:#A8BBC8;font-size:12px;">
+                  Vehicle images (${images.length})
+                </div>
+                <div>
+                  ${images
+                    .map(
+                      (url) => `
+                        <a href="${safe(url)}" target="_blank" rel="noopener noreferrer" style="display:inline-block;margin:0 8px 8px 0;text-decoration:none;">
+                          <img
+                            src="${safe(url)}"
+                            alt="Customer vehicle upload"
+                            width="112"
+                            style="display:block;width:112px;height:84px;object-fit:cover;border:1px solid #21445d;border-radius:10px;"
+                          />
+                        </a>
+                      `
+                    )
+                    .join("")}
+                </div>
+              `
+              : ""
+          }
+
+          ${
+            video
+              ? `
+                <div style="margin-top:10px;">
+                  <a
+                    href="${safe(video)}"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style="display:inline-block;padding:10px 14px;border-radius:10px;background:#FFD400;color:#061A2B;font-size:12px;font-weight:800;text-decoration:none;"
+                  >
+                    Open Customer Video
+                  </a>
+                </div>
+              `
+              : ""
+          }
+        </div>
+      `
+      : "";
+
   return `
     <div
       style="
@@ -516,79 +602,40 @@ function bookingDetailsHtml(
     ${detailGroup("Customer", [
       ["Name", booking.customer.fullName],
       ["Phone", booking.customer.phone],
-      [
-        "Email",
-        booking.customer.email ||
-          "Not provided",
-      ],
-    ])}
-
-    ${detailGroup("Service", [
-      [
-        "Service",
-        booking.service.serviceName,
-      ],
-      [
-        "Issue",
-        booking.vehicle.issue ||
-          "Not specified",
-      ],
+      ["Email", booking.customer.email || "Not provided"],
     ])}
 
     ${detailGroup("Vehicle", [
-      [
-        "Registration",
-        booking.vehicle.registrationNumber,
-      ],
-      [
-        "Vehicle notes",
-        booking.vehicle.notes || "None",
-      ],
+      ["Registration", booking.vehicle.registrationNumber || "Not provided"],
+      ["Make", booking.vehicle.make || "Not provided"],
+      ["Model", booking.vehicle.model || "Not provided"],
+      ["Year", booking.vehicle.year || "Not provided"],
+      ["Vehicle notes", booking.vehicle.notes || "None"],
     ])}
 
+    ${detailGroup("Service", [
+      ["Selected service", booking.service.serviceName],
+      ["Issue description", issueDescription],
+    ])}
+
+    ${mediaHtml}
+
     ${detailGroup("Appointment", [
-      [
-        "Date",
-        formatDate(
-          booking.appointment.date
-        ),
-      ],
+      ["Date", formatDate(booking.appointment.date)],
       [
         "Time",
-        `${formatTime(
-          booking.appointment.startTime
-        )} – ${formatTime(
-          booking.appointment.endTime
-        )}`,
+        `${formatTime(booking.appointment.startTime)} – ${formatTime(booking.appointment.endTime)}`,
       ],
-      [
-        "Timezone",
-        booking.appointment.timezone,
-      ],
+      ["Timezone", booking.appointment.timezone],
     ])}
 
     ${detailGroup("Service Location", [
-      [
-        "Address",
-        booking.location.address,
-      ],
-      [
-        "Suburb",
-        booking.location.suburb,
-      ],
-      [
-        "State",
-        booking.location.state,
-      ],
-      [
-        "Postcode",
-        booking.location.postcode,
-      ],
-      [
-        "Access notes",
-        booking.location.accessNotes ||
-          "None",
-      ],
+      ["Address", booking.location.address],
+      ["Suburb", booking.location.suburb],
+      ["Service area", booking.location.serviceArea || "Not provided"],
+      ["State", booking.location.state],
+      ["Postcode", booking.location.postcode],
+      ["Access notes", booking.location.accessNotes || "None"],
     ])}
   `;
 }

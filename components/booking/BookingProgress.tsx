@@ -1,11 +1,11 @@
+
 "use client";
 
 const STEPS = [
   "Vehicle",
-  "Service",
-  "Date & Time",
-  "Your Details",
-  "Review",
+  "Contact & Service",
+  "Issue & Media",
+  "Location & Time",
 ];
 
 interface BookingProgressProps {
@@ -15,52 +15,59 @@ interface BookingProgressProps {
 
 export default function BookingProgress({
   currentStep,
+  totalSteps,
 }: BookingProgressProps) {
+  const safeTotalSteps = STEPS.length;
+  const activeStep = Math.min(
+    Math.max(currentStep, 1),
+    safeTotalSteps
+  );
+
+  const progress = Math.min(
+    (activeStep / safeTotalSteps) * 100,
+    100
+  );
+
   return (
     <div>
-      <div className="mb-4 flex items-end justify-between mt-22">
-      
-<div>
-  <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#FFD400]">
-    Booking Request
-  </p>
+      <div className="mb-4 mt-22 flex items-end justify-between gap-4">
+        <div>
+          <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#FFD400]">
+            Booking Request
+          </p>
 
-  <h1 className="mt-2 text-2xl font-black tracking-tight sm:text-3xl">
-    Book an Automotive Service
-  </h1>
-</div>
+          <h1 className="mt-2 text-2xl font-black tracking-tight text-white sm:text-3xl">
+            Book an Automotive Service
+          </h1>
+        </div>
 
-
-        <span className="text-sm text-[#A8BBC8]">
-          Step {currentStep} of {STEPS.length}
+        <span className="shrink-0 text-sm text-[#A8BBC8]">
+          Step {activeStep} of {safeTotalSteps}
         </span>
       </div>
 
-      <div className="h-1.5 overflow-hidden rounded-full bg-white/10">
+      <div
+        className="h-1.5 overflow-hidden rounded-full bg-white/10"
+        role="progressbar"
+        aria-valuenow={activeStep}
+        aria-valuemin={1}
+        aria-valuemax={safeTotalSteps}
+        aria-label="Booking progress"
+      >
         <div
           className="h-full rounded-full bg-[#FFD400] transition-all duration-300"
-          style={{
-            width: `${
-              (currentStep / STEPS.length) *
-              100
-            }%`,
-          }}
+          style={{ width: `${progress}%` }}
         />
       </div>
 
-      <div className="mt-4 grid grid-cols-5 gap-2">
+      <div className="mt-4 grid grid-cols-4 gap-2">
         {STEPS.map((step, index) => {
           const number = index + 1;
-          const active =
-            number === currentStep;
-          const complete =
-            number < currentStep;
+          const active = number === activeStep;
+          const complete = number < activeStep;
 
           return (
-            <div
-              key={step}
-              className="min-w-0"
-            >
+            <div key={step} className="min-w-0">
               <div
                 className={[
                   "h-1 rounded-full transition",
@@ -75,7 +82,9 @@ export default function BookingProgress({
                   "mt-2 truncate text-[10px] font-semibold sm:text-xs",
                   active
                     ? "text-white"
-                    : "text-[#6F8796]",
+                    : complete
+                      ? "text-[#FFD400]"
+                      : "text-[#6F8796]",
                 ].join(" ")}
               >
                 {step}

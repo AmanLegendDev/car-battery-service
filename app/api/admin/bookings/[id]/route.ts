@@ -340,68 +340,51 @@ if (
   action === "cancel" ||
   action === "complete"
 ) {
-  const emailBooking = {
-    bookingReference:
-      booking.bookingReference,
+ const emailBooking = {
+  bookingReference: booking.bookingReference,
 
-    customer: {
-      fullName:
-        booking.customer.fullName,
+  customer: {
+    fullName: booking.customer.fullName,
+    phone: booking.customer.phone,
+    email: booking.customer.email,
+  },
 
-      phone:
-        booking.customer.phone,
+  vehicle: {
+    registrationNumber:
+      booking.vehicle.registrationNumber,
+    make: booking.vehicle.make,
+    model: booking.vehicle.model,
+    year: booking.vehicle.year,
+    notes: booking.vehicle.notes,
 
-      email:
-        booking.customer.email,
-    },
+    // Backward compatibility with existing email template.
+    issue: booking.service.issueDescription,
+  },
 
-    vehicle: {
-      registrationNumber:
-        booking.vehicle.registrationNumber,
+  service: {
+    serviceName: booking.service.serviceName,
+    issueDescription:
+      booking.service.issueDescription,
+    images: booking.service.images,
+    video: booking.service.video,
+  },
 
-      issue:
-        booking.vehicle.issue,
+  location: {
+    address: booking.location.address,
+    suburb: booking.location.suburb,
+    postcode: booking.location.postcode,
+    serviceArea: booking.location.serviceArea,
+    state: booking.location.state,
+    accessNotes: booking.location.accessNotes,
+  },
 
-      notes:
-        booking.vehicle.notes,
-    },
-
-    service: {
-      serviceName:
-        booking.service.serviceName,
-    },
-
-    location: {
-      address:
-        booking.location.address,
-
-      suburb:
-        booking.location.suburb,
-
-      state:
-        booking.location.state,
-
-      postcode:
-        booking.location.postcode,
-
-      accessNotes:
-        booking.location.accessNotes,
-    },
-
-    appointment: {
-      date:
-        booking.appointment.date,
-
-      startTime:
-        booking.appointment.startTime,
-
-      endTime:
-        booking.appointment.endTime,
-
-      timezone:
-        booking.appointment.timezone,
-    },
-  };
+  appointment: {
+    date: booking.appointment.date,
+    startTime: booking.appointment.startTime,
+    endTime: booking.appointment.endTime,
+    timezone: booking.appointment.timezone,
+  },
+};
 
   const emailResult =
     await Promise.allSettled([

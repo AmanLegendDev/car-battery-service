@@ -1,3 +1,4 @@
+
 "use client";
 
 import {
@@ -24,9 +25,9 @@ import BookingHeader from "./BookingHeader";
 import BookingProgress from "./BookingProgress";
 
 import VehicleStep from "./steps/VehicleStep";
-import ServiceStep from "./steps/ServiceStep";
-import DateTimeStep from "./steps/DateTimeStep";
 import CustomerStep from "./steps/CustomerStep";
+import MediaUpload from "./steps/MediaUpload";
+import LocationStep from "./steps/LocationStep";
 import ReviewStep from "./steps/ReviewStep";
 
 import type {
@@ -50,6 +51,10 @@ import type {
   PublicAvailabilityDay,
 } from "@/lib/booking/booking.availability";
 
+/* =========================================
+   TYPES
+========================================= */
+
 interface BookingService {
   id: string;
   title: string;
@@ -60,7 +65,13 @@ interface BookingPageProps {
   services: BookingService[];
 }
 
-const TOTAL_STEPS = 5;
+/*
+ * Four customer-facing steps.
+ * Review is a separate final screen.
+ */
+
+const TOTAL_STEPS = 4;
+const REVIEW_STEP = 5;
 
 export default function BookingPage({
   services,
@@ -83,14 +94,17 @@ export default function BookingPage({
   const [availabilityError, setAvailabilityError] =
     useState("");
 
-  const [error, setError] =
-    useState("");
+  const [error, setError] = useState("");
 
   const [selectedMonth, setSelectedMonth] =
     useState("");
 
   const [submitting, setSubmitting] =
     useState(false);
+
+  /* =========================================
+     BOOKING STATE UPDATES
+  ========================================= */
 
   const updateVehicle = (
     value: Partial<BookingVehicleData>
@@ -152,6 +166,10 @@ export default function BookingPage({
     }));
   };
 
+  /* =========================================
+     LIVE AVAILABILITY
+  ========================================= */
+
   const loadAvailability = useCallback(
     async (from?: string, to?: string) => {
       try {
@@ -199,7 +217,10 @@ export default function BookingPage({
           );
         }
       } catch (err) {
-        console.error(err);
+        console.error(
+          "Availability loading error:",
+          err
+        );
 
         setAvailabilityError(
           err instanceof Error
@@ -227,10 +248,16 @@ export default function BookingPage({
     booking.appointment.date,
   ]);
 
+  /* =========================================
+     STEP VALIDATION
+  ========================================= */
+
   const validateStep = (
     currentStep: number
   ): boolean => {
     setError("");
+
+    // STEP 1 — VEHICLE
 
     if (currentStep === 1) {
       const result =
@@ -250,15 +277,31 @@ export default function BookingPage({
       return true;
     }
 
+    // STEP 2 — CONTACT + SERVICE
+
     if (currentStep === 2) {
-      const result =
+      const customerResult =
+        bookingCustomerSchema.safeParse(
+          booking.customer
+        );
+
+      if (!customerResult.success) {
+        setError(
+          customerResult.error.issues[0]?.message ||
+            "Please complete your contact details."
+        );
+
+        return false;
+      }
+
+      const serviceResult =
         bookingServiceSchema.safeParse(
           booking.service
         );
 
-      if (!result.success) {
+      if (!serviceResult.success) {
         setError(
-          result.error.issues[0]?.message ||
+          serviceResult.error.issues[0]?.message ||
             "Please select a service."
         );
 
@@ -268,20 +311,58 @@ export default function BookingPage({
       return true;
     }
 
+    // STEP 3 — ISSUE + MEDIA
+
     if (currentStep === 3) {
       const result =
-        bookingAppointmentSchema.safeParse(
-          booking.appointment
+        bookingServiceSchema.safeParse(
+          booking.service
         );
 
       if (!result.success) {
         setError(
           result.error.issues[0]?.message ||
+            "Please check your service details and uploads."
+        );
+
+        return false;
+      }
+
+      return true;
+    }
+
+    // STEP 4 — LOCATION + APPOINTMENT
+
+    if (currentStep === 4) {
+      const locationResult =
+        bookingLocationSchema.safeParse(
+          booking.location
+        );
+
+      if (!locationResult.success) {
+        setError(
+          locationResult.error.issues[0]?.message ||
+            "Please complete your service location."
+        );
+
+        return false;
+      }
+
+      const appointmentResult =
+        bookingAppointmentSchema.safeParse(
+          booking.appointment
+        );
+
+      if (!appointmentResult.success) {
+        setError(
+          appointmentResult.error.issues[0]?.message ||
             "Please select a date and time."
         );
 
         return false;
       }
+
+      // Recheck selected slot against live availability.
 
       if (
         !selectedDay ||
@@ -306,49 +387,30 @@ export default function BookingPage({
       return true;
     }
 
-    if (currentStep === 4) {
-      const customerResult =
-        bookingCustomerSchema.safeParse(
-          booking.customer
-        );
-
-      if (!customerResult.success) {
-        setError(
-          customerResult.error.issues[0]?.message ||
-            "Please complete your contact details."
-        );
-
-        return false;
-      }
-
-      const locationResult =
-        bookingLocationSchema.safeParse(
-          booking.location
-        );
-
-      if (!locationResult.success) {
-        setError(
-          locationResult.error.issues[0]?.message ||
-            "Please complete your service location."
-        );
-
-        return false;
-      }
-
-      return true;
-    }
-
     return true;
   };
+
+  /* =========================================
+     NAVIGATION
+  ========================================= */
 
   const nextStep = () => {
     if (!validateStep(step)) {
       return;
     }
 
-    setStep((current) =>
-      Math.min(current + 1, TOTAL_STEPS)
-    );
+    /*
+     * After the fourth step,
+     * open the separate review screen.
+     */
+
+    if (step === TOTAL_STEPS) {
+      setStep(REVIEW_STEP);
+    } else {
+      setStep((current) =>
+        Math.min(current + 1, TOTAL_STEPS)
+      );
+    }
 
     window.scrollTo({
       top: 0,
@@ -360,7 +422,9 @@ export default function BookingPage({
     setError("");
 
     setStep((current) =>
-      Math.max(current - 1, 1)
+      current === REVIEW_STEP
+        ? TOTAL_STEPS
+        : Math.max(current - 1, 1)
     );
 
     window.scrollTo({
@@ -386,6 +450,10 @@ export default function BookingPage({
     });
   };
 
+  /* =========================================
+     APPOINTMENT SELECTION
+  ========================================= */
+
   const selectDate = (date: string) => {
     const day = availability.find(
       (item) => item.date === date
@@ -410,8 +478,7 @@ export default function BookingPage({
   ) => {
     const day = availability.find(
       (item) =>
-        item.date ===
-        booking.appointment.date
+        item.date === booking.appointment.date
     );
 
     const slot = day?.slots.find(
@@ -435,6 +502,10 @@ export default function BookingPage({
     setError("");
   };
 
+  /* =========================================
+     TERMS ACCEPTANCE
+  ========================================= */
+
   const setTermsAccepted = (
     accepted: boolean
   ) => {
@@ -448,13 +519,10 @@ export default function BookingPage({
     }
   };
 
-  /**
-   * FINAL BOOKING SUBMISSION
-   *
-   * Client-side validation first.
-   * Server API performs the final validation
-   * and availability re-check before saving.
-   */
+  /* =========================================
+     FINAL BOOKING SUBMISSION
+  ========================================= */
+
   const handleSubmit = async () => {
     if (submitting) {
       return;
@@ -462,25 +530,19 @@ export default function BookingPage({
 
     setError("");
 
-    // Validate all customer-entered sections again.
-    if (!validateStep(1)) {
-      setStep(1);
-      return;
-    }
+    // Revalidate all four customer steps.
 
-    if (!validateStep(2)) {
-      setStep(2);
-      return;
-    }
+    for (let currentStep = 1; currentStep <= TOTAL_STEPS; currentStep++) {
+      if (!validateStep(currentStep)) {
+        setStep(currentStep);
 
-    if (!validateStep(3)) {
-      setStep(3);
-      return;
-    }
+        window.scrollTo({
+          top: 0,
+          behavior: "smooth",
+        });
 
-    if (!validateStep(4)) {
-      setStep(4);
-      return;
+        return;
+      }
     }
 
     if (!booking.termsAccepted) {
@@ -546,20 +608,36 @@ export default function BookingPage({
     }
   };
 
+  /* =========================================
+     RENDER
+  ========================================= */
+
   return (
     <main className="min-h-screen bg-[#061A2B] text-white">
-      
 
       <section className="px-4 pb-20 pt-8 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-6xl">
+
+          <BookingHeader />
+
           <BookingProgress
-            currentStep={step}
+            currentStep={
+              step === REVIEW_STEP
+                ? TOTAL_STEPS
+                : step
+            }
             totalSteps={TOTAL_STEPS}
           />
 
           <div className="mt-8 grid gap-8 lg:grid-cols-[1fr_320px]">
+
+            {/* MAIN FORM */}
+
             <div>
               <div className="rounded-[28px] border border-white/10 bg-white/[0.04] p-5 shadow-2xl backdrop-blur-xl sm:p-8 lg:p-10">
+
+                {/* STEP 1 — VEHICLE */}
+
                 {step === 1 && (
                   <VehicleStep
                     value={booking.vehicle}
@@ -567,65 +645,107 @@ export default function BookingPage({
                   />
                 )}
 
+                {/* STEP 2 — CONTACT + SERVICE */}
+
                 {step === 2 && (
-                  <ServiceStep
-                    services={services}
-                    value={booking.service}
-                    onChange={updateService}
-                  />
-                )}
-
-                {step === 3 && (
-                  <DateTimeStep
-                    availability={availability}
-                    loading={loadingAvailability}
-                    error={availabilityError}
-                    selectedDate={
-                      booking.appointment.date
-                    }
-                    selectedStartTime={
-                      booking.appointment.startTime
-                    }
-                    selectedEndTime={
-                      booking.appointment.endTime
-                    }
-                    selectedMonth={selectedMonth}
-                    onMonthChange={
-                      setSelectedMonth
-                    }
-                    onDateSelect={selectDate}
-                    onTimeSelect={selectTime}
-                    onRetry={() =>
-                      loadAvailability()
-                    }
-                  />
-                )}
-
-                {step === 4 && (
                   <CustomerStep
                     customer={booking.customer}
-                    location={booking.location}
-                    onCustomerChange={
-                      updateCustomer
-                    }
-                    onLocationChange={
-                      updateLocation
-                    }
+                    service={booking.service}
+                    services={services}
+                    onCustomerChange={updateCustomer}
+                    onServiceChange={updateService}
                   />
                 )}
 
-                {step === 5 && (
+                {/* STEP 3 — MEDIA + ISSUE */}
+
+                {step === 3 && (
+                  <div>
+                    <p className="text-sm font-semibold text-[#FFD400]">
+                      Step 3
+                    </p>
+
+                    <h2 className="mt-2 text-2xl font-black">
+                      Tell Us About The Issue
+                    </h2>
+
+                    <p className="mt-2 text-sm leading-6 text-[#A8BBC8]">
+                      Describe the problem and upload photos
+                      or a short video to help our mechanic
+                      prepare before arriving.
+                    </p>
+
+                    <label className="mt-8 block">
+                      <span className="text-sm font-semibold">
+                        Describe the issue
+                      </span>
+
+                      <textarea
+                        value={booking.service.issueDescription}
+                        onChange={(event) =>
+                          updateService({
+                            issueDescription:
+                              event.target.value,
+                          })
+                        }
+                        rows={4}
+                        maxLength={3000}
+                        placeholder="Tell us what is happening with your vehicle..."
+                        className="mt-2 w-full resize-none rounded-xl border border-white/10 bg-white/[0.05] px-4 py-3 text-sm text-white outline-none placeholder:text-[#667E8D] focus:border-[#FFD400]/60"
+                      />
+
+                      <span className="mt-1 block text-right text-[11px] text-[#6F8796]">
+                        {booking.service.issueDescription.length}/3000
+                      </span>
+                    </label>
+
+                    <div className="mt-8 rounded-2xl bg-white p-4 sm:p-6">
+                      <MediaUpload
+                        images={booking.service.images}
+                        video={booking.service.video}
+                        onImagesChange={(images) =>
+                          updateService({ images })
+                        }
+                        onVideoChange={(video) =>
+                          updateService({ video })
+                        }
+                        disabled={submitting}
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* STEP 4 — LOCATION + APPOINTMENT */}
+
+               {step === 4 && (
+  <LocationStep
+    location={booking.location}
+    appointment={booking.appointment}
+    availability={availability}
+    loading={loadingAvailability}
+    error={availabilityError}
+    selectedMonth={selectedMonth}
+    onLocationChange={updateLocation}
+    onAppointmentChange={updateAppointment}
+    onMonthChange={setSelectedMonth}
+    onDateSelect={selectDate}
+    onTimeSelect={selectTime}
+    onRetry={() => loadAvailability()}
+  />
+)}
+
+                {/* FINAL REVIEW */}
+
+                {step === REVIEW_STEP && (
                   <ReviewStep
                     booking={booking}
                     onEdit={goToStep}
-                    termsAccepted={
-                      booking.termsAccepted
-                    }
-                    onTermsChange={
-                      setTermsAccepted
-                    }
+                    termsAccepted={booking.termsAccepted}
+                    onTermsChange={setTermsAccepted}
                   />
                 )}
+
+                {/* ERROR */}
 
                 {error && (
                   <div
@@ -636,7 +756,10 @@ export default function BookingPage({
                   </div>
                 )}
 
+                {/* NAVIGATION */}
+
                 <div className="mt-8 flex flex-col-reverse gap-3 border-t border-white/10 pt-6 sm:flex-row sm:items-center sm:justify-between">
+
                   <button
                     type="button"
                     onClick={previousStep}
@@ -649,14 +772,17 @@ export default function BookingPage({
                     Back
                   </button>
 
-                  {step < TOTAL_STEPS ? (
+                  {step < REVIEW_STEP ? (
                     <button
                       type="button"
                       onClick={nextStep}
                       disabled={submitting}
                       className="inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-[#FFD400] px-6 text-sm font-bold text-[#061A2B] transition hover:bg-[#F5B800] disabled:cursor-not-allowed disabled:opacity-50"
                     >
-                      Continue
+                      {step === TOTAL_STEPS
+                        ? "Review Booking"
+                        : "Continue"}
+
                       <ArrowRight size={17} />
                     </button>
                   ) : (
@@ -679,31 +805,35 @@ export default function BookingPage({
                         </>
                       ) : (
                         <>
-                          Submit Booking Request
+                          Confirm Booking
                           <Check size={17} />
                         </>
                       )}
                     </button>
                   )}
                 </div>
+
               </div>
             </div>
 
+            {/* SIDEBAR */}
+
             <aside className="hidden lg:block">
               <div className="sticky top-8 space-y-4">
+
                 <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-6">
                   <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#FFD400]">
                     Your booking
                   </p>
 
                   <h2 className="mt-3 text-xl font-bold">
-                    Request a Automotive service
+                    Request an Automotive Service
                   </h2>
 
                   <p className="mt-2 text-sm leading-6 text-[#A8BBC8]">
-                    Choose your vehicle, service,
-                    available appointment and
-                    location details.
+                    Tell us about your vehicle, choose
+                    a service, share the issue and select
+                    your preferred appointment.
                   </p>
                 </div>
 
@@ -720,9 +850,8 @@ export default function BookingPage({
                       </p>
 
                       <p className="mt-1 text-xs leading-5 text-[#A8BBC8]">
-                        Dates and time slots are
-                        checked against current
-                        availability.
+                        Dates and time slots are checked
+                        against current availability.
                       </p>
                     </div>
                   </div>
@@ -734,8 +863,10 @@ export default function BookingPage({
                 >
                   Return to website
                 </Link>
+
               </div>
             </aside>
+
           </div>
         </div>
       </section>

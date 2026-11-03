@@ -1,3 +1,4 @@
+
 import { NextResponse } from "next/server";
 import mongoose from "mongoose";
 
@@ -5,6 +6,7 @@ import { connectDB } from "@/lib/db";
 import Booking from "@/models/Booking";
 import Service from "@/models/Service";
 import Availability from "@/models/Availability";
+
 import {
   generateBookingReference,
 } from "@/lib/booking/booking.utils";
@@ -12,7 +14,6 @@ import {
 import {
   BOOKING_TIMEZONE,
   APPOINTMENT_DURATION_MINUTES,
-  WORKING_HOURS,
 } from "@/lib/availability/availability.constants";
 
 import {
@@ -29,6 +30,10 @@ import {
 
 import { bookingFormSchema } from "@/lib/booking/booking.validation";
 
+/* =========================================
+   MELBOURNE DATE
+========================================= */
+
 function getMelbourneToday() {
   return new Intl.DateTimeFormat("en-CA", {
     timeZone: BOOKING_TIMEZONE,
@@ -38,10 +43,12 @@ function getMelbourneToday() {
   }).format(new Date());
 }
 
+/* =========================================
+   SERVER-SIDE END TIME
+========================================= */
+
 function getEndTime(startTime: string) {
-  const [hours, minutes] = startTime
-    .split(":")
-    .map(Number);
+  const [hours, minutes] = startTime.split(":").map(Number);
 
   const total =
     hours * 60 +
@@ -56,15 +63,19 @@ function getEndTime(startTime: string) {
   ).padStart(2, "0")}`;
 }
 
+/* =========================================
+   CREATE BOOKING
+========================================= */
+
 export async function POST(request: Request) {
   try {
     await connectDB();
 
     const body = await request.json();
 
-    /* =====================================================
+    /* =====================================
        SERVER VALIDATION
-    ===================================================== */
+    ===================================== */
 
     const parsed = bookingFormSchema.safeParse(body);
 
@@ -87,9 +98,9 @@ export async function POST(request: Request) {
       endTime: clientEndTime,
     } = data.appointment;
 
-    /* =====================================================
+    /* =====================================
        DATE VALIDATION
-    ===================================================== */
+    ===================================== */
 
     if (!isValidDateFormat(date)) {
       return NextResponse.json(
@@ -101,9 +112,19 @@ export async function POST(request: Request) {
       );
     }
 
-    /* =====================================================
+    if (date <= getMelbourneToday()) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Please select a future appointment date.",
+        },
+        { status: 400 }
+      );
+    }
+
+    /* =====================================
        TIME VALIDATION
-    ===================================================== */
+    ===================================== */
 
     if (!isValidTimeFormat(startTime)) {
       return NextResponse.json(
@@ -115,17 +136,10 @@ export async function POST(request: Request) {
       );
     }
 
+    // Never trust the client-provided end time.
     const endTime = getEndTime(startTime);
 
-    /*
-     * Never trust the client-provided end time.
-     * The server calculates the final 60-minute slot.
-     */
-
-    if (
-      clientEndTime &&
-      clientEndTime !== endTime
-    ) {
+    if (clientEndTime && clientEndTime !== endTime) {
       return NextResponse.json(
         {
           success: false,
@@ -135,18 +149,17 @@ export async function POST(request: Request) {
       );
     }
 
-   if (!isWithinWorkingHours(startTime, endTime)) {
+    if (!isWithinWorkingHours(startTime, endTime)) {
       return NextResponse.json(
         {
           success: false,
-          message:
-            "Selected time is outside working hours.",
+          message: "Selected time is outside working hours.",
         },
         { status: 400 }
       );
     }
 
-  if (!isValidAppointmentSlot(startTime, endTime)){
+    if (!isValidAppointmentSlot(startTime, endTime)) {
       return NextResponse.json(
         {
           success: false,
@@ -156,141 +169,99 @@ export async function POST(request: Request) {
       );
     }
 
-    /* =====================================================
-       PAST DATE
-    ===================================================== */
-
-    if (date <= getMelbourneToday()) {
-      return NextResponse.json(
-        {
-          success: false,
-          message:
-            "Please select a future appointment date.",
-        },
-        { status: 400 }
-      );
-    }
-
-    /* =====================================================
+    /* =====================================
        SERVICE VALIDATION
-    ===================================================== */
+    ===================================== */
 
     let serviceId: mongoose.Types.ObjectId | null = null;
+    let serviceName = "";
 
-    let serviceName = "Not sure — I need help";
-
-    /*
-     * The booking form can send either:
-     *
-     * 1. A real Service ObjectId
-     * 2. null / empty value for "Not sure"
-     *
-     * We also detect the service name so an old frontend
-     * value cannot accidentally trigger ObjectId validation.
-     */
-
-    const selectedServiceId =
-      data.service.serviceId;
-
-    const selectedServiceName =
-      data.service.serviceName?.trim();
+    const selectedServiceId = data.service.serviceId?.trim();
+    const selectedServiceName = data.service.serviceName?.trim();
 
     const isHelpRequest =
-      !selectedServiceId ||
-      selectedServiceName ===
-        "Not sure — I need help";
+      !selectedServiceId &&
+      selectedServiceName === "Not sure — I need help";
 
-    if (!isHelpRequest) {
-      if (
-        !mongoose.isValidObjectId(
-          selectedServiceId
-        )
-      ) {
+    if (isHelpRequest) {
+      serviceName = "Not sure — I need help";
+    } else {
+      if (!selectedServiceId || !mongoose.isValidObjectId(selectedServiceId)) {
         return NextResponse.json(
           {
             success: false,
-            message: "Invalid service selected.",
+            message: "Please select a valid service.",
           },
           { status: 400 }
         );
       }
 
-      const service = await Service.findOne({
+      const selectedService = await Service.findOne({
         _id: selectedServiceId,
         status: "active",
       })
         .select("_id title")
         .lean();
 
-      if (!service) {
+      if (!selectedService) {
         return NextResponse.json(
           {
             success: false,
-            message:
-              "This service is no longer available.",
+            message: "This service is no longer available.",
           },
           { status: 409 }
         );
       }
 
-      serviceId = service._id;
-      serviceName = service.title;
+      serviceId = selectedService._id;
+      serviceName = selectedService.title;
     }
 
-    /* =====================================================
-       ADMIN BLOCK CHECK
-    ===================================================== */
+    /* =====================================
+       ADMIN AVAILABILITY BLOCK CHECK
+    ===================================== */
 
-    const availability =
-      await Availability.findOne({
-        date,
-      }).lean();
+    const availability = await Availability.findOne({
+      date,
+    }).lean();
 
     if (availability?.allDayBlocked) {
       return NextResponse.json(
         {
           success: false,
-          message:
-            "This date is no longer available.",
+          message: "This date is no longer available.",
         },
         { status: 409 }
       );
     }
 
-    const blocked =
-      availability?.timeBlocks?.some(
-        (block) =>
-          block.start === startTime &&
-          block.end === endTime
-      );
+    const blocked = availability?.timeBlocks?.some(
+      (block) =>
+        block.start === startTime &&
+        block.end === endTime
+    );
 
     if (blocked) {
       return NextResponse.json(
         {
           success: false,
-          message:
-            "This time is no longer available.",
+          message: "This time is no longer available.",
         },
         { status: 409 }
       );
     }
 
-    /* =====================================================
+    /* =====================================
        EXISTING BOOKING CHECK
-    ===================================================== */
+    ===================================== */
 
-    const alreadyBooked =
-      await Booking.exists({
-        "appointment.date": date,
-        "appointment.startTime": startTime,
-        status: {
-          $in: [
-            "pending",
-            "confirmed",
-            
-          ],
-        },
-      });
+    const alreadyBooked = await Booking.exists({
+      "appointment.date": date,
+      "appointment.startTime": startTime,
+      status: {
+        $in: ["pending", "confirmed"],
+      },
+    });
 
     if (alreadyBooked) {
       return NextResponse.json(
@@ -303,222 +274,154 @@ export async function POST(request: Request) {
       );
     }
 
-    /* =====================================================
+    /* =====================================
        BOOKING REFERENCE
-    ===================================================== */
+    ===================================== */
 
-    /* =====================================================
-   BOOKING REFERENCE
-===================================================== */
+    const bookingReference = await generateBookingReference();
 
-const bookingReference =
-  await generateBookingReference();
-
-
-    /* =====================================================
+    /* =====================================
        CREATE BOOKING
-    ===================================================== */
+    ===================================== */
 
-    const createdBooking =
-      await Booking.create({
-        bookingReference,
+    const createdBooking = await Booking.create({
+      bookingReference,
 
-        customer: {
-          fullName:
-            data.customer.fullName,
+      customer: {
+        fullName: data.customer.fullName,
+        phone: data.customer.phone,
+        email: data.customer.email || "",
+      },
 
-          phone:
-            data.customer.phone,
+      vehicle: {
+        registrationNumber:
+          data.vehicle.registrationNumber.toUpperCase(),
 
-          email:
-            data.customer.email || "",
+        make: data.vehicle.make,
+        model: data.vehicle.model,
+        year: data.vehicle.year,
+        notes: data.vehicle.notes || "",
+      },
 
-          notes: "",
-        },
+      service: {
+        serviceId,
+        serviceName,
+        issueDescription: data.service.issueDescription || "",
+        images: data.service.images || [],
+        video: data.service.video || "",
+      },
 
-        vehicle: {
-          registrationNumber:
-            data.vehicle.registrationNumber.toUpperCase(),
+      location: {
+        address: data.location.address,
+        suburb: data.location.suburb,
+        postcode: data.location.postcode,
+        serviceArea: data.location.serviceArea,
+        state: data.location.state,
+        accessNotes: data.location.accessNotes || "",
+      },
 
-       
-          issue:
-            data.vehicle.issue,
+      appointment: {
+        date,
+        startTime,
+        endTime,
+        timezone: BOOKING_TIMEZONE,
+      },
 
-          notes:
-            data.vehicle.notes,
-        },
+      status: "pending",
+    });
 
-        service: {
-          serviceId,
-          serviceName,
-        },
+    /* =====================================
+       EMAIL DATA
+    ===================================== */
 
-        location: {
-          address:
-            data.location.address,
+    const emailBooking = {
+      bookingReference: createdBooking.bookingReference,
 
-          suburb:
-            data.location.suburb,
+      customer: {
+        fullName: createdBooking.customer.fullName,
+        phone: createdBooking.customer.phone,
+        email: createdBooking.customer.email,
+      },
 
-          state:
-            data.location.state,
+      vehicle: {
+        registrationNumber:
+          createdBooking.vehicle.registrationNumber,
 
-          postcode:
-            data.location.postcode,
+        make: createdBooking.vehicle.make,
+        model: createdBooking.vehicle.model,
+        year: createdBooking.vehicle.year,
+        notes: createdBooking.vehicle.notes,
 
-          accessNotes:
-            data.location.accessNotes,
-        },
+        // Backward-compatible field for existing email templates.
+        issue: createdBooking.service.issueDescription,
+      },
 
-        appointment: {
-          date,
+      service: {
+        serviceName: createdBooking.service.serviceName,
+        issueDescription: createdBooking.service.issueDescription,
+        images: createdBooking.service.images,
+        video: createdBooking.service.video,
+      },
 
-          startTime,
+      location: {
+        address: createdBooking.location.address,
+        suburb: createdBooking.location.suburb,
+        postcode: createdBooking.location.postcode,
+        serviceArea: createdBooking.location.serviceArea,
+        state: createdBooking.location.state,
+        accessNotes: createdBooking.location.accessNotes,
+      },
 
-          endTime,
+      appointment: {
+        date: createdBooking.appointment.date,
+        startTime: createdBooking.appointment.startTime,
+        endTime: createdBooking.appointment.endTime,
+        timezone: createdBooking.appointment.timezone,
+      },
+    };
 
-          timezone:
-            BOOKING_TIMEZONE,
-        },
+    /* =====================================
+       SEND EMAILS
+    ===================================== */
 
-        status: "pending",
-      });
+    const emailResults = await Promise.allSettled([
+      sendCustomerBookingReceivedEmail(emailBooking),
+      sendAdminNewBookingEmail(emailBooking),
+    ]);
 
+    for (const result of emailResults) {
+      if (result.status === "rejected") {
+        console.error(
+          "BOOKING EMAIL ERROR:",
+          result.reason
+        );
+      }
+    }
 
-
-
-      /* =====================================================
-   BOOKING EMAILS
-===================================================== */
-
-const emailBooking = {
-  bookingReference:
-    createdBooking.bookingReference,
-
-  customer: {
-    fullName:
-      createdBooking.customer.fullName,
-
-    phone:
-      createdBooking.customer.phone,
-
-    email:
-      createdBooking.customer.email,
-  },
-
-  vehicle: {
-    registrationNumber:
-      createdBooking.vehicle.registrationNumber,
-
-    issue:
-      createdBooking.vehicle.issue,
-
-    notes:
-      createdBooking.vehicle.notes,
-  },
-
-  service: {
-    serviceName:
-      createdBooking.service.serviceName,
-  },
-
-  location: {
-    address:
-      createdBooking.location.address,
-
-    suburb:
-      createdBooking.location.suburb,
-
-    state:
-      createdBooking.location.state,
-
-    postcode:
-      createdBooking.location.postcode,
-
-    accessNotes:
-      createdBooking.location.accessNotes,
-  },
-
-  appointment: {
-    date:
-      createdBooking.appointment.date,
-
-    startTime:
-      createdBooking.appointment.startTime,
-
-    endTime:
-      createdBooking.appointment.endTime,
-
-    timezone:
-      createdBooking.appointment.timezone,
-  },
-};
-
-const emailResults =
-  await Promise.allSettled([
-    sendCustomerBookingReceivedEmail(
-      emailBooking
-    ),
-
-    sendAdminNewBookingEmail(
-      emailBooking
-    ),
-  ]);
-
-for (const result of emailResults) {
-  if (result.status === "rejected") {
-    console.error(
-      "BOOKING EMAIL ERROR:",
-      result.reason
-    );
-  }
-}
-
-    /* =====================================================
-       RESPONSE
-    ===================================================== */
-
-
-
-
-    const bookingId =
-      String(createdBooking._id);
+    /* =====================================
+       SUCCESS RESPONSE
+    ===================================== */
 
     return NextResponse.json(
       {
         success: true,
-
-        message:
-          "Your booking request has been received.",
-
-        reference:
-          bookingReference,
+        message: "Your booking request has been received.",
+        reference: bookingReference,
 
         booking: {
-          id: bookingId,
-
-          reference:
-            bookingReference,
-
-          service:
-            serviceName,
-
+          id: String(createdBooking._id),
+          reference: bookingReference,
+          service: serviceName,
           date,
-
           startTime,
-
           endTime,
-
           status: "pending",
         },
       },
       { status: 201 }
     );
   } catch (error) {
-    console.error(
-      "BOOKING SUBMISSION ERROR:",
-      error
-    );
+    console.error("BOOKING SUBMISSION ERROR:", error);
 
     return NextResponse.json(
       {

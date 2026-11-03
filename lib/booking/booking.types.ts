@@ -1,11 +1,12 @@
+
 import type {
   BOOKING_STATUSES,
   BOOKING_TIME_SLOTS,
-  BOOKING_VEHICLE_ISSUES,
 } from "./booking.constants";
 
-export type BookingVehicleIssue =
-  (typeof BOOKING_VEHICLE_ISSUES)[number];
+/* =========================================
+   SHARED TYPES
+========================================= */
 
 export type BookingStatus =
   (typeof BOOKING_STATUSES)[number];
@@ -13,16 +14,57 @@ export type BookingStatus =
 export type BookingTimeSlot =
   (typeof BOOKING_TIME_SLOTS)[number];
 
+/* =========================================
+   STEP 1 — VEHICLE
+========================================= */
+
 export interface BookingVehicleData {
   registrationNumber: string;
-  issue: BookingVehicleIssue | "";
+  make: string;
+  model: string;
+  year: string;
   notes: string;
 }
+
+/* =========================================
+   STEP 2 — CONTACT
+========================================= */
+
+export interface BookingCustomerData {
+  fullName: string;
+  phone: string;
+  email: string;
+}
+
+/* =========================================
+   STEP 3 — SERVICE
+========================================= */
 
 export interface BookingServiceData {
   serviceId: string;
   serviceName: string;
+  issueDescription: string;
+  images: string[];
+  video: string;
 }
+
+/* =========================================
+   STEP 4 — LOCATION
+========================================= */
+
+export interface BookingLocationData {
+  address: string;
+  suburb: string;
+  postcode: string;
+  serviceArea: string;
+  state: string;
+  accessNotes: string;
+}
+
+/* =========================================
+   APPOINTMENT
+   STEP 4 — PREFERRED DATE & TIME
+========================================= */
 
 export interface BookingDateTimeData {
   date: string;
@@ -31,38 +73,37 @@ export interface BookingDateTimeData {
   timezone: string;
 }
 
-export interface BookingCustomerData {
-  fullName: string;
-  phone: string;
-  email: string;
-  notes: string;
-}
-
-export interface BookingLocationData {
-  address: string;
-  suburb: string;
-  state: string;
-  postcode: string;
-  accessNotes: string;
-}
+/* =========================================
+   COMPLETE BOOKING FORM
+========================================= */
 
 export interface BookingFormData {
   vehicle: BookingVehicleData;
-  service: BookingServiceData;
-  appointment: BookingDateTimeData;
   customer: BookingCustomerData;
+  service: BookingServiceData;
   location: BookingLocationData;
+  appointment: BookingDateTimeData;
+
+  // Client-side confirmation only.
   termsAccepted: boolean;
 }
 
+/* =========================================
+   API SUBMISSION PAYLOAD
+========================================= */
+
 export interface BookingSubmitPayload {
   vehicle: BookingVehicleData;
-  service: BookingServiceData;
-  appointment: BookingDateTimeData;
   customer: BookingCustomerData;
+  service: BookingServiceData;
   location: BookingLocationData;
+  appointment: BookingDateTimeData;
   termsAccepted: boolean;
 }
+
+/* =========================================
+   BOOKING RESPONSE
+========================================= */
 
 export interface BookingReferenceResult {
   bookingReference: string;

@@ -1,3 +1,4 @@
+
 import { NextResponse } from "next/server";
 
 import { auth } from "@/auth";
@@ -14,8 +15,16 @@ const VALID_STATUSES = [
 type BookingStatus =
   (typeof VALID_STATUSES)[number];
 
+function escapeRegex(value: string) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
 export async function GET(request: Request) {
   try {
+    // ---------------------------------------------------------
+    // ADMIN AUTHORIZATION
+    // ---------------------------------------------------------
+
     const session = await auth();
 
     if (session?.user?.role !== "admin") {
@@ -30,128 +39,134 @@ export async function GET(request: Request) {
 
     await connectDB();
 
-    const { searchParams } =
-      new URL(request.url);
+    // ---------------------------------------------------------
+    // QUERY PARAMETERS
+    // ---------------------------------------------------------
 
-    const status =
+    const { searchParams } = new URL(request.url);
+
+    const requestedStatus =
       searchParams.get("status") ?? "all";
+
+    const status = VALID_STATUSES.includes(
+      requestedStatus as BookingStatus
+    )
+      ? (requestedStatus as BookingStatus)
+      : "all";
 
     const search =
       searchParams.get("search")?.trim() ?? "";
 
-    const page = Math.max(
-      Number(searchParams.get("page") ?? 1),
-      1
+    const requestedPage = Number(
+      searchParams.get("page") ?? 1
     );
 
-    const limit = Math.min(
-      Math.max(
-        Number(
-          searchParams.get("limit") ?? 20
-        ),
-        1
-      ),
-      100
+    const requestedLimit = Number(
+      searchParams.get("limit") ?? 20
     );
 
-    /*
-     * ---------------------------------------------------------
-     * ACTIVE BOOKING QUERY
-     * ---------------------------------------------------------
-     *
-     * We intentionally use:
-     *
-     * archived: { $ne: true }
-     *
-     * instead of:
-     *
-     * archived: false
-     *
-     * because older bookings created before the
-     * archive field existed may not have the field.
-     *
-     * Those old bookings should still appear here.
-     */
+    const page =
+      Number.isFinite(requestedPage) &&
+      requestedPage > 0
+        ? Math.floor(requestedPage)
+        : 1;
+
+    const limit =
+      Number.isFinite(requestedLimit) &&
+      requestedLimit > 0
+        ? Math.min(Math.floor(requestedLimit), 100)
+        : 20;
+
+    const skip = (page - 1) * limit;
+
+    // ---------------------------------------------------------
+    // ACTIVE BOOKING QUERY
+    // ---------------------------------------------------------
+
+    // Older bookings may not have an archived field.
+    // They must remain visible in the active booking list.
+
     const query: Record<string, unknown> = {
       archived: {
         $ne: true,
       },
     };
 
-    /*
-     * ---------------------------------------------------------
-     * STATUS FILTER
-     * ---------------------------------------------------------
-     */
-    if (
-      status !== "all" &&
-      VALID_STATUSES.includes(
-        status as BookingStatus
-      )
-    ) {
+    if (status !== "all") {
       query.status = status;
     }
 
-    /*
-     * ---------------------------------------------------------
-     * SEARCH
-     * ---------------------------------------------------------
-     */
+    // ---------------------------------------------------------
+    // SEARCH
+    // ---------------------------------------------------------
+
     if (search) {
+      const safeSearch = escapeRegex(search);
+
+      const searchRegex = {
+        $regex: safeSearch,
+        $options: "i",
+      };
+
       query.$or = [
+        // Booking reference
         {
-          bookingReference: {
-            $regex: search,
-            $options: "i",
-          },
+          bookingReference: searchRegex,
         },
 
+        // Customer information
         {
-          "customer.fullName": {
-            $regex: search,
-            $options: "i",
-          },
+          "customer.fullName": searchRegex,
+        },
+        {
+          "customer.phone": searchRegex,
+        },
+        {
+          "customer.email": searchRegex,
         },
 
+        // Vehicle information
         {
-          "customer.phone": {
-            $regex: search,
-            $options: "i",
-          },
+          "vehicle.registrationNumber": searchRegex,
+        },
+        {
+          "vehicle.make": searchRegex,
+        },
+        {
+          "vehicle.model": searchRegex,
+        },
+        {
+          "vehicle.year": searchRegex,
         },
 
+        // Service information
         {
-          "vehicle.registrationNumber": {
-            $regex: search,
-            $options: "i",
-          },
+          "service.serviceName": searchRegex,
+        },
+        {
+          "service.issueDescription": searchRegex,
         },
 
+        // Location information
         {
-          "service.serviceName": {
-            $regex: search,
-            $options: "i",
-          },
+          "location.address": searchRegex,
         },
-
         {
-          "location.suburb": {
-            $regex: search,
-            $options: "i",
-          },
+          "location.suburb": searchRegex,
+        },
+        {
+          "location.postcode": searchRegex,
+        },
+        {
+          "location.serviceArea": searchRegex,
         },
       ];
     }
 
-    const skip = (page - 1) * limit;
+    // ---------------------------------------------------------
+    // COUNTS
+    // ---------------------------------------------------------
 
-    /*
-     * ---------------------------------------------------------
-     * COUNTS
-     * ---------------------------------------------------------
-     *
-     * Counts are ONLY for active/non-archived bookings.
-     */
     const activeQuery = {
       archived: {
         $ne: true,
@@ -197,75 +212,68 @@ export async function GET(request: Request) {
       }),
     ]);
 
-    /*
-     * ---------------------------------------------------------
-     * RESPONSE
-     * ---------------------------------------------------------
-     */
-    return NextResponse.json({
-      success: true,
+    // ---------------------------------------------------------
+    // RESPONSE
+    // ---------------------------------------------------------
 
-      data: bookings.map((booking) => ({
-        ...booking,
+    const data = bookings.map((booking) => ({
+      ...booking,
 
-        _id: String(booking._id),
+      _id: String(booking._id),
 
-        bookingReference:
-          booking.bookingReference,
+      bookingReference:
+        booking.bookingReference,
 
-        archived:
-          booking.archived === true,
+      archived: booking.archived === true,
 
-        archivedAt:
-          booking.archivedAt
-            ? booking.archivedAt
-            : null,
+      archivedAt:
+        booking.archivedAt ?? null,
 
-        service: {
-          ...booking.service,
+      // Preserve every service field, including:
+      // serviceId, serviceName, issueDescription,
+      // images and video.
 
-          serviceId:
-            booking.service.serviceId
-              ? String(
-                  booking.service.serviceId
-                )
-              : null,
+      service: {
+        ...(booking.service ?? {}),
+
+        serviceId: booking.service?.serviceId
+          ? String(booking.service.serviceId)
+          : null,
+      },
+    }));
+
+    return NextResponse.json(
+      {
+        success: true,
+
+        data,
+
+        pagination: {
+          page,
+          limit,
+          total,
+          totalPages: Math.ceil(total / limit),
         },
-      })),
 
-      pagination: {
-        page,
-        limit,
-        total,
-        totalPages: Math.ceil(
-          total / limit
-        ),
+        counts: {
+          all:
+            pendingCount +
+            confirmedCount +
+            completedCount +
+            cancelledCount,
+
+          pending: pendingCount,
+          confirmed: confirmedCount,
+          completed: completedCount,
+          cancelled: cancelledCount,
+        },
       },
-
-      /*
-       * These are the exact counters used
-       * by the booking management page.
-       */
-      counts: {
-        all:
-          pendingCount +
-          confirmedCount +
-          completedCount +
-          cancelledCount,
-
-        pending:
-          pendingCount,
-
-        confirmed:
-          confirmedCount,
-
-        completed:
-          completedCount,
-
-        cancelled:
-          cancelledCount,
-      },
-    });
+      {
+        headers: {
+          "Cache-Control": "no-store",
+        },
+      }
+    );
   } catch (error) {
     console.error(
       "ADMIN BOOKINGS GET ERROR:",
@@ -275,8 +283,7 @@ export async function GET(request: Request) {
     return NextResponse.json(
       {
         success: false,
-        message:
-          "Unable to load bookings.",
+        message: "Unable to load bookings.",
       },
       { status: 500 }
     );

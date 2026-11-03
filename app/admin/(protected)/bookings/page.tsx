@@ -14,11 +14,13 @@ import {
   Check,
   CheckCircle2,
   Clock3,
+  Image as ImageIcon,
   Mail,
   MapPin,
   Phone,
   Search,
   User,
+  Video,
   Wrench,
   X,
   XCircle,
@@ -47,12 +49,15 @@ type Booking = {
     fullName: string;
     phone: string;
     email: string;
-    notes: string;
+    notes?: string;
   };
 
   vehicle: {
     registrationNumber: string;
-    issue:
+    make?: string;
+    model?: string;
+    year?: string;
+    issue?:
       | "Car won't start"
       | "Battery appears flat"
       | "Needs a jump start"
@@ -60,12 +65,15 @@ type Booking = {
       | "Battery replacement"
       | "Not sure / Need help"
       | "";
-    notes: string;
+    notes?: string;
   };
 
   service: {
     serviceId: string | null;
     serviceName: string;
+    issueDescription?: string;
+    images?: string[];
+    video?: string;
   };
 
   location: {
@@ -73,6 +81,7 @@ type Booking = {
     suburb: string;
     state: string;
     postcode: string;
+    serviceArea?: string;
     accessNotes: string;
   };
 
@@ -773,10 +782,16 @@ function BookingCard({
           <InfoItem
             icon={CarFront}
             label="Vehicle"
-            value={
-              booking.vehicle
-                .registrationNumber
-            }
+            value={[
+              booking.vehicle.make,
+              booking.vehicle.model,
+              booking.vehicle.year,
+              booking.vehicle.registrationNumber
+                ? `(${booking.vehicle.registrationNumber})`
+                : "",
+            ]
+              .filter(Boolean)
+              .join(" ") || "Vehicle details unavailable"}
           />
 
           <InfoItem
@@ -794,7 +809,7 @@ function BookingCard({
           <InfoItem
             icon={MapPin}
             label="Location"
-            value={`${booking.location.suburb}, ${booking.location.state}`}
+            value={`${booking.location.serviceArea || booking.location.suburb}, ${booking.location.state}`}
           />
         </div>
 
@@ -992,27 +1007,34 @@ function BookingDetailsModal({
               <DetailRow
                 label="Registration"
                 value={
-                  booking.vehicle
-                    .registrationNumber
+                  booking.vehicle.registrationNumber ||
+                  "Not provided"
                 }
               />
 
               <DetailRow
-                label="Issue"
-                value={
-                  booking.vehicle
-                    .issue ||
-                  "Not specified"
-                }
+                label="Make"
+                value={booking.vehicle.make || "Not provided"}
+              />
+
+              <DetailRow
+                label="Model"
+                value={booking.vehicle.model || "Not provided"}
+              />
+
+              <DetailRow
+                label="Year"
+                value={booking.vehicle.year || "Not provided"}
+              />
+
+              <DetailRow
+                label="Legacy Issue"
+                value={booking.vehicle.issue || "Not provided"}
               />
 
               <DetailRow
                 label="Vehicle Notes"
-                value={
-                  booking.vehicle
-                    .notes ||
-                  "None"
-                }
+                value={booking.vehicle.notes || "None"}
               />
             </DetailSection>
 
@@ -1036,6 +1058,85 @@ function BookingDetailsModal({
                   "Not linked"
                 }
               />
+
+              <DetailRow
+                label="Issue Description"
+                value={
+                  booking.service.issueDescription ||
+                  "No description provided"
+                }
+              />
+            </DetailSection>
+
+            <DetailSection
+              title="Uploaded Photos & Video"
+              icon={ImageIcon}
+            >
+              {booking.service.images?.length ? (
+                <div>
+                  <p className="mb-3 text-xs font-bold uppercase tracking-wider text-[#718895]">
+                    Photos ({booking.service.images.length})
+                  </p>
+
+                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                    {booking.service.images.map((imageUrl, index) => (
+                      <a
+                        key={`${imageUrl}-${index}`}
+                        href={imageUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="group overflow-hidden rounded-xl border border-white/[0.08] bg-[#08263D]"
+                      >
+                        <img
+                          src={imageUrl}
+                          alt={`Booking vehicle photo ${index + 1}`}
+                          loading="lazy"
+                          className="h-32 w-full object-cover transition duration-300 group-hover:scale-105"
+                        />
+                        <span className="block px-2 py-2 text-[11px] font-semibold text-[#A8BBC8]">
+                          Photo {index + 1} · Open full size
+                        </span>
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <p className="text-sm text-[#718895]">
+                  No photos uploaded.
+                </p>
+              )}
+
+              {booking.service.video ? (
+                <div className="border-t border-white/[0.06] pt-4">
+                  <div className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#718895]">
+                    <Video className="h-4 w-4 text-[#FFD400]" />
+                    Uploaded Video
+                  </div>
+
+                  <video
+                    src={booking.service.video}
+                    controls
+                    playsInline
+                    preload="metadata"
+                    className="max-h-[420px] w-full rounded-xl border border-white/[0.08] bg-black"
+                  >
+                    Your browser does not support video playback.
+                  </video>
+
+                  <a
+                    href={booking.service.video}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="mt-2 inline-flex text-xs font-semibold text-[#FFD400] hover:underline"
+                  >
+                    Open video in a new tab
+                  </a>
+                </div>
+              ) : (
+                <p className="text-sm text-[#718895]">
+                  No video uploaded.
+                </p>
+              )}
             </DetailSection>
 
             <DetailSection
@@ -1098,6 +1199,14 @@ function BookingDetailsModal({
                   value={
                     booking.location
                       .postcode
+                  }
+                />
+
+                <DetailRow
+                  label="Service Area"
+                  value={
+                    booking.location.serviceArea ||
+                    "Not provided"
                   }
                 />
 

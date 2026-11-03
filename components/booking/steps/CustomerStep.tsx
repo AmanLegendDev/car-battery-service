@@ -1,227 +1,496 @@
+
 "use client";
+
+import {
+  useMemo,
+  useState,
+} from "react";
+
+import {
+  UserRound,
+  Phone,
+  Mail,
+  Wrench,
+  ChevronDown,
+  Check,
+  Search,
+  Sparkles,
+} from "lucide-react";
 
 import type {
   BookingCustomerData,
-  BookingLocationData,
+  BookingServiceData,
 } from "@/lib/booking/booking.types";
+
+/* =========================================
+   TYPES
+========================================= */
+
+interface Service {
+  id: string;
+  title: string;
+  shortDescription: string;
+}
 
 interface CustomerStepProps {
   customer: BookingCustomerData;
-  location: BookingLocationData;
+  service: BookingServiceData;
+  services: Service[];
+
   onCustomerChange: (
     value: Partial<BookingCustomerData>
   ) => void;
-  onLocationChange: (
-    value: Partial<BookingLocationData>
+
+  onServiceChange: (
+    value: Partial<BookingServiceData>
   ) => void;
 }
 
+/* =========================================
+   STYLES
+========================================= */
+
 const inputClass =
-  "mt-2 h-12 w-full rounded-xl border border-white/10 bg-white/[0.05] px-4 text-sm text-white outline-none transition placeholder:text-[#667E8D] focus:border-[#FFD400]/60";
+  "mt-2 h-12 w-full rounded-xl border border-white/10 bg-[#08263D] px-4 text-sm text-white outline-none transition placeholder:text-[#667E8D] focus:border-[#FFD400]/60 focus:ring-2 focus:ring-[#FFD400]/10";
+
+const NOT_SURE_SERVICE = {
+  id: "not-sure",
+  title: "Not sure — I need help",
+  shortDescription:
+    "Not sure which service your vehicle needs? Our team can help identify the right solution.",
+};
+
+/* =========================================
+   COMPONENT
+========================================= */
 
 export default function CustomerStep({
   customer,
-  location,
+  service,
+  services,
   onCustomerChange,
-  onLocationChange,
+  onServiceChange,
 }: CustomerStepProps) {
+  const [search, setSearch] = useState("");
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+
+  const selectedService = useMemo(() => {
+    if (service.serviceId === "not-sure") {
+      return NOT_SURE_SERVICE;
+    }
+
+    return services.find(
+      (item) => item.id === service.serviceId
+    );
+  }, [services, service.serviceId]);
+
+  const filteredServices = useMemo(() => {
+    const query = search.trim().toLowerCase();
+
+    if (!query) return services;
+
+    return services.filter(
+      (item) =>
+        item.title.toLowerCase().includes(query) ||
+        item.shortDescription.toLowerCase().includes(query)
+    );
+  }, [services, search]);
+
+  const selectService = (
+    id: string,
+    title: string
+  ) => {
+    onServiceChange({
+      serviceId: id,
+      serviceName: title,
+    });
+
+    setDropdownOpen(false);
+    setSearch("");
+  };
+
   return (
     <div>
+      {/* HEADER */}
+
       <p className="text-sm font-semibold text-[#FFD400]">
-        Step 4
+        Step 2 of 4
       </p>
 
-      <h2 className="mt-2 text-2xl font-black">
-        Where should we come?
+      <h2 className="mt-2 text-2xl font-black text-white sm:text-3xl">
+        Contact & Service Details
       </h2>
 
-      <p className="mt-2 text-sm leading-6 text-[#A8BBC8]">
-        Give us the contact and vehicle location
-        details for your service request.
+      <p className="mt-2 max-w-xl text-sm leading-6 text-[#A8BBC8]">
+        Tell us how to contact you and choose the service
+        you need for your vehicle.
       </p>
 
-      <div className="mt-8">
-        <h3 className="font-bold">
-          Your details
-        </h3>
+      {/* CONTACT DETAILS */}
 
-        <div className="mt-4 grid gap-5 sm:grid-cols-2">
+      <section className="mt-8">
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#0D6E91]/20 text-[#FFD400]">
+            <UserRound size={19} />
+          </div>
+
+          <div>
+            <h3 className="font-bold text-white">
+              Your Contact Details
+            </h3>
+
+            <p className="mt-0.5 text-xs text-[#8298A7]">
+              So we can confirm your booking.
+            </p>
+          </div>
+        </div>
+
+        <div className="mt-5 grid gap-5 sm:grid-cols-2">
+          {/* FULL NAME */}
+
           <label className="block">
-            <span className="text-sm font-semibold">
-              Full Name *
+            <span className="text-sm font-semibold text-white">
+              Full Name <span className="text-[#FFD400]">*</span>
             </span>
 
             <input
+              type="text"
+              autoComplete="name"
               value={customer.fullName}
               onChange={(event) =>
                 onCustomerChange({
-                  fullName:
-                    event.target.value,
+                  fullName: event.target.value,
                 })
               }
-              placeholder="Your full name"
+              placeholder="Enter your full name"
+              maxLength={120}
               className={inputClass}
             />
           </label>
+
+          {/* PHONE */}
 
           <label className="block">
-            <span className="text-sm font-semibold">
-              Mobile Number *
+            <span className="flex items-center gap-2 text-sm font-semibold text-white">
+              Mobile Number
+              <span className="text-[#FFD400]">*</span>
             </span>
 
-            <input
-              value={customer.phone}
-              onChange={(event) =>
-                onCustomerChange({
-                  phone:
-                    event.target.value,
-                })
-              }
-              placeholder="+61 ..."
-              className={inputClass}
-            />
+            <div className="relative">
+              <Phone
+                size={16}
+                className="absolute left-4 top-1/2 -translate-y-1/2 text-[#8298A7]"
+              />
+
+              <input
+                type="tel"
+                autoComplete="tel"
+                value={customer.phone}
+                onChange={(event) =>
+                  onCustomerChange({
+                    phone: event.target.value,
+                  })
+                }
+                placeholder="+61 4XX XXX XXX"
+                maxLength={30}
+                className={`${inputClass} pl-11`}
+              />
+            </div>
           </label>
 
+          {/* EMAIL */}
+
           <label className="block sm:col-span-2">
-            <span className="text-sm font-semibold">
-              Email
-              <span className="ml-2 text-xs font-normal text-[#6F8796]">
+            <span className="flex items-center gap-2 text-sm font-semibold text-white">
+              Email Address
+
+              <span className="text-xs font-normal text-[#8298A7]">
                 Optional
               </span>
             </span>
 
-            <input
-              type="email"
-              value={customer.email}
-              onChange={(event) =>
-                onCustomerChange({
-                  email:
-                    event.target.value,
-                })
-              }
-              placeholder="you@example.com"
-              className={inputClass}
-            />
+            <div className="relative">
+              <Mail
+                size={16}
+                className="absolute left-4 top-1/2 -translate-y-1/2 text-[#8298A7]"
+              />
+
+              <input
+                type="email"
+                autoComplete="email"
+                value={customer.email}
+                onChange={(event) =>
+                  onCustomerChange({
+                    email: event.target.value,
+                  })
+                }
+                placeholder="you@example.com"
+                maxLength={254}
+                className={`${inputClass} pl-11`}
+              />
+            </div>
           </label>
         </div>
-      </div>
+      </section>
 
-      <div className="mt-10 border-t border-white/10 pt-8">
-        <h3 className="font-bold">
-          Vehicle location
-        </h3>
+      {/* DIVIDER */}
 
-        <div className="mt-4 grid gap-5 sm:grid-cols-2">
-          <label className="block sm:col-span-2">
-            <span className="text-sm font-semibold">
-              Street Address *
-            </span>
+      <div className="my-9 border-t border-white/10" />
 
-            <input
-              value={location.address}
-              onChange={(event) =>
-                onLocationChange({
-                  address:
-                    event.target.value,
-                })
-              }
-              placeholder="123 Example Street"
-              className={inputClass}
-            />
-          </label>
+      {/* SERVICE SELECTION */}
 
-          <label className="block">
-            <span className="text-sm font-semibold">
-              Suburb *
-            </span>
+      <section>
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#0D6E91]/20 text-[#FFD400]">
+            <Wrench size={19} />
+          </div>
 
-            <input
-              value={location.suburb}
-              onChange={(event) =>
-                onLocationChange({
-                  suburb:
-                    event.target.value,
-                })
-              }
-              placeholder="Werribee"
-              className={inputClass}
-            />
-          </label>
+          <div>
+            <h3 className="font-bold text-white">
+              Select Your Service
+            </h3>
 
-          <label className="block">
-            <span className="text-sm font-semibold">
-              State *
-            </span>
-
-            <input
-              value={location.state}
-              onChange={(event) =>
-                onLocationChange({
-                  state:
-                    event.target.value,
-                })
-              }
-              placeholder="VIC"
-              className={inputClass}
-            />
-          </label>
-
-          <label className="block">
-            <span className="text-sm font-semibold">
-              Postcode *
-            </span>
-
-            <input
-              value={location.postcode}
-              onChange={(event) =>
-                onLocationChange({
-                  postcode:
-                    event.target.value,
-                })
-              }
-              placeholder="3030"
-              className={inputClass}
-            />
-          </label>
-
-          <label className="block">
-            <span className="text-sm font-semibold">
-              Access / Location Notes
-            </span>
-
-            <input
-              value={location.accessNotes}
-              onChange={(event) =>
-                onLocationChange({
-                  accessNotes:
-                    event.target.value,
-                })
-              }
-              placeholder="Optional"
-              className={inputClass}
-            />
-          </label>
+            <p className="mt-0.5 text-xs text-[#8298A7]">
+              Choose the service you need.
+            </p>
+          </div>
         </div>
+
+        {/* DROPDOWN */}
+
+        <div className="relative mt-5">
+          <button
+            type="button"
+            aria-expanded={dropdownOpen}
+            aria-haspopup="listbox"
+            onClick={() =>
+              setDropdownOpen((current) => !current)
+            }
+            className={[
+              "flex min-h-14 w-full items-center justify-between gap-3 rounded-xl border px-4 py-3 text-left transition",
+              dropdownOpen
+                ? "border-[#FFD400]/60 bg-[#08263D]"
+                : "border-white/10 bg-[#08263D] hover:border-white/20",
+            ].join(" ")}
+          >
+            <span className="flex min-w-0 items-center gap-3">
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#0D6E91]/20 text-[#FFD400]">
+                <Wrench size={17} />
+              </span>
+
+              <span className="min-w-0">
+                <span
+                  className={[
+                    "block truncate text-sm font-semibold",
+                    selectedService
+                      ? "text-white"
+                      : "text-[#8298A7]",
+                  ].join(" ")}
+                >
+                  {selectedService?.title ||
+                    "Choose a service"}
+                </span>
+
+                <span className="mt-0.5 block text-[11px] text-[#8298A7]">
+                  {services.length} services available
+                </span>
+              </span>
+            </span>
+
+            <ChevronDown
+              size={19}
+              className={[
+                "shrink-0 text-[#8298A7] transition-transform",
+                dropdownOpen ? "rotate-180" : "",
+              ].join(" ")}
+            />
+          </button>
+
+          {/* DROPDOWN PANEL */}
+
+          {dropdownOpen && (
+            <div className="absolute left-0 right-0 top-full z-30 mt-2 overflow-hidden rounded-2xl border border-white/10 bg-[#08263D] shadow-2xl shadow-black/40">
+              {/* SEARCH */}
+
+              <div className="border-b border-white/10 p-3">
+                <div className="relative">
+                  <Search
+                    size={16}
+                    className="absolute left-3 top-1/2 -translate-y-1/2 text-[#8298A7]"
+                  />
+
+                  <input
+                    autoFocus
+                    type="text"
+                    value={search}
+                    onChange={(event) =>
+                      setSearch(event.target.value)
+                    }
+                    placeholder="Search services..."
+                    className="h-11 w-full rounded-xl border border-white/10 bg-[#061A2B] pl-10 pr-3 text-sm text-white outline-none placeholder:text-[#667E8D] focus:border-[#FFD400]/50"
+                  />
+                </div>
+              </div>
+
+              {/* SERVICE OPTIONS */}
+
+              <div
+                role="listbox"
+                aria-label="Available services"
+                className="max-h-72 overflow-y-auto p-2"
+              >
+                {filteredServices.map((item) => {
+                  const isSelected =
+                    service.serviceId === item.id;
+
+                  return (
+                    <button
+                      key={item.id}
+                      type="button"
+                      role="option"
+                      aria-selected={isSelected}
+                      onClick={() =>
+                        selectService(
+                          item.id,
+                          item.title
+                        )
+                      }
+                      className={[
+                        "flex w-full items-start gap-3 rounded-xl p-3 text-left transition",
+                        isSelected
+                          ? "bg-[#FFD400]/10"
+                          : "hover:bg-white/[0.05]",
+                      ].join(" ")}
+                    >
+                      <span
+                        className={[
+                          "mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg",
+                          isSelected
+                            ? "bg-[#FFD400] text-[#061A2B]"
+                            : "bg-white/5 text-[#A8BBC8]",
+                        ].join(" ")}
+                      >
+                        {isSelected ? (
+                          <Check size={16} />
+                        ) : (
+                          <Wrench size={15} />
+                        )}
+                      </span>
+
+                      <span className="min-w-0 flex-1">
+                        <span className="block text-sm font-semibold text-white">
+                          {item.title}
+                        </span>
+
+                        <span className="mt-1 block text-xs leading-5 text-[#8298A7]">
+                          {item.shortDescription}
+                        </span>
+                      </span>
+
+                      {isSelected && (
+                        <Check
+                          size={17}
+                          className="mt-1 shrink-0 text-[#FFD400]"
+                        />
+                      )}
+                    </button>
+                  );
+                })}
+
+                {filteredServices.length === 0 && (
+                  <p className="px-4 py-7 text-center text-sm text-[#8298A7]">
+                    No services found. Try another search.
+                  </p>
+                )}
+              </div>
+
+              {/* NOT SURE */}
+
+              <div className="border-t border-white/10 p-2">
+                <button
+                  type="button"
+                  onClick={() =>
+                    selectService(
+                      NOT_SURE_SERVICE.id,
+                      NOT_SURE_SERVICE.title
+                    )
+                  }
+                  className={[
+                    "flex w-full items-center gap-3 rounded-xl p-3 text-left transition",
+                    service.serviceId === "not-sure"
+                      ? "bg-[#FFD400]/10"
+                      : "hover:bg-white/[0.05]",
+                  ].join(" ")}
+                >
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#FFD400]/10 text-[#FFD400]">
+                    <Sparkles size={17} />
+                  </span>
+
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-sm font-bold text-white">
+                      Not sure — I need help
+                    </span>
+
+                    <span className="mt-0.5 block text-xs text-[#8298A7]">
+                      Let our team help identify the right service.
+                    </span>
+                  </span>
+
+                  {service.serviceId === "not-sure" && (
+                    <Check
+                      size={17}
+                      className="text-[#FFD400]"
+                    />
+                  )}
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* SELECTED SERVICE */}
+
+        {selectedService && (
+          <div className="mt-4 rounded-2xl border border-[#FFD400]/25 bg-[#FFD400]/[0.06] p-4">
+            <div className="flex items-start gap-3">
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#FFD400] text-[#061A2B]">
+                <Check size={18} />
+              </span>
+
+              <div className="min-w-0 flex-1">
+                <p className="text-[10px] font-bold uppercase tracking-wider text-[#FFD400]">
+                  Service Selected
+                </p>
+
+                <h4 className="mt-1 font-bold text-white">
+                  {selectedService.title}
+                </h4>
+
+                <p className="mt-1 text-xs leading-5 text-[#A8BBC8]">
+                  {selectedService.shortDescription}
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setDropdownOpen(true)}
+                className="shrink-0 text-xs font-semibold text-[#FFD400] hover:underline"
+              >
+                Change
+              </button>
+            </div>
+          </div>
+        )}
+      </section>
+
+      {/* FOOTNOTE */}
+
+      <div className="mt-8 rounded-xl border border-white/10 bg-white/[0.03] p-4">
+        <p className="text-xs leading-5 text-[#8298A7]">
+          Your contact information will only be used to
+          communicate about your service booking.
+        </p>
       </div>
-
-      <label className="mt-8 block">
-        <span className="text-sm font-semibold">
-          Additional notes
-        </span>
-
-        <textarea
-          value={customer.notes}
-          onChange={(event) =>
-            onCustomerChange({
-              notes:
-                event.target.value,
-            })
-          }
-          rows={4}
-          placeholder="Anything else we should know?"
-          className="mt-2 w-full resize-none rounded-xl border border-white/10 bg-white/[0.05] px-4 py-3 text-sm text-white outline-none placeholder:text-[#667E8D] focus:border-[#FFD400]/60"
-        />
-      </label>
     </div>
   );
 }
