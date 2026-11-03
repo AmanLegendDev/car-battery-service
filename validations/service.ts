@@ -1,6 +1,11 @@
+
 import { z } from "zod";
 
 const slugRegex = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+
+/*
+ * MEDIA SCHEMA
+ */
 
 const mediaSchema = z
   .object({
@@ -51,6 +56,10 @@ const mediaSchema = z
   })
   .strict();
 
+/*
+ * REUSABLE STRING ARRAY
+ */
+
 const stringArray = (label: string, maxItems: number) =>
   z
     .array(
@@ -62,6 +71,10 @@ const stringArray = (label: string, maxItems: number) =>
     )
     .max(maxItems, `${label} cannot contain more than ${maxItems} items`)
     .default([]);
+
+/*
+ * PROCESS STEP SCHEMA
+ */
 
 const processStepSchema = z
   .object({
@@ -78,6 +91,57 @@ const processStepSchema = z
       .max(500),
   })
   .strict();
+
+/*
+ * SERVICE PRICING SCHEMA
+ */
+
+const pricingSchema = z
+  .object({
+    type: z.enum(["fixed", "from", "quote"], {
+      error: "Pricing type is required or invalid",
+    }),
+
+    amount: z
+      .number({
+        error: "Price must be a valid number",
+      })
+      .finite("Price must be a valid number")
+      .nonnegative("Price cannot be negative")
+      .optional(),
+
+    currency: z
+      .string()
+      .trim()
+      .length(3, "Currency must be a 3-letter currency code")
+      .transform((value) => value.toUpperCase())
+      .default("AUD"),
+  })
+  .strict()
+  .superRefine((data, ctx) => {
+    if (
+      (data.type === "fixed" || data.type === "from") &&
+      data.amount === undefined
+    ) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["amount"],
+        message: "Price amount is required",
+      });
+    }
+
+    if (data.type === "quote" && data.amount !== undefined) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["amount"],
+        message: "Amount must not be provided for quote-based pricing",
+      });
+    }
+  });
+
+/*
+ * CREATE SERVICE VALIDATION
+ */
 
 export const createServiceSchema = z
   .object({
@@ -135,6 +199,15 @@ export const createServiceSchema = z
       .default([]),
 
     suitableFor: stringArray("Suitable-for item", 20),
+
+    /*
+     * SERVICE PRICING
+     */
+
+    pricing: pricingSchema.default({
+      type: "quote",
+      currency: "AUD",
+    }),
 
     /*
      * SERVICE DETAILS

@@ -4,6 +4,7 @@ import {
   ArrowLeft,
   ArrowRight,
   CheckCircle2,
+  CircleDollarSign,
   Edit3,
   ExternalLink,
   Eye,
@@ -57,6 +58,11 @@ interface ServiceItem {
   processSteps?: ProcessStep[];
   suitableFor?: string[];
   estimatedTime?: string;
+  pricing?: {
+  type: "fixed" | "from" | "quote";
+  amount?: number | null;
+  currency: string;
+};
   emergencyService?: boolean;
   onSiteService?: boolean;
   ctaText?: string;
@@ -70,7 +76,32 @@ interface ServiceItem {
   createdAt: string | null;
   updatedAt: string | null;
 }
+function getServicePrice(pricing?: ServiceItem["pricing"]) {
+  if (
+    !pricing ||
+    pricing.type === "quote" ||
+    typeof pricing.amount !== "number" ||
+    !Number.isFinite(pricing.amount)
+  ) {
+    return {
+      label: "Contact for a Quote",
+      type: "quote" as const,
+    };
+  }
 
+  const formatted = new Intl.NumberFormat("en-AU", {
+    style: "currency",
+    currency: pricing.currency || "AUD",
+  }).format(pricing.amount);
+
+  return {
+    label:
+      pricing.type === "from"
+        ? `From ${formatted}`
+        : formatted,
+    type: pricing.type,
+  };
+}
 interface ServicesResponse {
   success: boolean;
   data: ServiceItem[];
@@ -171,6 +202,7 @@ export default function ServicesAdminPage() {
   }, [page, search, status, featured]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadServices();
   }, [loadServices]);
 
@@ -524,6 +556,36 @@ export default function ServicesAdminPage() {
                         "No short description added."}
                     </p>
                   </div>
+                  {/* PRICING PREVIEW */}
+{(() => {
+  const price = getServicePrice(service.pricing);
+
+  return (
+    <div className="mt-4 overflow-hidden rounded-xl border border-[#FFD400]/15 bg-gradient-to-r from-[#061A2B] to-[#0A3045]">
+      <div className="flex items-center justify-between gap-3 px-4 py-3">
+        <div className="min-w-0">
+          <p className="text-[9px] font-bold uppercase tracking-[0.18em] text-[#A8BBC8]">
+            {price.type === "fixed"
+              ? "Fixed Service Price"
+              : price.type === "from"
+                ? "Starting Price"
+                : "Service Pricing"}
+          </p>
+
+          <p className="mt-1 break-words text-lg font-black tracking-tight text-[#FFD400]">
+            {price.label}
+          </p>
+        </div>
+
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[#FFD400]/15 bg-[#FFD400]/10 text-[#FFD400]">
+          <CircleDollarSign className="h-5 w-5" />
+        </div>
+      </div>
+
+      <div className="h-[2px] w-full bg-gradient-to-r from-[#FFD400] via-[#0D6E91] to-transparent" />
+    </div>
+  );
+})()}
 
                   <div className="mt-4 flex items-center justify-between border-t border-white/[0.08] pt-4">
                     <div>
@@ -767,6 +829,19 @@ export default function ServicesAdminPage() {
                           : "Not specified"
                       }
                     />
+                    <div className="rounded-xl border border-[#FFD400]/15 bg-gradient-to-r from-[#061A2B] to-[#0A3045] p-4 sm:col-span-2">
+  <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-[#A8BBC8]">
+    Service Pricing
+  </p>
+
+  <p className="mt-2 text-2xl font-black text-[#FFD400]">
+    {getServicePrice(viewService.pricing).label}
+  </p>
+
+  <p className="mt-1 text-xs text-[#718895]">
+    Pricing configured in Service CMS
+  </p>
+</div>
                   </div>
 
                   {/* DESCRIPTION */}

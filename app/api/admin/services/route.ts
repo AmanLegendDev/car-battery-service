@@ -29,7 +29,13 @@ function serializeService(service: {
   included?: string[];
   processSteps?: unknown[];
   suitableFor?: string[];
+    pricing?: {
+    type: "fixed" | "from" | "quote";
+    amount?: number;
+    currency?: string;
+  };
   estimatedTime?: string;
+
   emergencyService?: boolean;
   onSiteService?: boolean;
   ctaText?: string;
@@ -56,6 +62,12 @@ function serializeService(service: {
     included: service.included ?? [],
     processSteps: service.processSteps ?? [],
     suitableFor: service.suitableFor ?? [],
+       pricing: {
+      type: service.pricing?.type ?? "quote",
+      amount: service.pricing?.amount ?? null,
+      currency: service.pricing?.currency ?? "AUD",
+    },
+
     estimatedTime: service.estimatedTime ?? "",
     emergencyService: service.emergencyService ?? false,
     onSiteService: service.onSiteService ?? false,

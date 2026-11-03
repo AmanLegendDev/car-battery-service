@@ -54,6 +54,7 @@ async function getServiceBySlug(
           "included",
           "suitableFor",
           "estimatedTime",
+          "pricing",
           "emergencyService",
           "onSiteService",
           "ctaText",

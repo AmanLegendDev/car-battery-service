@@ -1,5 +1,4 @@
 
-
 import Link from "next/link";
 import ServiceListItem from "./ServiceListItem";
 
@@ -16,6 +15,11 @@ interface ServicesDirectoryProps {
       alt: string;
     } | null;
     estimatedTime: string;
+    pricing: {
+      type: "fixed" | "from" | "quote";
+      amount: number | null;
+      currency: string;
+    };
     emergencyService: boolean;
     onSiteService: boolean;
     ctaText: string;

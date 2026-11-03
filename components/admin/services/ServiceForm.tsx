@@ -41,6 +41,12 @@ interface ProcessStep {
   description: string;
 }
 
+interface ServicePricing {
+  type: "fixed" | "from" | "quote";
+  amount?: number;
+  currency: string;
+}
+
 interface ServiceFormState {
   title: string;
   slug: string;
@@ -52,6 +58,7 @@ interface ServiceFormState {
   included: string[];
   processSteps: ProcessStep[];
   suitableFor: string[];
+  pricing: ServicePricing;
 
   estimatedTime: string;
   emergencyService: boolean;
@@ -92,6 +99,7 @@ interface ServiceApiResponse {
     included: string[];
     processSteps: ProcessStep[];
     suitableFor: string[];
+    pricing: ServicePricing;
     estimatedTime: string;
     emergencyService: boolean;
     onSiteService: boolean;
@@ -126,6 +134,11 @@ const initialForm: ServiceFormState = {
     },
   ],
   suitableFor: [""],
+  pricing: {
+  type: "quote",
+  amount: undefined,
+  currency: "AUD",
+},
 
   estimatedTime: "",
   emergencyService: false,
@@ -265,6 +278,7 @@ export default function ServiceForm({
 
   useEffect(() => {
     if (!isEditMode) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setIsLoadingService(false);
       return;
     }
@@ -325,6 +339,11 @@ export default function ServiceForm({
             service.suitableFor?.length > 0
               ? service.suitableFor
               : [""],
+              pricing: {
+  type: service.pricing?.type ?? "quote",
+  amount: service.pricing?.amount,
+  currency: service.pricing?.currency ?? "AUD",
+},
           estimatedTime: service.estimatedTime ?? "",
           emergencyService: Boolean(service.emergencyService),
           onSiteService: Boolean(service.onSiteService),
@@ -387,6 +406,37 @@ export default function ServiceForm({
       return next;
     });
   }
+
+  function updatePricing<K extends keyof ServicePricing>(
+  field: K,
+  value: ServicePricing[K]
+) {
+  setForm((current) => {
+    const nextPricing = {
+      ...current.pricing,
+      [field]: value,
+    };
+
+    // Quote-based services do not need a numeric amount.
+    if (field === "type" && value === "quote") {
+      delete nextPricing.amount;
+    }
+
+    return {
+      ...current,
+      pricing: nextPricing,
+    };
+  });
+
+  setErrors((current) => {
+    const next = { ...current };
+    delete next["pricing"];
+    delete next["pricing.type"];
+    delete next["pricing.amount"];
+    delete next["pricing.currency"];
+    return next;
+  });
+}
 
   function handleTitleChange(value: string) {
     updateField("title", value);
@@ -1028,7 +1078,7 @@ export default function ServiceForm({
           <SectionHeader
             number="03"
             icon={Clock3}
-            title="Service Details"
+            title="Service Details & Pricing"
             description="Give customers useful operational information without inventing claims."
           />
 
@@ -1053,6 +1103,118 @@ export default function ServiceForm({
                 Only enter an estimate genuinely supported by the business.
               </p>
             </div>
+
+            {/* SERVICE PRICING */}
+
+<div className="md:col-span-2 rounded-2xl border border-[#FFD400]/15 bg-[#061A2B]/70 p-5">
+  <div className="mb-5">
+    <h3 className="text-sm font-bold text-[#F8FAFC]">
+      Service Pricing
+    </h3>
+
+    <p className="mt-1 text-xs leading-5 text-[#A8BBC8]">
+      Choose how the service price should appear on the website.
+    </p>
+  </div>
+
+  <div className="grid gap-5 md:grid-cols-2">
+    <div>
+      <Label required>Pricing Type</Label>
+
+      <select
+        value={form.pricing.type}
+        onChange={(event) =>
+          updatePricing(
+            "type",
+            event.target.value as ServicePricing["type"]
+          )
+        }
+        className={inputClass}
+      >
+        <option value="fixed">Fixed Price</option>
+        <option value="from">Starting From</option>
+        <option value="quote">Contact for a Quote</option>
+      </select>
+
+      <FieldError
+        message={getFirstError(errors, "pricing.type")}
+      />
+    </div>
+
+    <div>
+      <Label>Currency</Label>
+
+      <select
+        value={form.pricing.currency}
+        onChange={(event) =>
+          updatePricing("currency", event.target.value)
+        }
+        className={inputClass}
+      >
+        <option value="AUD">AUD - Australian Dollar</option>
+        <option value="USD">USD - US Dollar</option>
+        <option value="INR">INR - Indian Rupee</option>
+        <option value="GBP">GBP - British Pound</option>
+        <option value="NZD">NZD - New Zealand Dollar</option>
+      </select>
+
+      <FieldError
+        message={getFirstError(errors, "pricing.currency")}
+      />
+    </div>
+
+    {form.pricing.type !== "quote" && (
+      <div className="md:col-span-2">
+        <Label required>
+          {form.pricing.type === "from"
+            ? "Starting Price"
+            : "Service Price"}
+        </Label>
+
+        <div className="relative">
+          <input
+            type="number"
+            min="0"
+            step="0.01"
+            value={form.pricing.amount ?? ""}
+            onChange={(event) =>
+              updatePricing(
+                "amount",
+                event.target.value === ""
+                  ? undefined
+                  : Number(event.target.value)
+              )
+            }
+            placeholder="e.g. 150"
+            className={inputClass}
+          />
+        </div>
+
+        <FieldError
+          message={getFirstError(errors, "pricing.amount")}
+        />
+      </div>
+    )}
+  </div>
+
+  <div className="mt-5 rounded-xl border border-[#0D6E91]/20 bg-[#0D6E91]/10 p-4">
+    <p className="text-xs font-semibold text-[#F8FAFC]">
+      Customer-facing preview
+    </p>
+
+    <p className="mt-2 text-lg font-black text-[#FFD400]">
+      {form.pricing.type === "quote"
+        ? "Contact for a quote"
+        : `${form.pricing.type === "from" ? "From " : ""}${new Intl.NumberFormat(
+            "en-AU",
+            {
+              style: "currency",
+              currency: form.pricing.currency,
+            }
+          ).format(form.pricing.amount ?? 0)}`}
+    </p>
+  </div>
+</div>
 
             <div className="space-y-3">
               <Toggle

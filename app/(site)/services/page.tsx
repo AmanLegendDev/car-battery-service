@@ -84,6 +84,7 @@ async function getServices() {
           "ctaText",
           "featured",
           "displayOrder",
+          "pricing",
         ].join(" "),
       )
       .sort({
@@ -138,6 +139,12 @@ async function getServices() {
 
       estimatedTime:
         service.estimatedTime || "",
+
+        pricing: {
+  type: service.pricing?.type ?? "quote",
+  amount: service.pricing?.amount ?? null,
+  currency: service.pricing?.currency ?? "AUD",
+},
 
       emergencyService:
         Boolean(service.emergencyService),

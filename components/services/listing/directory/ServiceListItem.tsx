@@ -7,6 +7,7 @@ import {
   MapPin,
   Siren,
   Wrench,
+  Tag,
 } from "lucide-react";
 
 interface ServiceListItemProps {
@@ -22,6 +23,11 @@ interface ServiceListItemProps {
       alt: string;
     } | null;
     estimatedTime: string;
+    pricing: {
+      type: "fixed" | "from" | "quote";
+      amount: number | null;
+      currency: string;
+    };
     emergencyService: boolean;
     onSiteService: boolean;
     ctaText: string;
@@ -34,6 +40,20 @@ export default function ServiceListItem({
   index,
 }: ServiceListItemProps) {
   const serviceHref = `/services/${service.slug}`;
+
+  const pricing = service.pricing;
+
+  const hasPrice =
+    pricing?.type !== "quote" &&
+    typeof pricing?.amount === "number" &&
+    Number.isFinite(pricing.amount);
+
+  const formattedPrice = hasPrice
+    ? new Intl.NumberFormat("en-AU", {
+        style: "currency",
+        currency: pricing.currency || "AUD",
+      }).format(pricing.amount as number)
+    : null;
 
   return (
     <article className="group relative border-t border-[#061A2B]/10">
@@ -101,6 +121,43 @@ export default function ServiceListItem({
                 Emergency service
               </span>
             ) : null}
+          </div>
+
+          {/* Premium Service Pricing */}
+          <div className="mt-7 max-w-md overflow-hidden rounded-2xl border border-[#061A2B]/10 bg-white shadow-[0_8px_30px_rgba(6,26,43,0.05)] transition-all duration-300 group-hover:border-[#0D6E91]/25 group-hover:shadow-[0_12px_35px_rgba(6,26,43,0.08)]">
+            <div className="flex items-center justify-between gap-4 px-5 py-4 sm:px-6">
+              <div className="min-w-0">
+                <div className="flex items-center gap-2">
+                  <Tag
+                    aria-hidden="true"
+                    className="h-3.5 w-3.5 text-[#0D6E91]"
+                  />
+
+                  <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-[#061A2B]/45">
+                    {pricing?.type === "from"
+                      ? "Starting Price"
+                      : pricing?.type === "fixed"
+                        ? "Fixed Service Price"
+                        : "Service Pricing"}
+                  </p>
+                </div>
+
+                <p className="mt-2 text-xl font-bold tracking-tight text-[#061A2B] sm:text-2xl">
+                  {hasPrice && formattedPrice
+                    ? `${pricing.type === "from" ? "From " : ""}${formattedPrice}`
+                    : "Contact for a Quote"}
+                </p>
+              </div>
+
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#FFD400]/20 text-[#061A2B]">
+                <Wrench
+                  aria-hidden="true"
+                  className="h-5 w-5"
+                />
+              </div>
+            </div>
+
+            <div className="h-[3px] w-full bg-gradient-to-r from-[#FFD400] via-[#0D6E91] to-transparent" />
           </div>
 
           {/* Service page link */}

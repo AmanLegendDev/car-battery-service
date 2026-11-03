@@ -1,6 +1,15 @@
+
 import mongoose, { Document, Model, Schema } from "mongoose";
 
 export type ServiceStatus = "active" | "inactive";
+
+export type ServicePricingType = "fixed" | "from" | "quote";
+
+export interface IServicePricing {
+  type: ServicePricingType;
+  amount?: number;
+  currency: string;
+}
 
 export interface IServiceMedia {
   publicId: string;
@@ -33,6 +42,8 @@ export interface IService extends Document {
   processSteps: IServiceProcessStep[];
   suitableFor: string[];
 
+  pricing: IServicePricing;
+
   estimatedTime?: string;
   emergencyService: boolean;
   onSiteService: boolean;
@@ -51,6 +62,10 @@ export interface IService extends Document {
   createdAt: Date;
   updatedAt: Date;
 }
+
+/*
+ * MEDIA SCHEMA
+ */
 
 const ServiceMediaSchema = new Schema<IServiceMedia>(
   {
@@ -111,6 +126,10 @@ const ServiceMediaSchema = new Schema<IServiceMedia>(
   }
 );
 
+/*
+ * SERVICE PROCESS STEP SCHEMA
+ */
+
 const ServiceProcessStepSchema = new Schema<IServiceProcessStep>(
   {
     title: {
@@ -140,6 +159,50 @@ const ServiceProcessStepSchema = new Schema<IServiceProcessStep>(
     versionKey: false,
   }
 );
+
+/*
+ * SERVICE PRICING SCHEMA
+ */
+
+const ServicePricingSchema = new Schema<IServicePricing>(
+  {
+    type: {
+      type: String,
+      enum: {
+        values: ["fixed", "from", "quote"],
+        message: "Invalid pricing type",
+      },
+      default: "quote",
+      required: true,
+    },
+
+    amount: {
+      type: Number,
+      min: [0, "Price cannot be negative"],
+      required: function (this: any) {
+        return this.type === "fixed" || this.type === "from";
+      },
+    },
+
+    currency: {
+      type: String,
+      default: "AUD",
+      trim: true,
+      uppercase: true,
+      minlength: 3,
+      maxlength: 3,
+      required: true,
+    },
+  },
+  {
+    _id: false,
+    versionKey: false,
+  }
+);
+
+/*
+ * MAIN SERVICE SCHEMA
+ */
 
 const ServiceSchema = new Schema<IService>(
   {
@@ -257,6 +320,19 @@ const ServiceSchema = new Schema<IService>(
     },
 
     /*
+     * SERVICE PRICING
+     */
+
+    pricing: {
+      type: ServicePricingSchema,
+      default: () => ({
+        type: "quote",
+        currency: "AUD",
+      }),
+      required: true,
+    },
+
+    /*
      * SERVICE DETAILS
      */
 
@@ -353,7 +429,7 @@ const ServiceSchema = new Schema<IService>(
 );
 
 /*
- * Useful compound indexes for future listing/filtering.
+ * USEFUL COMPOUND INDEXES
  */
 
 ServiceSchema.index({
@@ -366,6 +442,10 @@ ServiceSchema.index({
   featured: 1,
   displayOrder: 1,
 });
+
+/*
+ * MODEL
+ */
 
 const Service: Model<IService> =
   mongoose.models.Service ||
