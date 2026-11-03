@@ -1,3 +1,4 @@
+
 import type { Metadata } from "next";
 
 import { connectDB } from "@/lib/db";
@@ -11,23 +12,19 @@ import FAQsListingPage from "@/components/faqs/listing/FAQsListingPage";
 
 export const dynamic = "force-dynamic";
 
-const SITE_URL =
-  "https://www.mobilecarservices.com.au/";
+const SITE_URL = "https://www.mobilecarservices.com.au";
 
-const PAGE_URL =
-  `${SITE_URL}/faqs`;
+const PAGE_URL = `${SITE_URL}/faqs`;
 
 const SEO_TITLE =
   "Car Battery FAQs | Signs, Testing, Replacement & Jump Starts";
 
 const SEO_DESCRIPTION =
-  "Frequently asked questions about mobile Mobile Car Services in Melbourne West, including battery replacement, battery testing and jump start assistance.";
+  "Find answers to common questions about mobile car services in Melbourne West, including battery replacement, battery testing, jump starts and roadside assistance.";
 
-const OG_IMAGE =
-  "/images/seo/og-image.jpg";
+const OG_IMAGE = `${SITE_URL}/images/seo/og-image.jpg`;
 
-const DEFAULT_BUSINESS_NAME =
-  "Mobile Car Services";
+const DEFAULT_BUSINESS_NAME = "Mobile Car Services";
 
 /* ============================================================
    PUBLIC FAQ
@@ -108,31 +105,21 @@ async function getFAQs(): Promise<PublicFAQ[]> {
   return faqs.map((faq) => ({
     id: faq._id.toString(),
 
-    question:
-      faq.question,
+    question: faq.question || "",
 
-    answer:
-      faq.answer,
+    answer: faq.answer || "",
 
-    category:
-      faq.category,
+    category: faq.category || "",
 
-    relatedServices:
-      Array.isArray(faq.relatedServices)
-        ? faq.relatedServices.map(
-            (id) => id.toString(),
-          )
-        : [],
+    relatedServices: Array.isArray(faq.relatedServices)
+      ? faq.relatedServices.map((id) => id.toString())
+      : [],
 
-    relatedServiceAreas:
-      Array.isArray(faq.relatedServiceAreas)
-        ? faq.relatedServiceAreas.map(
-            (id) => id.toString(),
-          )
-        : [],
+    relatedServiceAreas: Array.isArray(faq.relatedServiceAreas)
+      ? faq.relatedServiceAreas.map((id) => id.toString())
+      : [],
 
-    featured:
-      Boolean(faq.featured),
+    featured: Boolean(faq.featured),
 
     displayOrder:
       typeof faq.displayOrder === "number"
@@ -148,12 +135,11 @@ async function getFAQs(): Promise<PublicFAQ[]> {
 async function getBusinessSettings(): Promise<FAQsBusiness> {
   await connectDB();
 
-  const settings =
-    await SiteSettings.findOne()
-      .select(
-        "businessName primaryServiceRegion phone primaryCallNumber whatsapp",
-      )
-      .lean();
+  const settings = await SiteSettings.findOne()
+    .select(
+      "businessName primaryServiceRegion phone primaryCallNumber whatsapp",
+    )
+    .lean();
 
   const phone =
     settings?.primaryCallNumber ||
@@ -193,41 +179,27 @@ async function getRelatedContent(
 }> {
   await connectDB();
 
-  const serviceIds =
-    Array.from(
-      new Set(
-        faqs.flatMap(
-          (faq) =>
-            faq.relatedServices,
-        ),
-      ),
-    );
+  const serviceIds = Array.from(
+    new Set(
+      faqs.flatMap((faq) => faq.relatedServices),
+    ),
+  );
 
-  const serviceAreaIds =
-    Array.from(
-      new Set(
-        faqs.flatMap(
-          (faq) =>
-            faq.relatedServiceAreas,
-        ),
-      ),
-    );
+  const serviceAreaIds = Array.from(
+    new Set(
+      faqs.flatMap((faq) => faq.relatedServiceAreas),
+    ),
+  );
 
-  const [
-    services,
-    serviceAreas,
-  ] = await Promise.all([
+  const [services, serviceAreas] = await Promise.all([
     serviceIds.length > 0
       ? Service.find({
           _id: {
             $in: serviceIds,
           },
-
           status: "active",
         })
-          .select(
-            "title slug shortDescription heroImage",
-          )
+          .select("title slug shortDescription heroImage")
           .lean()
       : [],
 
@@ -236,80 +208,49 @@ async function getRelatedContent(
           _id: {
             $in: serviceAreaIds,
           },
-
           status: "active",
         })
-          .select(
-            "name slug shortDescription heroImage",
-          )
+          .select("name slug shortDescription heroImage")
           .lean()
       : [],
   ]);
 
   return {
-    services:
-      services.map(
-        (service) => ({
-          id:
-            service._id.toString(),
+    services: services.map((service) => ({
+      id: service._id.toString(),
 
-          title:
-            service.title,
+      title: service.title,
 
-          slug:
-            service.slug,
+      slug: service.slug,
 
-          shortDescription:
-            service.shortDescription ||
-            "",
+      shortDescription:
+        service.shortDescription || "",
 
-          heroImage:
-            service.heroImage
-              ? {
-                  secureUrl:
-                    service.heroImage
-                      .secureUrl,
+      heroImage: service.heroImage
+        ? {
+            secureUrl: service.heroImage.secureUrl,
+            alt: service.heroImage.alt || service.title,
+          }
+        : null,
+    })),
 
-                  alt:
-                    service.heroImage
-                      .alt ||
-                    service.title,
-                }
-              : null,
-        }),
-      ),
+    serviceAreas: serviceAreas.map((area) => ({
+      id: area._id.toString(),
 
-    serviceAreas:
-      serviceAreas.map(
-        (area) => ({
-          id:
-            area._id.toString(),
+      name: area.name,
 
-          name:
-            area.name,
+      slug: area.slug,
 
-          slug:
-            area.slug,
+      shortDescription:
+        area.shortDescription || "",
 
-          shortDescription:
-            area.shortDescription ||
-            "",
-
-          heroImage:
-            area.heroImage
-              ? {
-                  secureUrl:
-                    area.heroImage
-                      .secureUrl,
-
-                  alt:
-                    area.heroImage
-                      .alt ||
-                    area.name,
-                }
-              : null,
-        }),
-      ),
+      heroImage: area.heroImage
+        ? {
+            secureUrl: area.heroImage.secureUrl,
+            alt: area.heroImage.alt || area.name,
+          }
+        : null,
+    })),
   };
 }
 
@@ -317,259 +258,212 @@ async function getRelatedContent(
    SEO METADATA
 ============================================================ */
 
-export async function generateMetadata(): Promise<Metadata> {
-  return {
-    title: {
-      absolute:
-        SEO_TITLE,
-    },
+export const metadata: Metadata = {
+  title: {
+    absolute: SEO_TITLE,
+  },
 
-    description:
-      SEO_DESCRIPTION,
+  description: SEO_DESCRIPTION,
 
-    alternates: {
-      canonical:
-        PAGE_URL,
-    },
+  alternates: {
+    canonical: PAGE_URL,
+  },
 
-    openGraph: {
-      type: "website",
+  openGraph: {
+    type: "website",
 
-      locale: "en_AU",
+    locale: "en_AU",
 
-      url:
-        PAGE_URL,
+    url: PAGE_URL,
 
-      siteName:
-        "Mobile Car Services",
+    siteName: "Mobile Car Services",
 
-      title:
-        SEO_TITLE,
+    title: SEO_TITLE,
 
-      description:
-        SEO_DESCRIPTION,
+    description: SEO_DESCRIPTION,
 
-      images: [
-        {
-          url:
-            OG_IMAGE,
+    images: [
+      {
+        url: OG_IMAGE,
 
-          width: 1200,
+        width: 1200,
 
-          height: 630,
+        height: 630,
 
-          alt:
-            "Car Battery FAQs - Signs, Testing, Replacement and Jump Starts",
-        },
-      ],
-    },
+        alt: "Car Battery FAQs - Signs, Testing, Replacement and Jump Starts",
+      },
+    ],
+  },
 
-    twitter: {
-      card:
-        "summary_large_image",
+  twitter: {
+    card: "summary_large_image",
 
-      title:
-        SEO_TITLE,
+    title: SEO_TITLE,
 
-      description:
-        SEO_DESCRIPTION,
+    description: SEO_DESCRIPTION,
 
-      images: [
-        OG_IMAGE,
-      ],
-    },
+    images: [OG_IMAGE],
+  },
 
-    robots: {
+  robots: {
+    index: true,
+
+    follow: true,
+
+    googleBot: {
       index: true,
 
       follow: true,
 
-      googleBot: {
-        index: true,
+      "max-image-preview": "large",
 
-        follow: true,
+      "max-snippet": -1,
 
-        "max-image-preview":
-          "large",
-
-        "max-snippet":
-          -1,
-
-        "max-video-preview":
-          -1,
-      },
+      "max-video-preview": -1,
     },
-  };
-}
+  },
+};
 
 /* ============================================================
    FAQ STRUCTURED DATA
 ============================================================ */
 
-function getFAQStructuredData(
-  faqs: PublicFAQ[],
-) {
-  const validFAQs =
-    faqs.filter(
+function stripHtml(value: string): string {
+  return value
+    .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, " ")
+    .replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, " ")
+    .replace(/<[^>]*>/g, " ")
+    .replace(/&nbsp;|&#160;/gi, " ")
+    .replace(/&amp;/gi, "&")
+    .replace(/&quot;/gi, '"')
+    .replace(/&#39;|&apos;/gi, "'")
+    .replace(/&lt;/gi, "<")
+    .replace(/&gt;/gi, ">")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function getFAQStructuredData(faqs: PublicFAQ[]) {
+  const validFAQs = faqs
+    .map((faq) => ({
+      ...faq,
+      question: stripHtml(faq.question),
+      answer: stripHtml(faq.answer),
+    }))
+    .filter(
       (faq) =>
-        faq.question.trim().length > 0 &&
-        faq.answer.trim().length > 0,
+        faq.question.length > 0 &&
+        faq.answer.length > 0,
     );
 
+  const graph: Record<string, unknown>[] = [
+    {
+      "@type": "WebPage",
+
+      "@id": `${PAGE_URL}#webpage`,
+
+      url: PAGE_URL,
+
+      name: SEO_TITLE,
+
+      description: SEO_DESCRIPTION,
+
+      isPartOf: {
+        "@id": `${SITE_URL}/#website`,
+      },
+
+      about: {
+        "@id": `${SITE_URL}/#organization`,
+      },
+
+      publisher: {
+        "@id": `${SITE_URL}/#organization`,
+      },
+
+      primaryImageOfPage: {
+        "@type": "ImageObject",
+
+        url: OG_IMAGE,
+
+        width: 1200,
+
+        height: 630,
+      },
+
+      breadcrumb: {
+        "@id": `${PAGE_URL}#breadcrumb`,
+      },
+
+      inLanguage: "en-AU",
+    },
+
+    {
+      "@type": "BreadcrumbList",
+
+      "@id": `${PAGE_URL}#breadcrumb`,
+
+      itemListElement: [
+        {
+          "@type": "ListItem",
+
+          position: 1,
+
+          name: "Home",
+
+          item: SITE_URL,
+        },
+
+        {
+          "@type": "ListItem",
+
+          position: 2,
+
+          name: "FAQs",
+
+          item: PAGE_URL,
+        },
+      ],
+    },
+  ];
+
+  if (validFAQs.length > 0) {
+    graph.push({
+      "@type": "FAQPage",
+
+      "@id": `${PAGE_URL}#faqpage`,
+
+      url: PAGE_URL,
+
+      name: SEO_TITLE,
+
+      description: SEO_DESCRIPTION,
+
+      isPartOf: {
+        "@id": `${SITE_URL}/#website`,
+      },
+
+      mainEntity: validFAQs.map((faq) => ({
+        "@type": "Question",
+
+        "@id": `${PAGE_URL}#faq-${faq.id}`,
+
+        name: faq.question,
+
+        acceptedAnswer: {
+          "@type": "Answer",
+
+          text: faq.answer,
+        },
+      })),
+
+      inLanguage: "en-AU",
+    });
+  }
+
   return {
-    "@context":
-      "https://schema.org",
+    "@context": "https://schema.org",
 
-    "@graph": [
-      {
-        "@type":
-          "FAQPage",
-
-        "@id":
-          `${PAGE_URL}#faqpage`,
-
-        url:
-          PAGE_URL,
-
-        name:
-          SEO_TITLE,
-
-        description:
-          SEO_DESCRIPTION,
-
-        isPartOf: {
-          "@id":
-            `${SITE_URL}/#website`,
-        },
-
-        about: {
-          "@id":
-            `${SITE_URL}/#organization`,
-        },
-
-        publisher: {
-          "@id":
-            `${SITE_URL}/#organization`,
-        },
-
-        mainEntity:
-          validFAQs.map(
-            (faq) => ({
-              "@type":
-                "Question",
-
-              "@id":
-                `${PAGE_URL}#faq-${faq.id}`,
-
-              name:
-                faq.question,
-
-              acceptedAnswer: {
-                "@type":
-                  "Answer",
-
-                text:
-                  faq.answer,
-              },
-            }),
-          ),
-
-        inLanguage:
-          "en-AU",
-      },
-
-      {
-        "@type":
-          "WebPage",
-
-        "@id":
-          `${PAGE_URL}#webpage`,
-
-        url:
-          PAGE_URL,
-
-        name:
-          SEO_TITLE,
-
-        description:
-          SEO_DESCRIPTION,
-
-        isPartOf: {
-          "@id":
-            `${SITE_URL}/#website`,
-        },
-
-        about: {
-          "@id":
-            `${SITE_URL}/#organization`,
-        },
-
-        publisher: {
-          "@id":
-            `${SITE_URL}/#organization`,
-        },
-
-        primaryImageOfPage: {
-          "@type":
-            "ImageObject",
-
-          url:
-            `${SITE_URL}${OG_IMAGE}`,
-
-          width:
-            1200,
-
-          height:
-            630,
-        },
-
-        breadcrumb: {
-          "@id":
-            `${PAGE_URL}#breadcrumb`,
-        },
-
-        inLanguage:
-          "en-AU",
-      },
-
-      {
-        "@type":
-          "BreadcrumbList",
-
-        "@id":
-          `${PAGE_URL}#breadcrumb`,
-
-        itemListElement: [
-          {
-            "@type":
-              "ListItem",
-
-            position:
-              1,
-
-            name:
-              "Home",
-
-            item:
-              SITE_URL,
-          },
-
-          {
-            "@type":
-              "ListItem",
-
-            position:
-              2,
-
-            name:
-              "FAQs",
-
-            item:
-              PAGE_URL,
-          },
-        ],
-      },
-    ],
+    "@graph": graph,
   };
 }
 
@@ -578,24 +472,19 @@ function getFAQStructuredData(
 ============================================================ */
 
 export default async function FAQsPage() {
-  const [
-    faqs,
-    business,
-  ] = await Promise.all([
+  const [faqs, business] = await Promise.all([
     getFAQs(),
 
     getBusinessSettings(),
   ]);
 
-  const relatedContent =
-    await getRelatedContent(
-      faqs,
-    );
+  const relatedContent = await getRelatedContent(faqs);
 
-  const structuredData =
-    getFAQStructuredData(
-      faqs,
-    );
+  const structuredData = getFAQStructuredData(faqs);
+
+  const safeStructuredData = JSON.stringify(
+    structuredData,
+  ).replace(/</g, "\\u003c");
 
   return (
     <>
@@ -603,22 +492,15 @@ export default async function FAQsPage() {
         <FAQsListingPage
           faqs={faqs}
           business={business}
-          relatedServices={
-            relatedContent.services
-          }
-          relatedServiceAreas={
-            relatedContent.serviceAreas
-          }
+          relatedServices={relatedContent.services}
+          relatedServiceAreas={relatedContent.serviceAreas}
         />
       </main>
 
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html:
-            JSON.stringify(
-              structuredData,
-            ),
+          __html: safeStructuredData,
         }}
       />
     </>

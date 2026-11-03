@@ -1,3 +1,4 @@
+
 import type { Metadata } from "next";
 
 import { connectDB } from "@/lib/db";
@@ -8,11 +9,9 @@ import ServicesListingPage from "@/components/services/listing/ServicesListingPa
 
 export const dynamic = "force-dynamic";
 
-const SITE_URL =
-  "https://www.mobilecarservices.com.au/";
+const SITE_URL = "https://www.mobilecarservices.com.au";
 
-const PAGE_URL =
-  `${SITE_URL}/services`;
+const PAGE_URL = `${SITE_URL}/services`;
 
 const SEO_TITLE =
   "Mobile Car Services | Replacement, Testing & Jump Starts";
@@ -20,14 +19,9 @@ const SEO_TITLE =
 const SEO_DESCRIPTION =
   "Battery replacement, battery testing, jump starts, starter motor and alternator replacement – all done on-site at your vehicle in Melbourne's west.";
 
-const OG_IMAGE =
-  "/images/seo/service-og.jpg";
+const OG_IMAGE = `${SITE_URL}/images/seo/service-og.jpg`;
 
-const DEFAULT_BUSINESS_NAME =
-  "Mobile Car Services";
-
-const DEFAULT_REGION =
-  "Melbourne West";
+const DEFAULT_REGION = "Melbourne West";
 
 /* ============================================================
    GET BUSINESS SETTINGS
@@ -36,24 +30,13 @@ const DEFAULT_REGION =
 async function getBusinessSettings() {
   await connectDB();
 
-  const settings =
-    await SiteSettings.findOne()
-      .select(
-        "businessName primaryServiceRegion",
-      )
-      .lean();
+  const settings = await SiteSettings.findOne()
+    .select("primaryServiceRegion")
+    .lean();
 
   return {
-    businessName:
-      typeof settings?.businessName ===
-        "string" &&
-      settings.businessName.trim()
-        ? settings.businessName.trim()
-        : DEFAULT_BUSINESS_NAME,
-
     primaryServiceRegion:
-      typeof settings?.primaryServiceRegion ===
-        "string" &&
+      typeof settings?.primaryServiceRegion === "string" &&
       settings.primaryServiceRegion.trim()
         ? settings.primaryServiceRegion.trim()
         : DEFAULT_REGION,
@@ -67,353 +50,255 @@ async function getBusinessSettings() {
 async function getServices() {
   await connectDB();
 
-  const services =
-    await Service.find({
-      status: "active",
+  const services = await Service.find({
+    status: "active",
+  })
+    .select(
+      [
+        "title",
+        "slug",
+        "shortDescription",
+        "description",
+        "heroImage",
+        "estimatedTime",
+        "emergencyService",
+        "onSiteService",
+        "ctaText",
+        "featured",
+        "displayOrder",
+        "pricing",
+      ].join(" "),
+    )
+    .sort({
+      featured: -1,
+      displayOrder: 1,
+      title: 1,
     })
-      .select(
-        [
-          "title",
-          "slug",
-          "shortDescription",
-          "description",
-          "heroImage",
-          "estimatedTime",
-          "emergencyService",
-          "onSiteService",
-          "ctaText",
-          "featured",
-          "displayOrder",
-          "pricing",
-        ].join(" "),
-      )
-      .sort({
-        featured: -1,
-        displayOrder: 1,
-        title: 1,
-      })
-      .lean();
+    .lean();
 
-  return services.map(
-    (service) => ({
-      id: String(service._id),
+  return services.map((service) => ({
+    id: String(service._id),
 
-      title: service.title,
+    title: service.title,
 
-      slug: service.slug,
+    slug: service.slug,
 
-      shortDescription:
-        service.shortDescription || "",
+    shortDescription:
+      service.shortDescription || "",
 
-      description:
-        service.description || "",
+    description:
+      service.description || "",
 
-      heroImage:
-        service.heroImage
-          ? {
-              publicId:
-                service.heroImage.publicId,
+    heroImage: service.heroImage
+      ? {
+          publicId: service.heroImage.publicId,
 
-              secureUrl:
-                service.heroImage.secureUrl,
+          secureUrl: service.heroImage.secureUrl,
 
-              width:
-                service.heroImage.width,
+          width: service.heroImage.width,
 
-              height:
-                service.heroImage.height,
+          height: service.heroImage.height,
 
-              format:
-                service.heroImage.format,
+          format: service.heroImage.format,
 
-              bytes:
-                service.heroImage.bytes,
+          bytes: service.heroImage.bytes,
 
-              resourceType:
-                service.heroImage.resourceType,
+          resourceType: service.heroImage.resourceType,
 
-              alt:
-                service.heroImage.alt,
-            }
-          : null,
+          alt: service.heroImage.alt,
+        }
+      : null,
 
-      estimatedTime:
-        service.estimatedTime || "",
+    estimatedTime: service.estimatedTime || "",
 
-        pricing: {
-  type: service.pricing?.type ?? "quote",
-  amount: service.pricing?.amount ?? null,
-  currency: service.pricing?.currency ?? "AUD",
-},
+    pricing: {
+      type: service.pricing?.type ?? "quote",
 
-      emergencyService:
-        Boolean(service.emergencyService),
+      amount: service.pricing?.amount ?? null,
 
-      onSiteService:
-        Boolean(service.onSiteService),
+      currency: service.pricing?.currency ?? "AUD",
+    },
 
-      ctaText:
-        service.ctaText || "",
+    emergencyService: Boolean(service.emergencyService),
 
-      featured:
-        Boolean(service.featured),
+    onSiteService: Boolean(service.onSiteService),
 
-      displayOrder:
-        service.displayOrder ?? 0,
-    }),
-  );
+    ctaText: service.ctaText || "",
+
+    featured: Boolean(service.featured),
+
+    displayOrder: service.displayOrder ?? 0,
+  }));
 }
 
 /* ============================================================
    SEO METADATA
 ============================================================ */
 
-export async function generateMetadata(): Promise<Metadata> {
-  return {
-    /*
-     * `absolute` is intentional.
-     *
-     * The global layout has:
-     * "%s | Mobile Car Services"
-     *
-     * Using `absolute` prevents:
-     *
-     * Mobile Car Services | Replacement, Testing & Jump Starts
-     * | Mobile Car Services
-     *
-     * and preserves the exact title from the SEO sheet.
-     */
-    title: {
-      absolute: SEO_TITLE,
-    },
+export const metadata: Metadata = {
+  title: {
+    absolute: SEO_TITLE,
+  },
 
-    description:
-      SEO_DESCRIPTION,
+  description: SEO_DESCRIPTION,
 
-    alternates: {
-      canonical:
-        PAGE_URL,
-    },
+  alternates: {
+    canonical: PAGE_URL,
+  },
 
-    openGraph: {
-      type: "website",
+  openGraph: {
+    type: "website",
 
-      locale: "en_AU",
+    locale: "en_AU",
 
-      url:
-        PAGE_URL,
+    url: PAGE_URL,
 
-      siteName:
-        "Mobile Car Services",
+    siteName: "Mobile Car Services",
 
-      title:
-        SEO_TITLE,
+    title: SEO_TITLE,
 
-      description:
-        SEO_DESCRIPTION,
+    description: SEO_DESCRIPTION,
 
-      images: [
-        {
-          url:
-            OG_IMAGE,
+    images: [
+      {
+        url: OG_IMAGE,
 
-          width: 1200,
+        width: 1200,
 
-          height: 630,
+        height: 630,
 
-          alt:
-            "Mobile Car Services - Replacement, Testing and Jump Starts",
-        },
-      ],
-    },
+        alt: "Mobile Car Services - Replacement, Testing and Jump Starts",
+      },
+    ],
+  },
 
-    twitter: {
-      card:
-        "summary_large_image",
+  twitter: {
+    card: "summary_large_image",
 
-      title:
-        SEO_TITLE,
+    title: SEO_TITLE,
 
-      description:
-        SEO_DESCRIPTION,
+    description: SEO_DESCRIPTION,
 
-      images: [
-        OG_IMAGE,
-      ],
-    },
+    images: [OG_IMAGE],
+  },
 
-    robots: {
+  robots: {
+    index: true,
+
+    follow: true,
+
+    googleBot: {
       index: true,
 
       follow: true,
 
-      googleBot: {
-        index: true,
+      "max-image-preview": "large",
 
-        follow: true,
+      "max-snippet": -1,
 
-        "max-image-preview":
-          "large",
-
-        "max-snippet":
-          -1,
-
-        "max-video-preview":
-          -1,
-      },
+      "max-video-preview": -1,
     },
-  };
-}
+  },
+};
 
 /* ============================================================
    SERVICES STRUCTURED DATA
 ============================================================ */
 
 function getServicesStructuredData(
-  services: Awaited<
-    ReturnType<typeof getServices>
-  >,
-  businessName: string,
-  region: string,
+  services: Awaited<ReturnType<typeof getServices>>,
 ) {
-  const serviceItems =
-    services.map(
-      (service, index) => ({
-        "@type":
-          "ListItem",
+  const serviceItems = services.map((service, index) => ({
+    "@type": "ListItem",
 
-        position:
-          index + 1,
+    position: index + 1,
 
-        name:
-          service.title,
+    name: service.title,
 
-        url:
-          `${SITE_URL}/services/${service.slug}`,
-      }),
-    );
-
-  const graph = [
-    /* --------------------------------------------------------
-       COLLECTION PAGE
-    -------------------------------------------------------- */
-
-    {
-      "@type":
-        "CollectionPage",
-
-      "@id":
-        `${PAGE_URL}#collection`,
-
-      url:
-        PAGE_URL,
-
-      name:
-        SEO_TITLE,
-
-      description:
-        SEO_DESCRIPTION,
-
-      isPartOf: {
-        "@id":
-          `${SITE_URL}/#website`,
-      },
-
-      about: {
-        "@id":
-          `${SITE_URL}/#organization`,
-      },
-
-      publisher: {
-        "@id":
-          `${SITE_URL}/#organization`,
-      },
-
-      mainEntity: {
-        "@id":
-          `${PAGE_URL}#itemlist`,
-      },
-
-      breadcrumb: {
-        "@id":
-          `${PAGE_URL}#breadcrumb`,
-      },
-
-      inLanguage:
-        "en-AU",
-    },
-
-    /* --------------------------------------------------------
-       ITEM LIST
-    -------------------------------------------------------- */
-
-    {
-      "@type":
-        "ItemList",
-
-      "@id":
-        `${PAGE_URL}#itemlist`,
-
-      name:
-        "Mobile Car Services",
-
-      numberOfItems:
-        services.length,
-
-      itemListOrder:
-        "https://schema.org/ItemListOrderAscending",
-
-      itemListElement:
-        serviceItems,
-    },
-
-    /* --------------------------------------------------------
-       BREADCRUMBS
-    -------------------------------------------------------- */
-
-    {
-      "@type":
-        "BreadcrumbList",
-
-      "@id":
-        `${PAGE_URL}#breadcrumb`,
-
-      itemListElement: [
-        {
-          "@type":
-            "ListItem",
-
-          position: 1,
-
-          name:
-            "Home",
-
-          item:
-            SITE_URL,
-        },
-
-        {
-          "@type":
-            "ListItem",
-
-          position: 2,
-
-          name:
-            "Services",
-
-          item:
-            PAGE_URL,
-        },
-      ],
-    },
-  ];
+    url: `${SITE_URL}/services/${service.slug}`,
+  }));
 
   return {
-    "@context":
-      "https://schema.org",
+    "@context": "https://schema.org",
 
-    "@graph":
-      graph,
+    "@graph": [
+      {
+        "@type": "CollectionPage",
+
+        "@id": `${PAGE_URL}#collection`,
+
+        url: PAGE_URL,
+
+        name: SEO_TITLE,
+
+        description: SEO_DESCRIPTION,
+
+        isPartOf: {
+          "@id": `${SITE_URL}/#website`,
+        },
+
+        about: {
+          "@id": `${SITE_URL}/#organization`,
+        },
+
+        publisher: {
+          "@id": `${SITE_URL}/#organization`,
+        },
+
+        mainEntity: {
+          "@id": `${PAGE_URL}#itemlist`,
+        },
+
+        breadcrumb: {
+          "@id": `${PAGE_URL}#breadcrumb`,
+        },
+
+        inLanguage: "en-AU",
+      },
+
+      {
+        "@type": "ItemList",
+
+        "@id": `${PAGE_URL}#itemlist`,
+
+        name: "Mobile Car Services",
+
+        numberOfItems: services.length,
+
+        itemListOrder:
+          "https://schema.org/ItemListOrderAscending",
+
+        itemListElement: serviceItems,
+      },
+
+      {
+        "@type": "BreadcrumbList",
+
+        "@id": `${PAGE_URL}#breadcrumb`,
+
+        itemListElement: [
+          {
+            "@type": "ListItem",
+
+            position: 1,
+
+            name: "Home",
+
+            item: SITE_URL,
+          },
+
+          {
+            "@type": "ListItem",
+
+            position: 2,
+
+            name: "Services",
+
+            item: PAGE_URL,
+          },
+        ],
+      },
+    ],
   };
 }
 
@@ -422,42 +307,32 @@ function getServicesStructuredData(
 ============================================================ */
 
 export default async function ServicesPage() {
-  const [
-    services,
-    business,
-  ] = await Promise.all([
+  const [services, business] = await Promise.all([
     getServices(),
 
     getBusinessSettings(),
   ]);
 
   const structuredData =
-    getServicesStructuredData(
-      services,
-      business.businessName,
-      business.primaryServiceRegion,
-    );
+    getServicesStructuredData(services);
+
+  const safeStructuredData = JSON.stringify(
+    structuredData,
+  ).replace(/</g, "\\u003c");
 
   return (
     <>
       <main className="min-h-screen overflow-x-hidden bg-[#061A2B] text-[#F8FAFC]">
         <ServicesListingPage
-          services={
-            services
-          }
-          region={
-            business.primaryServiceRegion
-          }
+          services={services}
+          region={business.primaryServiceRegion}
         />
       </main>
 
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html:
-            JSON.stringify(
-              structuredData,
-            ),
+          __html: safeStructuredData,
         }}
       />
     </>

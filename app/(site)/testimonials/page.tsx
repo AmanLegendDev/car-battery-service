@@ -1,3 +1,4 @@
+
 import type { Metadata } from "next";
 
 import { connectDB } from "@/lib/db";
@@ -12,169 +13,121 @@ import TestimonialsListingPage, {
 
 export const dynamic = "force-dynamic";
 
-const SITE_URL =
-  "https://www.mobilecarservices.com.au/";
+const SITE_URL = "https://www.mobilecarservices.com.au";
 
-const PAGE_URL =
-  `${SITE_URL}/testimonials`;
+const PAGE_URL = `${SITE_URL}/testimonials`;
 
-const OG_IMAGE =
-  "/images/seo/og-image.jpg";
+const OG_IMAGE = `${SITE_URL}/images/seo/og-image.jpg`;
 
-const DEFAULT_BUSINESS_NAME =
-  "Mobile Car Services";
+const DEFAULT_BUSINESS_NAME = "Mobile Car Services";
 
 /* ============================================================
    GET TESTIMONIALS
 ============================================================ */
 
-async function getTestimonials(): Promise<
-  PublicTestimonial[]
-> {
+async function getTestimonials(): Promise<PublicTestimonial[]> {
   await connectDB();
 
-  const testimonials =
-    await Testimonial.find({
-      published: true,
+  const testimonials = await Testimonial.find({
+    published: true,
+  })
+    .select(
+      [
+        "name",
+        "businessName",
+        "role",
+        "photo",
+        "testimonial",
+        "rating",
+        "featured",
+        "displayOrder",
+      ].join(" "),
+    )
+    .sort({
+      featured: -1,
+      displayOrder: 1,
+      createdAt: -1,
     })
-      .select(
-        [
-          "name",
-          "businessName",
-          "role",
-          "photo",
-          "testimonial",
-          "rating",
-          "featured",
-          "displayOrder",
-        ].join(" "),
-      )
-      .sort({
-        featured: -1,
-        displayOrder: 1,
-        createdAt: -1,
-      })
-      .lean();
+    .lean();
 
-  return testimonials.map(
-    (testimonial) => ({
-      id:
-        String(
-          testimonial._id,
-        ),
+  return testimonials.map((testimonial) => ({
+    id: String(testimonial._id),
 
-      name:
-        testimonial.name ||
-        "",
+    name: testimonial.name || "",
 
-      businessName:
-        testimonial.businessName ||
-        "",
+    businessName: testimonial.businessName || "",
 
-      role:
-        testimonial.role ||
-        "",
+    role: testimonial.role || "",
 
-      photo:
-        testimonial.photo
-          ? {
-              publicId:
-                testimonial.photo
-                  .publicId,
+    photo: testimonial.photo
+      ? {
+          publicId: testimonial.photo.publicId,
 
-              secureUrl:
-                testimonial.photo
-                  .secureUrl,
+          secureUrl: testimonial.photo.secureUrl,
 
-              width:
-                testimonial.photo
-                  .width,
+          width: testimonial.photo.width,
 
-              height:
-                testimonial.photo
-                  .height,
+          height: testimonial.photo.height,
 
-              format:
-                testimonial.photo
-                  .format,
+          format: testimonial.photo.format,
 
-              bytes:
-                testimonial.photo
-                  .bytes,
+          bytes: testimonial.photo.bytes,
 
-              resourceType:
-                testimonial.photo
-                  .resourceType,
+          resourceType: testimonial.photo.resourceType,
 
-              alt:
-                testimonial.photo
-                  .alt ||
-                "",
-            }
-          : null,
+          alt: testimonial.photo.alt || "",
+        }
+      : null,
 
-      testimonial:
-        testimonial.testimonial ||
-        "",
+    testimonial: testimonial.testimonial || "",
 
-      rating:
-        typeof testimonial.rating ===
-        "number"
-          ? testimonial.rating
-          : null,
+    rating:
+      typeof testimonial.rating === "number"
+        ? testimonial.rating
+        : null,
 
-      featured:
-        Boolean(
-          testimonial.featured,
-        ),
+    featured: Boolean(testimonial.featured),
 
-      displayOrder:
-        testimonial.displayOrder ??
-        0,
-    }),
-  );
+    displayOrder: testimonial.displayOrder ?? 0,
+  }));
 }
 
 /* ============================================================
    GET BUSINESS SETTINGS
 ============================================================ */
 
-async function getBusinessSettings(): Promise<
-  TestimonialsBusiness
-> {
+async function getBusinessSettings(): Promise<TestimonialsBusiness> {
   await connectDB();
 
-  const settings =
-    await SiteSettings.findOne()
-      .select(
-        [
-          "businessName",
-          "primaryServiceRegion",
-          "phone",
-          "primaryCallNumber",
-          "whatsapp",
-        ].join(" "),
-      )
-      .lean();
+  const settings = await SiteSettings.findOne()
+    .select(
+      [
+        "businessName",
+        "primaryServiceRegion",
+        "phone",
+        "primaryCallNumber",
+        "whatsapp",
+      ].join(" "),
+    )
+    .lean();
 
   return {
     businessName:
-      settings?.businessName ||
+      settings?.businessName?.trim() ||
       DEFAULT_BUSINESS_NAME,
 
     primaryServiceRegion:
-      settings?.primaryServiceRegion ||
-      "",
+      settings?.primaryServiceRegion?.trim() || "",
 
     phone:
-      settings?.primaryCallNumber ||
-      settings?.phone ||
+      settings?.primaryCallNumber?.trim() ||
+      settings?.phone?.trim() ||
       "",
 
     whatsapp:
-      settings?.whatsapp ||
-      settings?.primaryCallNumber ||
-      settings?.phone ||
+      settings?.whatsapp?.trim() ||
+      settings?.primaryCallNumber?.trim() ||
+      settings?.phone?.trim() ||
       "",
   };
 }
@@ -184,28 +137,27 @@ async function getBusinessSettings(): Promise<
 ============================================================ */
 
 export async function generateMetadata(): Promise<Metadata> {
-  const settings =
-    await getBusinessSettings();
+  const business = await getBusinessSettings();
 
-  const region =
-    settings.primaryServiceRegion;
+  const region = business.primaryServiceRegion;
 
   const title = region
-    ? `Customer Experiences | ${settings.businessName} | ${region}`
-    : `Customer Experiences | ${settings.businessName}`;
+    ? `Customer Experiences | ${business.businessName} | ${region}`
+    : `Customer Experiences | ${business.businessName}`;
 
   const description = region
-    ? `Read genuine customer feedback about ${settings.businessName} and mobile car battery assistance in ${region}.`
-    : `Read genuine customer feedback about ${settings.businessName} and its mobile car battery assistance.`;
+    ? `Read customer feedback about ${business.businessName} and its mobile automotive services, including battery assistance in ${region}.`
+    : `Read customer feedback about ${business.businessName} and its mobile automotive services.`;
 
   return {
-    title,
+    title: {
+      absolute: title,
+    },
 
     description,
 
     alternates: {
-      canonical:
-        "/testimonials",
+      canonical: PAGE_URL,
     },
 
     openGraph: {
@@ -213,11 +165,9 @@ export async function generateMetadata(): Promise<Metadata> {
 
       locale: "en_AU",
 
-      url:
-        PAGE_URL,
+      url: PAGE_URL,
 
-      siteName:
-        settings.businessName,
+      siteName: business.businessName,
 
       title,
 
@@ -225,30 +175,25 @@ export async function generateMetadata(): Promise<Metadata> {
 
       images: [
         {
-          url:
-            OG_IMAGE,
+          url: OG_IMAGE,
 
           width: 1200,
 
           height: 630,
 
-          alt:
-            `${settings.businessName} - Customer Experiences`,
+          alt: `${business.businessName} - Customer Experiences`,
         },
       ],
     },
 
     twitter: {
-      card:
-        "summary_large_image",
+      card: "summary_large_image",
 
       title,
 
       description,
 
-      images: [
-        OG_IMAGE,
-      ],
+      images: [OG_IMAGE],
     },
 
     robots: {
@@ -261,14 +206,11 @@ export async function generateMetadata(): Promise<Metadata> {
 
         follow: true,
 
-        "max-image-preview":
-          "large",
+        "max-image-preview": "large",
 
-        "max-snippet":
-          -1,
+        "max-snippet": -1,
 
-        "max-video-preview":
-          -1,
+        "max-video-preview": -1,
       },
     },
   };
@@ -282,196 +224,151 @@ function getTestimonialsStructuredData(
   testimonials: PublicTestimonial[],
   business: TestimonialsBusiness,
 ) {
-  const validTestimonials =
-    testimonials.filter(
-      (testimonial) =>
-        testimonial.name.trim()
-          .length > 0 &&
-        testimonial.testimonial
-          .trim()
-          .length > 0,
-    );
+  const validTestimonials = testimonials.filter(
+    (testimonial) =>
+      testimonial.name.trim().length > 0 &&
+      testimonial.testimonial.trim().length > 0,
+  );
 
-  const reviewItems =
-    validTestimonials.map(
-      (testimonial) => {
-        const review: Record<
-          string,
-          unknown
-        > = {
-          "@type":
-            "Review",
+  const reviewItems = validTestimonials.map((testimonial) => {
+    const review: Record<string, unknown> = {
+      "@type": "Review",
 
-          "@id":
-            `${PAGE_URL}#review-${testimonial.id}`,
+      "@id": `${PAGE_URL}#review-${testimonial.id}`,
 
-          author: {
-            "@type":
-              "Person",
+      author: {
+        "@type": "Person",
 
-            name:
-              testimonial.name,
-          },
-
-          reviewBody:
-            testimonial.testimonial,
-
-          itemReviewed: {
-            "@id":
-              `${SITE_URL}/#organization`,
-          },
-        };
-
-        if (
-          typeof testimonial.rating ===
-            "number" &&
-          testimonial.rating >= 1 &&
-          testimonial.rating <= 5
-        ) {
-          review.reviewRating = {
-            "@type":
-              "Rating",
-
-            ratingValue:
-              testimonial.rating,
-
-            bestRating: 5,
-
-            worstRating: 1,
-          };
-        }
-
-        return review;
+        name: testimonial.name,
       },
-    );
+
+      reviewBody: testimonial.testimonial,
+
+      itemReviewed: {
+        "@id": `${SITE_URL}/#organization`,
+      },
+    };
+
+    if (
+      typeof testimonial.rating === "number" &&
+      Number.isFinite(testimonial.rating) &&
+      testimonial.rating >= 1 &&
+      testimonial.rating <= 5
+    ) {
+      review.reviewRating = {
+        "@type": "Rating",
+
+        ratingValue: testimonial.rating,
+
+        bestRating: 5,
+
+        worstRating: 1,
+      };
+    }
+
+    return review;
+  });
+
+  const title = business.primaryServiceRegion
+    ? `Customer Experiences | ${business.businessName} | ${business.primaryServiceRegion}`
+    : `Customer Experiences | ${business.businessName}`;
+
+  const description = business.primaryServiceRegion
+    ? `Read customer feedback about ${business.businessName} and its mobile automotive services in ${business.primaryServiceRegion}.`
+    : `Read customer feedback about ${business.businessName} and its mobile automotive services.`;
 
   return {
-    "@context":
-      "https://schema.org",
+    "@context": "https://schema.org",
 
     "@graph": [
-      /* ------------------------------------------------------
-         WEB PAGE
-      ------------------------------------------------------ */
+      /* --------------------------------------------------------
+         COLLECTION PAGE
+      -------------------------------------------------------- */
 
       {
-        "@type":
-          "CollectionPage",
+        "@type": "CollectionPage",
 
-        "@id":
-          `${PAGE_URL}#collection`,
+        "@id": `${PAGE_URL}#collection`,
 
-        url:
-          PAGE_URL,
+        url: PAGE_URL,
 
-        name:
-          `Customer Experiences | ${business.businessName}`,
+        name: title,
 
-        description:
-          business.primaryServiceRegion
-            ? `Read genuine customer feedback about ${business.businessName} and mobile car battery assistance in ${business.primaryServiceRegion}.`
-            : `Read genuine customer feedback about ${business.businessName} and its mobile car battery assistance.`,
+        description,
 
         isPartOf: {
-          "@id":
-            `${SITE_URL}/#website`,
+          "@id": `${SITE_URL}/#website`,
         },
 
         about: {
-          "@id":
-            `${SITE_URL}/#organization`,
+          "@id": `${SITE_URL}/#organization`,
         },
 
         publisher: {
-          "@id":
-            `${SITE_URL}/#organization`,
+          "@id": `${SITE_URL}/#organization`,
         },
 
         mainEntity: {
-          "@id":
-            `${PAGE_URL}#reviews`,
+          "@id": `${PAGE_URL}#reviews`,
         },
 
         breadcrumb: {
-          "@id":
-            `${PAGE_URL}#breadcrumb`,
+          "@id": `${PAGE_URL}#breadcrumb`,
         },
 
-        inLanguage:
-          "en-AU",
+        inLanguage: "en-AU",
       },
 
-      /* ------------------------------------------------------
-         REVIEWS
-      ------------------------------------------------------ */
+      /* --------------------------------------------------------
+         CUSTOMER REVIEWS
+      -------------------------------------------------------- */
 
       {
-        "@type":
-          "ItemList",
+        "@type": "ItemList",
 
-        "@id":
-          `${PAGE_URL}#reviews`,
+        "@id": `${PAGE_URL}#reviews`,
 
-        name:
-          "Customer Reviews",
+        name: "Customer Reviews",
 
-        numberOfItems:
-          reviewItems.length,
+        numberOfItems: reviewItems.length,
 
-        itemListElement:
-          reviewItems.map(
-            (
-              review,
-              index,
-            ) => ({
-              "@type":
-                "ListItem",
+        itemListElement: reviewItems.map((review, index) => ({
+          "@type": "ListItem",
 
-              position:
-                index + 1,
+          position: index + 1,
 
-              item:
-                review,
-            }),
-          ),
+          item: review,
+        })),
       },
 
-      /* ------------------------------------------------------
+      /* --------------------------------------------------------
          BREADCRUMBS
-      ------------------------------------------------------ */
+      -------------------------------------------------------- */
 
       {
-        "@type":
-          "BreadcrumbList",
+        "@type": "BreadcrumbList",
 
-        "@id":
-          `${PAGE_URL}#breadcrumb`,
+        "@id": `${PAGE_URL}#breadcrumb`,
 
         itemListElement: [
           {
-            "@type":
-              "ListItem",
+            "@type": "ListItem",
 
             position: 1,
 
-            name:
-              "Home",
+            name: "Home",
 
-            item:
-              SITE_URL,
+            item: SITE_URL,
           },
 
           {
-            "@type":
-              "ListItem",
+            "@type": "ListItem",
 
             position: 2,
 
-            name:
-              "Customer Experiences",
+            name: "Customer Experiences",
 
-            item:
-              PAGE_URL,
+            item: PAGE_URL,
           },
         ],
       },
@@ -484,41 +381,34 @@ function getTestimonialsStructuredData(
 ============================================================ */
 
 export default async function TestimonialsPage() {
-  const [
-    testimonials,
-    business,
-  ] = await Promise.all([
+  const [testimonials, business] = await Promise.all([
     getTestimonials(),
 
     getBusinessSettings(),
   ]);
 
-  const structuredData =
-    getTestimonialsStructuredData(
-      testimonials,
-      business,
-    );
+  const structuredData = getTestimonialsStructuredData(
+    testimonials,
+    business,
+  );
+
+  const safeStructuredData = JSON.stringify(
+    structuredData,
+  ).replace(/</g, "\\u003c");
 
   return (
     <>
-      <main>
+      <main className="min-h-screen overflow-x-hidden bg-[#061A2B] text-[#F8FAFC]">
         <TestimonialsListingPage
-          testimonials={
-            testimonials
-          }
-          business={
-            business
-          }
+          testimonials={testimonials}
+          business={business}
         />
       </main>
 
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html:
-            JSON.stringify(
-              structuredData,
-            ),
+          __html: safeStructuredData,
         }}
       />
     </>

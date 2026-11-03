@@ -21,6 +21,33 @@ const FALLBACK_ICONS = [Wrench, CarFront, Settings];
 function getServiceIcon(index: number) {
   return FALLBACK_ICONS[index % FALLBACK_ICONS.length] ?? Wrench;
 }
+function formatServicePrice(pricing?: {
+  type?: "fixed" | "from" | "quote";
+  amount?: number;
+  currency?: string;
+}) {
+  if (
+    !pricing ||
+    pricing.type === "quote" ||
+    typeof pricing.amount !== "number" ||
+    !Number.isFinite(pricing.amount)
+  ) {
+    return {
+      label: "Contact for a Quote",
+      type: "quote" as const,
+    };
+  }
+
+  const amount = new Intl.NumberFormat("en-AU", {
+    style: "currency",
+    currency: pricing.currency || "AUD",
+  }).format(pricing.amount);
+
+  return {
+    label: pricing.type === "from" ? `From ${amount}` : amount,
+    type: pricing.type,
+  };
+}
 
 export default async function ServicesOverview() {
   let services;
@@ -35,6 +62,7 @@ export default async function ServicesOverview() {
         title: 1,
         slug: 1,
         shortDescription: 1,
+        pricing: 1,
         icon: 1,
         heroImage: 1,
         estimatedTime: 1,
@@ -207,6 +235,34 @@ export default async function ServicesOverview() {
                     <p className="mt-4 max-w-2xl text-sm leading-6 text-slate-600 sm:mt-5 sm:text-base sm:leading-7">
                       {service.shortDescription}
                     </p>
+                    
+                    {/* Service Pricing */}
+                    {(() => {
+                      const price = formatServicePrice(service.pricing);
+
+                      return (
+                        <div className="mt-5 flex w-fit max-w-full items-center gap-3 rounded-xl border border-[#FFD400]/40 bg-white px-4 py-3 shadow-[0_6px_24px_rgba(6,26,43,0.05)] transition-all duration-300 group-hover:border-[#FFD400] group-hover:shadow-[0_8px_28px_rgba(6,26,43,0.09)]">
+                          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[#061A2B] text-[#FFD400]">
+                            <span className="text-lg font-bold">$</span>
+                          </div>
+
+                          <div className="min-w-0">
+                            <p className="text-[9px] font-bold uppercase tracking-[0.17em] text-slate-400">
+                              {price.type === "fixed"
+                                ? "Fixed Service Price"
+                                : price.type === "from"
+                                  ? "Starting Price"
+                                  : "Service Pricing"}
+                            </p>
+
+                            <p className="mt-0.5 break-words text-base font-black tracking-tight text-[#061A2B] sm:text-lg">
+                              {price.label}
+                            </p>
+                          </div>
+                        </div>
+                      );
+                    })()}
+
 
                     {/* Service attributes */}
                     <div className="mt-5 flex flex-wrap gap-2 sm:mt-6">

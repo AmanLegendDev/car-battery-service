@@ -1,3 +1,4 @@
+
 import type { Metadata } from "next";
 
 import { connectDB } from "@/lib/db";
@@ -9,20 +10,17 @@ import AboutPage from "@/components/about/listing/AboutPage";
 
 export const dynamic = "force-dynamic";
 
-const SITE_URL =
-  "https://www.mobilecarservices.com.au";
+const SITE_URL = "https://www.mobilecarservices.com.au";
 
-const PAGE_URL =
-  `${SITE_URL}/about`;
+const PAGE_URL = `${SITE_URL}/about`;
 
 const SEO_TITLE =
-  "About Us | Local Mobile Mobile Car Services Melbourne West";
+  "About Mobile Car Services | Melbourne West";
 
 const SEO_DESCRIPTION =
-  "Learn about our local mobile Mobile Car Services in Melbourne West, providing battery replacement, battery testing and jump start assistance at your vehicle's location.";
+  "Learn about Mobile Car Services and our mobile automotive assistance across Melbourne's west, including car servicing, battery replacement, repairs and roadside support.";
 
-const OG_IMAGE =
-  "/images/seo/og-image.jpg";
+const OG_IMAGE = "/images/seo/og-image.jpg";
 
 export interface AboutBusiness {
   businessName: string;
@@ -48,29 +46,21 @@ export interface AboutService {
 async function getBusinessSettings(): Promise<AboutBusiness> {
   await connectDB();
 
-  const settings =
-    await SiteSettings.findOne()
-      .select(
-        "businessName tagline description phone primaryCallNumber whatsapp email primaryServiceRegion",
-      )
-      .lean();
+  const settings = await SiteSettings.findOne()
+    .select(
+      "businessName tagline description phone primaryCallNumber whatsapp email primaryServiceRegion"
+    )
+    .lean();
 
   return {
     businessName:
-      settings?.businessName ||
-      "Mobile Car Services",
+      settings?.businessName || "Mobile Car Services",
 
-    tagline:
-      settings?.tagline ||
-      "",
+    tagline: settings?.tagline || "",
 
-    description:
-      settings?.description ||
-      "",
+    description: settings?.description || "",
 
-    phone:
-      settings?.phone ||
-      "",
+    phone: settings?.phone || "",
 
     primaryCallNumber:
       settings?.primaryCallNumber ||
@@ -83,128 +73,90 @@ async function getBusinessSettings(): Promise<AboutBusiness> {
       settings?.phone ||
       "",
 
-    email:
-      settings?.email ||
-      "",
+    email: settings?.email || "",
 
     primaryServiceRegion:
-      settings?.primaryServiceRegion ||
-      "",
+      settings?.primaryServiceRegion || "",
   };
 }
 
 async function getServices(): Promise<AboutService[]> {
   await connectDB();
 
-  const services =
-    await Service.find({
-      status: "active",
+  const services = await Service.find({
+    status: "active",
+  })
+    .select(
+      "title slug shortDescription estimatedTime emergencyService onSiteService featured displayOrder"
+    )
+    .sort({
+      featured: -1,
+      displayOrder: 1,
+      title: 1,
     })
-      .select(
-        "title slug shortDescription estimatedTime emergencyService onSiteService featured displayOrder",
-      )
-      .sort({
-        featured: -1,
-        displayOrder: 1,
-        title: 1,
-      })
-      .lean();
+    .lean();
 
-  return services.map(
-    (service) => ({
-      id:
-        service._id.toString(),
+  return services.map((service) => ({
+    id: service._id.toString(),
 
-      title:
-        service.title,
+    title: service.title,
 
-      slug:
-        service.slug,
+    slug: service.slug,
 
-      shortDescription:
-        service.shortDescription ||
-        "",
+    shortDescription:
+      service.shortDescription || "",
 
-      estimatedTime:
-        service.estimatedTime ||
-        "",
+    estimatedTime:
+      service.estimatedTime || "",
 
-      emergencyService:
-        Boolean(
-          service.emergencyService,
-        ),
+    emergencyService:
+      Boolean(service.emergencyService),
 
-      onSiteService:
-        Boolean(
-          service.onSiteService,
-        ),
-    }),
-  );
+    onSiteService:
+      Boolean(service.onSiteService),
+  }));
 }
 
 export async function generateMetadata(): Promise<Metadata> {
   return {
     title: {
-      absolute:
-        SEO_TITLE,
+      absolute: SEO_TITLE,
     },
 
-    description:
-      SEO_DESCRIPTION,
+    description: SEO_DESCRIPTION,
 
     alternates: {
-      canonical:
-        PAGE_URL,
+      canonical: PAGE_URL,
     },
 
     openGraph: {
-      type:
-        "website",
-
-      locale:
-        "en_AU",
-
-      url:
-        PAGE_URL,
-
-      siteName:
-        "Mobile Car Services",
-
-      title:
-        SEO_TITLE,
-
-      description:
-        SEO_DESCRIPTION,
+      type: "website",
+      locale: "en_AU",
+      url: PAGE_URL,
+      siteName: "Mobile Car Services",
+      title: SEO_TITLE,
+      description: SEO_DESCRIPTION,
 
       images: [
         {
-          url:
-            OG_IMAGE,
-
-          width:
-            1200,
-
-          height:
-            630,
-
-          alt:
-            "About Mobile Car Services - Local Mobile Car Service Melbourne West",
+          url: OG_IMAGE,
+          width: 1200,
+          height: 630,
+          alt: "About Mobile Car Services in Melbourne West",
         },
       ],
     },
 
     twitter: {
-      card:
-        "summary_large_image",
-
-      title:
-        SEO_TITLE,
-
-      description:
-        SEO_DESCRIPTION,
+      card: "summary_large_image",
+      title: SEO_TITLE,
+      description: SEO_DESCRIPTION,
 
       images: [
-        OG_IMAGE,
+        {
+          url: OG_IMAGE,
+          alt: "About Mobile Car Services in Melbourne West",
+        },
       ],
     },
 
@@ -215,15 +167,9 @@ export async function generateMetadata(): Promise<Metadata> {
       googleBot: {
         index: true,
         follow: true,
-
-        "max-image-preview":
-          "large",
-
-        "max-snippet":
-          -1,
-
-        "max-video-preview":
-          -1,
+        "max-image-preview": "large",
+        "max-snippet": -1,
+        "max-video-preview": -1,
       },
     },
   };
@@ -231,98 +177,64 @@ export async function generateMetadata(): Promise<Metadata> {
 
 function getAboutStructuredData() {
   return {
-    "@context":
-      "https://schema.org",
+    "@context": "https://schema.org",
 
     "@graph": [
       {
-        "@type":
-          "AboutPage",
+        "@type": "AboutPage",
 
-        "@id":
-          `${PAGE_URL}#webpage`,
+        "@id": `${PAGE_URL}#webpage`,
 
-        url:
-          PAGE_URL,
+        url: PAGE_URL,
 
-        name:
-          SEO_TITLE,
+        name: SEO_TITLE,
 
-        description:
-          SEO_DESCRIPTION,
+        description: SEO_DESCRIPTION,
 
         isPartOf: {
-          "@id":
-            `${SITE_URL}/#website`,
+          "@id": `${SITE_URL}/#website`,
         },
 
         about: {
-          "@id":
-            `${SITE_URL}/#organization`,
+          "@id": `${SITE_URL}/#organization`,
         },
 
         publisher: {
-          "@id":
-            `${SITE_URL}/#organization`,
+          "@id": `${SITE_URL}/#organization`,
         },
 
         primaryImageOfPage: {
-          "@type":
-            "ImageObject",
-
-          url:
-            `${SITE_URL}${OG_IMAGE}`,
-
-          width:
-            1200,
-
-          height:
-            630,
+          "@type": "ImageObject",
+          url: `${SITE_URL}${OG_IMAGE}`,
+          width: 1200,
+          height: 630,
         },
 
         breadcrumb: {
-          "@id":
-            `${PAGE_URL}#breadcrumb`,
+          "@id": `${PAGE_URL}#breadcrumb`,
         },
 
-        inLanguage:
-          "en-AU",
+        inLanguage: "en-AU",
       },
 
       {
-        "@type":
-          "BreadcrumbList",
+        "@type": "BreadcrumbList",
 
-        "@id":
-          `${PAGE_URL}#breadcrumb`,
+        "@id": `${PAGE_URL}#breadcrumb`,
 
         itemListElement: [
           {
-            "@type":
-              "ListItem",
-
-            position:
-              1,
-
-            name:
-              "Home",
-
-            item:
-              SITE_URL,
+            "@type": "ListItem",
+            position: 1,
+            name: "Home",
+            item: `${SITE_URL}/`,
           },
 
           {
-            "@type":
-              "ListItem",
-
-            position:
-              2,
-
-            name:
-              "About Us",
-
-            item:
-              PAGE_URL,
+            "@type": "ListItem",
+            position: 2,
+            name: "About Us",
+            item: PAGE_URL,
           },
         ],
       },
@@ -331,37 +243,29 @@ function getAboutStructuredData() {
 }
 
 export default async function AboutRoute() {
-  const [
-    business,
-    services,
-  ] = await Promise.all([
+  const [business, services] = await Promise.all([
     getBusinessSettings(),
     getServices(),
   ]);
 
-  const structuredData =
-    getAboutStructuredData();
+  const structuredData = getAboutStructuredData();
 
   return (
     <>
       <main>
         <AboutPage
-          business={
-            business
-          }
-          services={
-            services
-          }
+          business={business}
+          services={services}
         />
       </main>
 
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html:
-            JSON.stringify(
-              structuredData,
-            ),
+          __html: JSON.stringify(structuredData).replace(
+            /</g,
+            "\\u003c"
+          ),
         }}
       />
     </>

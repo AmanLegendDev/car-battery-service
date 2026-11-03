@@ -1,3 +1,4 @@
+
 import type { Metadata } from "next";
 
 import { connectDB } from "@/lib/db";
@@ -22,19 +23,16 @@ export const dynamic = "force-dynamic";
 const SITE_URL = "https://www.mobilecarservices.com.au";
 
 const HOME_TITLE =
-  "Mobile Car Battery Replacement Melbourne West | 7 Days";
+  "Mobile Mechanic Melbourne West | Mobile Car Services";
 
 const HOME_DESCRIPTION =
-  "Flat battery? Mobile car battery replacement, testing & jump starts at your home, work or roadside across Melbourne's west. Open 7 days. Call 0467 037 886.";
+  "Need a mobile mechanic in Melbourne's west? Explore mobile car servicing, repairs, battery replacement and roadside assistance. Contact Mobile Car Services to arrange an appointment.";
 
-const HOME_OG_IMAGE =
-  "/images/seo/og-image.jpg";
+const HOME_OG_IMAGE = "/images/seo/og-image.jpg";
 
 /**
- * Site settings are used for website content/UI.
- * Page SEO metadata is intentionally controlled here
- * so the exact SEO values from the SEO sheet cannot be
- * accidentally overridden by CMS business description data.
+ * Site settings are used for website content and dynamic business information.
+ * Homepage SEO metadata remains intentionally controlled in this file.
  */
 async function getSiteSettings() {
   await connectDB();
@@ -47,15 +45,13 @@ async function getSiteSettings() {
 }
 
 /**
- * Homepage SEO metadata.
+ * Homepage metadata.
  *
- * IMPORTANT:
- * `absolute` prevents the global layout title template
- * from appending "|Mobile Car Services to this exact
- * homepage SEO title.
+ * Absolute title prevents the global layout title template
+ * from appending another brand name.
  */
 export async function generateMetadata(): Promise<Metadata> {
-  const canonicalUrl = SITE_URL;
+  const canonicalUrl = `${SITE_URL}/`;
 
   return {
     title: {
@@ -73,7 +69,6 @@ export async function generateMetadata(): Promise<Metadata> {
       locale: "en_AU",
       url: canonicalUrl,
       siteName: "Mobile Car Services",
-
       title: HOME_TITLE,
       description: HOME_DESCRIPTION,
 
@@ -82,21 +77,20 @@ export async function generateMetadata(): Promise<Metadata> {
           url: HOME_OG_IMAGE,
           width: 1200,
           height: 630,
-          alt: "Mobile Car Battery Replacement Melbourne West",
+          alt: "Mobile mechanic and automotive services in Melbourne West",
         },
       ],
     },
 
     twitter: {
       card: "summary_large_image",
-
       title: HOME_TITLE,
       description: HOME_DESCRIPTION,
 
       images: [
         {
           url: HOME_OG_IMAGE,
-          alt: "Mobile Car Battery Replacement Melbourne West",
+          alt: "Mobile mechanic and automotive services in Melbourne West",
         },
       ],
     },
@@ -119,25 +113,55 @@ export async function generateMetadata(): Promise<Metadata> {
 /**
  * Homepage structured data.
  *
- * The WebPage name and description are aligned with the
- * exact homepage SEO metadata.
+ * Defines the website, organisation and homepage entities
+ * so their @id references resolve consistently.
  *
- * Phone remains dynamic because it comes from SiteSettings.
+ * Does not invent a physical business address or opening hours.
  */
-function getHomepageStructuredData(phone: string) {
+function getHomepageStructuredData(
+  phone: string,
+  businessName: string,
+  logoUrl?: string
+) {
+  const organization: Record<string, unknown> = {
+    "@type": "Organization",
+    "@id": `${SITE_URL}/#organization`,
+    name: businessName,
+    url: `${SITE_URL}/`,
+    contactPoint: {
+      "@id": `${SITE_URL}/#contact-point`,
+    },
+  };
+
+  if (logoUrl) {
+    organization.logo = {
+      "@type": "ImageObject",
+      url: logoUrl,
+    };
+  }
+
   return {
     "@context": "https://schema.org",
 
     "@graph": [
+      organization,
+
+      {
+        "@type": "WebSite",
+        "@id": `${SITE_URL}/#website`,
+        url: `${SITE_URL}/`,
+        name: businessName,
+        publisher: {
+          "@id": `${SITE_URL}/#organization`,
+        },
+        inLanguage: "en-AU",
+      },
+
       {
         "@type": "WebPage",
-
         "@id": `${SITE_URL}/#webpage`,
-
-        url: SITE_URL,
-
+        url: `${SITE_URL}/`,
         name: HOME_TITLE,
-
         description: HOME_DESCRIPTION,
 
         isPartOf: {
@@ -154,11 +178,8 @@ function getHomepageStructuredData(phone: string) {
 
         primaryImageOfPage: {
           "@type": "ImageObject",
-
           url: `${SITE_URL}${HOME_OG_IMAGE}`,
-
           width: 1200,
-
           height: 630,
         },
 
@@ -167,15 +188,13 @@ function getHomepageStructuredData(phone: string) {
 
       {
         "@type": "ContactPoint",
-
         "@id": `${SITE_URL}/#contact-point`,
-
         telephone: phone,
-
         contactType: "customer service",
-
-        areaServed: "Melbourne West",
-
+        areaServed: {
+          "@type": "Place",
+          name: "Melbourne West",
+        },
         availableLanguage: ["English"],
       },
     ],
@@ -186,24 +205,19 @@ export default async function HomePage() {
   const settings = await getSiteSettings();
 
   /*
-   * Dynamic CMS/business information for the actual website UI.
-   * This is intentionally separate from homepage SEO metadata.
+   * Dynamic CMS information for website UI.
+   * SEO metadata remains independent from CMS descriptions.
    */
   const heroSettings = settings
     ? {
         businessName: settings.businessName,
-
         tagline: settings.tagline ?? "",
-
         description: settings.description ?? "",
-
         phone:
           settings.primaryCallNumber ||
           settings.phone,
-
         serviceRegion:
           settings.primaryServiceRegion ?? "",
-
         bookingCta:
           settings.bookingCta ||
           "Book a Service",
@@ -215,8 +229,20 @@ export default async function HomePage() {
     settings?.phone ||
     "+61 467 037 886";
 
+  const businessName =
+    settings?.businessName ||
+    "Mobile Car Services";
+
+  const logoUrl = settings?.logo?.secureUrl
+    ? settings.logo.secureUrl
+    : undefined;
+
   const homepageStructuredData =
-    getHomepageStructuredData(phone);
+    getHomepageStructuredData(
+      phone,
+      businessName,
+      logoUrl
+    );
 
   return (
     <>
@@ -252,8 +278,8 @@ export default async function HomePage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{
           __html: JSON.stringify(
-            homepageStructuredData,
-          ),
+            homepageStructuredData
+          ).replace(/</g, "\\u003c"),
         }}
       />
     </>

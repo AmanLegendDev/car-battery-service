@@ -1,3 +1,4 @@
+
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
@@ -12,8 +13,7 @@ import BlogDetailPage from "@/components/blog/detail/BlogDetailPage";
 
 export const dynamic = "force-dynamic";
 
-const SITE_URL =
-  "https://www.mobilecarservices.com.au";
+const SITE_URL = "https://www.mobilecarservices.com.au";
 
 const BLOG_RELATED_POST_LIMIT = 6;
 const BLOG_RELATED_SERVICE_LIMIT = 3;
@@ -31,7 +31,6 @@ async function getBlogPost(slug: string) {
   const post = await Blog.findOne({
     slug,
     status: "published",
-    noIndex: false,
   })
     .select(
       [
@@ -82,8 +81,7 @@ async function getSiteSettings() {
 
   return {
     businessName:
-      settings?.businessName ||
-      "Mobile Car Services",
+      settings?.businessName || "Mobile Car Services",
 
     phone:
       settings?.primaryCallNumber ||
@@ -108,15 +106,10 @@ async function getRelatedBlogPosts(
 ) {
   await connectDB();
 
-  const orConditions: Record<
-    string,
-    unknown
-  >[] = [];
+  const orConditions: Record<string, unknown>[] = [];
 
   if (category) {
-    orConditions.push({
-      category,
-    });
+    orConditions.push({ category });
   }
 
   if (tags.length > 0) {
@@ -127,10 +120,7 @@ async function getRelatedBlogPosts(
     });
   }
 
-  const query: Record<
-    string,
-    unknown
-  > = {
+  const query: Record<string, unknown> = {
     status: "published",
     noIndex: false,
     slug: {
@@ -153,6 +143,7 @@ async function getRelatedBlogPosts(
         "publishedAt",
         "readingTime",
         "featured",
+        "displayOrder",
       ].join(" "),
     )
     .sort({
@@ -168,165 +159,103 @@ async function getRelatedBlogPosts(
 
     slug: post.slug,
 
-    excerpt:
-      post.excerpt || "",
+    excerpt: post.excerpt || "",
 
-    coverImage:
-      post.coverImage
-        ? {
-            publicId:
-              post.coverImage.publicId,
+    coverImage: post.coverImage
+      ? {
+          publicId: post.coverImage.publicId,
+          secureUrl: post.coverImage.secureUrl,
+          width: post.coverImage.width,
+          height: post.coverImage.height,
+          format: post.coverImage.format,
+          bytes: post.coverImage.bytes,
+          resourceType: post.coverImage.resourceType,
+          alt: post.coverImage.alt,
+        }
+      : null,
 
-            secureUrl:
-              post.coverImage.secureUrl,
+    category: post.category || "",
 
-            width:
-              post.coverImage.width,
+    publishedAt: post.publishedAt
+      ? new Date(post.publishedAt).toISOString()
+      : null,
 
-            height:
-              post.coverImage.height,
-
-            format:
-              post.coverImage.format,
-
-            bytes:
-              post.coverImage.bytes,
-
-            resourceType:
-              post.coverImage.resourceType,
-
-            alt:
-              post.coverImage.alt,
-          }
-        : null,
-
-    category:
-      post.category || "",
-
-    publishedAt:
-      post.publishedAt
-        ? new Date(
-            post.publishedAt,
-          ).toISOString()
-        : null,
-
-    readingTime:
-      post.readingTime ?? null,
+    readingTime: post.readingTime ?? null,
   }));
 }
 
-async function getRelatedServices(
-  relatedServiceIds: unknown[],
-) {
+async function getRelatedServices(relatedServiceIds: unknown[]) {
   await connectDB();
 
   if (
-    !Array.isArray(
-      relatedServiceIds,
-    ) ||
+    !Array.isArray(relatedServiceIds) ||
     relatedServiceIds.length === 0
   ) {
     return [];
   }
 
   const validIds = relatedServiceIds
-    .filter(
-      (value) => value != null,
-    )
-    .map((value) =>
-      String(value),
-    )
+    .filter((value) => value != null)
+    .map(String)
     .filter(Boolean);
 
   if (validIds.length === 0) {
     return [];
   }
 
-  const services =
-    await Service.find({
-      _id: {
-        $in: validIds,
-      },
-
-      status: "active",
+  const services = await Service.find({
+    _id: {
+      $in: validIds,
+    },
+    status: "active",
+  })
+    .select(
+      [
+        "title",
+        "slug",
+        "shortDescription",
+        "heroImage",
+        "estimatedTime",
+        "emergencyService",
+        "onSiteService",
+        "featured",
+        "displayOrder",
+      ].join(" "),
+    )
+    .sort({
+      featured: -1,
+      displayOrder: 1,
+      title: 1,
     })
-      .select(
-        [
-          "title",
-          "slug",
-          "shortDescription",
-          "heroImage",
-          "estimatedTime",
-          "emergencyService",
-          "onSiteService",
-          "featured",
-          "displayOrder",
-        ].join(" "),
-      )
-      .sort({
-        featured: -1,
-        displayOrder: 1,
-        title: 1,
-      })
-      .limit(
-        BLOG_RELATED_SERVICE_LIMIT,
-      )
-      .lean();
+    .limit(BLOG_RELATED_SERVICE_LIMIT)
+    .lean();
 
-  return services.map(
-    (service) => ({
-      title: service.title,
+  return services.map((service) => ({
+    title: service.title,
 
-      slug: service.slug,
+    slug: service.slug,
 
-      shortDescription:
-        service.shortDescription ||
-        "",
+    shortDescription: service.shortDescription || "",
 
-      heroImage:
-        service.heroImage
-          ? {
-              publicId:
-                service.heroImage.publicId,
+    heroImage: service.heroImage
+      ? {
+          publicId: service.heroImage.publicId,
+          secureUrl: service.heroImage.secureUrl,
+          width: service.heroImage.width,
+          height: service.heroImage.height,
+          format: service.heroImage.format,
+          bytes: service.heroImage.bytes,
+          resourceType: service.heroImage.resourceType,
+          alt: service.heroImage.alt,
+        }
+      : null,
 
-              secureUrl:
-                service.heroImage.secureUrl,
+    estimatedTime: service.estimatedTime || "",
 
-              width:
-                service.heroImage.width,
+    emergencyService: Boolean(service.emergencyService),
 
-              height:
-                service.heroImage.height,
-
-              format:
-                service.heroImage.format,
-
-              bytes:
-                service.heroImage.bytes,
-
-              resourceType:
-                service.heroImage.resourceType,
-
-              alt:
-                service.heroImage.alt,
-            }
-          : null,
-
-      estimatedTime:
-        service.estimatedTime ||
-        "",
-
-      emergencyService:
-        Boolean(
-          service.emergencyService,
-        ),
-
-      onSiteService:
-        Boolean(
-          service.onSiteService,
-        ),
-    }),
-  );
+    onSiteService: Boolean(service.onSiteService),
+  }));
 }
 
 async function getRelatedServiceAreas(
@@ -335,133 +264,99 @@ async function getRelatedServiceAreas(
   await connectDB();
 
   if (
-    !Array.isArray(
-      relatedServiceAreaIds,
-    ) ||
+    !Array.isArray(relatedServiceAreaIds) ||
     relatedServiceAreaIds.length === 0
   ) {
     return [];
   }
 
   const validIds = relatedServiceAreaIds
-    .filter(
-      (value) => value != null,
-    )
-    .map((value) =>
-      String(value),
-    )
+    .filter((value) => value != null)
+    .map(String)
     .filter(Boolean);
 
   if (validIds.length === 0) {
     return [];
   }
 
-  const areas =
-    await ServiceArea.find({
-      _id: {
-        $in: validIds,
-      },
-
-      status: "active",
+  const areas = await ServiceArea.find({
+    _id: {
+      $in: validIds,
+    },
+    status: "active",
+  })
+    .select(
+      [
+        "name",
+        "slug",
+        "shortDescription",
+        "heroImage",
+        "featured",
+        "displayOrder",
+      ].join(" "),
+    )
+    .sort({
+      featured: -1,
+      displayOrder: 1,
+      name: 1,
     })
-      .select(
-        [
-          "name",
-          "slug",
-          "shortDescription",
-          "heroImage",
-          "featured",
-          "displayOrder",
-        ].join(" "),
-      )
-      .sort({
-        featured: -1,
-        displayOrder: 1,
-        name: 1,
-      })
-      .limit(
-        BLOG_RELATED_AREA_LIMIT,
-      )
-      .lean();
+    .limit(BLOG_RELATED_AREA_LIMIT)
+    .lean();
 
-  return areas.map(
-    (area) => ({
-      name: area.name,
+  return areas.map((area) => ({
+    name: area.name,
 
-      slug: area.slug,
+    slug: area.slug,
 
-      shortDescription:
-        area.shortDescription ||
-        "",
+    shortDescription: area.shortDescription || "",
 
-      heroImage:
-        area.heroImage
-          ? {
-              publicId:
-                area.heroImage.publicId,
-
-              secureUrl:
-                area.heroImage.secureUrl,
-
-              width:
-                area.heroImage.width,
-
-              height:
-                area.heroImage.height,
-
-              format:
-                area.heroImage.format,
-
-              bytes:
-                area.heroImage.bytes,
-
-              resourceType:
-                area.heroImage.resourceType,
-
-              alt:
-                area.heroImage.alt,
-            }
-          : null,
-    }),
-  );
+    heroImage: area.heroImage
+      ? {
+          publicId: area.heroImage.publicId,
+          secureUrl: area.heroImage.secureUrl,
+          width: area.heroImage.width,
+          height: area.heroImage.height,
+          format: area.heroImage.format,
+          bytes: area.heroImage.bytes,
+          resourceType: area.heroImage.resourceType,
+          alt: area.heroImage.alt,
+        }
+      : null,
+  }));
 }
 
-function getAbsoluteUrl(
-  value: string,
-  fallback: string,
-) {
-  if (!value) {
-    return `${SITE_URL}${fallback}`;
-  }
+function getAbsoluteUrl(value: unknown, fallback: string) {
+  const candidate =
+    typeof value === "string" && value.trim()
+      ? value.trim()
+      : fallback;
 
-  if (
-    value.startsWith("http://") ||
-    value.startsWith("https://")
-  ) {
-    return value;
-  }
+  try {
+    const url = new URL(candidate, SITE_URL);
 
-  return `${SITE_URL}${
-    value.startsWith("/")
-      ? value
-      : `/${value}`
-  }`;
+    if (
+      url.protocol !== "https:" &&
+      url.protocol !== "http:"
+    ) {
+      throw new Error("Invalid URL protocol");
+    }
+
+    return url.toString();
+  } catch {
+    return new URL(fallback, SITE_URL).toString();
+  }
 }
 
 export async function generateMetadata({
   params,
 }: BlogPageProps): Promise<Metadata> {
-  const { slug } =
-    await params;
+  const { slug } = await params;
 
-  const post =
-    await getBlogPost(slug);
+  const post = await getBlogPost(slug);
 
   if (!post) {
     return {
-      title:
-        "Article Not Found | Mobile Car Services",
-
+      title: "Article Not Found | Mobile Car Services",
       robots: {
         index: false,
         follow: false,
@@ -477,17 +372,34 @@ export async function generateMetadata({
   const description =
     post.seoDescription ||
     post.ogDescription ||
-    post.excerpt;
+    post.excerpt ||
+    "";
 
-  const canonical =
-    getAbsoluteUrl(
-      post.canonicalUrl,
-      `/blog/${post.slug}`,
-    );
+  const canonical = getAbsoluteUrl(
+    post.canonicalUrl,
+    `/blog/${post.slug}`,
+  );
 
-  const image =
+  const imageValue =
     post.ogImage?.secureUrl ||
     post.coverImage?.secureUrl;
+
+  const image = imageValue
+    ? getAbsoluteUrl(imageValue, `/blog/${post.slug}`)
+    : undefined;
+
+  const imageWidth =
+    post.ogImage?.width ||
+    post.coverImage?.width;
+
+  const imageHeight =
+    post.ogImage?.height ||
+    post.coverImage?.height;
+
+  const imageAlt =
+    post.ogImage?.alt ||
+    post.coverImage?.alt ||
+    post.title;
 
   return {
     title,
@@ -510,41 +422,26 @@ export async function generateMetadata({
 
     openGraph: {
       title,
-
       description,
-
       url: canonical,
-
       type: "article",
 
-      publishedTime:
-        post.publishedAt
-          ? new Date(
-              post.publishedAt,
-            ).toISOString()
-          : undefined,
+      publishedTime: post.publishedAt
+        ? new Date(post.publishedAt).toISOString()
+        : undefined,
 
-      modifiedTime:
-        post.updatedAt
-          ? new Date(
-              post.updatedAt,
-            ).toISOString()
-          : undefined,
+      modifiedTime: post.updatedAt
+        ? new Date(post.updatedAt).toISOString()
+        : undefined,
 
-      authors:
-        post.authorName
-          ? [post.authorName]
-          : undefined,
+      authors: post.authorName
+        ? [post.authorName]
+        : undefined,
 
-      section:
-        post.category ||
-        undefined,
+      section: post.category || undefined,
 
       tags:
-        Array.isArray(
-          post.tags,
-        ) &&
-        post.tags.length > 0
+        Array.isArray(post.tags) && post.tags.length > 0
           ? post.tags
           : undefined,
 
@@ -552,35 +449,19 @@ export async function generateMetadata({
         ? [
             {
               url: image,
-
-              width:
-                post.ogImage?.width ||
-                post.coverImage?.width,
-
-              height:
-                post.ogImage?.height ||
-                post.coverImage?.height,
-
-              alt:
-                post.ogImage?.alt ||
-                post.coverImage?.alt ||
-                post.title,
+              width: imageWidth,
+              height: imageHeight,
+              alt: imageAlt,
             },
           ]
         : undefined,
     },
 
     twitter: {
-      card:
-        "summary_large_image",
-
+      card: "summary_large_image",
       title,
-
       description,
-
-      images: image
-        ? [image]
-        : undefined,
+      images: image ? [image] : undefined,
     },
   };
 }
@@ -591,7 +472,7 @@ function extractFaqItems(content: unknown) {
   }
 
   const sectionMatch = content.match(
-    /<h2\b[^>]*>\s*Frequently Asked Questions\s*<\/h2>([\s\S]*?)(?=<h2\b|$)/i
+    /<h2\b[^>]*>\s*Frequently Asked Questions\s*<\/h2>([\s\S]*?)(?=<h2\b|$)/i,
   );
 
   if (!sectionMatch) {
@@ -625,7 +506,10 @@ function extractFaqItems(content: unknown) {
     const answer = decodeText(match[2]);
 
     if (question && answer) {
-      faqs.push({ question, answer });
+      faqs.push({
+        question,
+        answer,
+      });
     }
   }
 
@@ -634,14 +518,10 @@ function extractFaqItems(content: unknown) {
 
 function getArticleStructuredData({
   post,
-  business,
   canonicalUrl,
   articleImage,
 }: {
   post: any;
-  business: {
-    businessName: string;
-  };
   canonicalUrl: string;
   articleImage?: {
     url: string;
@@ -650,30 +530,21 @@ function getArticleStructuredData({
     alt?: string;
   };
 }) {
-  const articleId =
-    `${canonicalUrl}#article`;
+  const articleId = `${canonicalUrl}#article`;
 
-  const webpageId =
-    `${canonicalUrl}#webpage`;
+  const webpageId = `${canonicalUrl}#webpage`;
 
-  const breadcrumbId =
-    `${canonicalUrl}#breadcrumb`;
+  const breadcrumbId = `${canonicalUrl}#breadcrumb`;
 
-    const faqItems = extractFaqItems(post.content);
+  const faqItems = extractFaqItems(post.content);
 
-  const schemaGraph: Record<
-    string,
-    unknown
-  >[] = [
+  const schemaGraph: Record<string, unknown>[] = [
     {
-      "@type":
-        "BlogPosting",
+      "@type": "BlogPosting",
 
-      "@id":
-        articleId,
+      "@id": articleId,
 
-      headline:
-        post.title,
+      headline: post.title,
 
       description:
         post.seoDescription ||
@@ -681,42 +552,34 @@ function getArticleStructuredData({
         post.excerpt ||
         undefined,
 
-      url:
-        canonicalUrl,
+      url: canonicalUrl,
 
       mainEntityOfPage: {
-        "@id":
-          webpageId,
+        "@id": webpageId,
       },
 
       ...(articleImage
         ? {
             image: [
               {
-                "@type":
-                  "ImageObject",
-
-                url:
-                  articleImage.url,
+                "@type": "ImageObject",
+                url: articleImage.url,
 
                 ...(articleImage.width
                   ? {
-                      width:
-                        articleImage.width,
+                      width: articleImage.width,
                     }
                   : {}),
 
                 ...(articleImage.height
                   ? {
-                      height:
-                        articleImage.height,
+                      height: articleImage.height,
                     }
                   : {}),
 
                 ...(articleImage.alt
                   ? {
-                      caption:
-                        articleImage.alt,
+                      caption: articleImage.alt,
                     }
                   : {}),
               },
@@ -726,43 +589,35 @@ function getArticleStructuredData({
 
       ...(post.publishedAt
         ? {
-            datePublished:
-              new Date(
-                post.publishedAt,
-              ).toISOString(),
+            datePublished: new Date(
+              post.publishedAt,
+            ).toISOString(),
           }
         : {}),
 
       ...(post.updatedAt
         ? {
-            dateModified:
-              new Date(
-                post.updatedAt,
-              ).toISOString(),
+            dateModified: new Date(
+              post.updatedAt,
+            ).toISOString(),
           }
         : {}),
 
       ...(post.authorName
         ? {
             author: {
-              "@type":
-                "Person",
-
-              name:
-                post.authorName,
+              "@type": "Person",
+              name: post.authorName,
 
               ...(post.authorRole
                 ? {
-                    jobTitle:
-                      post.authorRole,
+                    jobTitle: post.authorRole,
                   }
                 : {}),
 
               ...(post.authorImage?.secureUrl
                 ? {
-                    image:
-                      post.authorImage
-                        .secureUrl,
+                    image: post.authorImage.secureUrl,
                   }
                 : {}),
             },
@@ -770,51 +625,38 @@ function getArticleStructuredData({
         : {}),
 
       publisher: {
-        "@id":
-          `${SITE_URL}/#organization`,
+        "@id": `${SITE_URL}/#organization`,
       },
 
       ...(post.category
         ? {
-            articleSection:
-              post.category,
+            articleSection: post.category,
           }
         : {}),
 
-      ...(Array.isArray(
-        post.tags,
-      ) &&
-      post.tags.length > 0
+      ...(Array.isArray(post.tags) && post.tags.length > 0
         ? {
-            keywords:
-              post.tags.join(", "),
+            keywords: post.tags.join(", "),
           }
         : {}),
 
       ...(post.readingTime
         ? {
-            timeRequired:
-              `PT${post.readingTime}M`,
+            timeRequired: `PT${post.readingTime}M`,
           }
         : {}),
 
-      inLanguage:
-        "en-AU",
+      inLanguage: "en-AU",
     },
 
     {
-      "@type":
-        "WebPage",
+      "@type": "WebPage",
 
-      "@id":
-        webpageId,
+      "@id": webpageId,
 
-      url:
-        canonicalUrl,
+      url: canonicalUrl,
 
-      name:
-        post.seoTitle ||
-        post.title,
+      name: post.seoTitle || post.title,
 
       description:
         post.seoDescription ||
@@ -823,75 +665,63 @@ function getArticleStructuredData({
         undefined,
 
       isPartOf: {
-        "@id":
-          `${SITE_URL}/#website`,
+        "@id": `${SITE_URL}/#website`,
       },
 
       about: {
-        "@id":
-          `${SITE_URL}/#organization`,
+        "@id": `${SITE_URL}/#organization`,
       },
 
       publisher: {
-        "@id":
-          `${SITE_URL}/#organization`,
+        "@id": `${SITE_URL}/#organization`,
       },
 
       ...(articleImage
         ? {
             primaryImageOfPage: {
-              "@id":
-                `${canonicalUrl}#primaryimage`,
+              "@id": `${canonicalUrl}#primaryimage`,
             },
           }
         : {}),
 
       breadcrumb: {
-        "@id":
-          breadcrumbId,
+        "@id": breadcrumbId,
       },
 
-      inLanguage:
-        "en-AU",
+      inLanguage: "en-AU",
     },
 
     ...(articleImage
       ? [
           {
-            "@type":
-              "ImageObject",
+            "@type": "ImageObject",
 
-            "@id":
-              `${canonicalUrl}#primaryimage`,
+            "@id": `${canonicalUrl}#primaryimage`,
 
-            url:
-              articleImage.url,
+            url: articleImage.url,
 
             ...(articleImage.width
               ? {
-                  width:
-                    articleImage.width,
+                  width: articleImage.width,
                 }
               : {}),
 
             ...(articleImage.height
               ? {
-                  height:
-                    articleImage.height,
+                  height: articleImage.height,
                 }
               : {}),
 
             ...(articleImage.alt
               ? {
-                  caption:
-                    articleImage.alt,
+                  caption: articleImage.alt,
                 }
               : {}),
           },
         ]
       : []),
 
-        {
+    {
       "@type": "BreadcrumbList",
 
       "@id": breadcrumbId,
@@ -903,12 +733,14 @@ function getArticleStructuredData({
           name: "Home",
           item: SITE_URL,
         },
+
         {
           "@type": "ListItem",
           position: 2,
           name: "Blog",
           item: `${SITE_URL}/blog`,
         },
+
         {
           "@type": "ListItem",
           position: 3,
@@ -918,15 +750,18 @@ function getArticleStructuredData({
       ],
     },
 
-    // FAQ Schema — add this before the closing ];
     ...(faqItems.length > 0
       ? [
           {
             "@type": "FAQPage",
+
             "@id": `${canonicalUrl}#faq`,
+
             mainEntity: faqItems.map((faq) => ({
               "@type": "Question",
+
               name: faq.question,
+
               acceptedAnswer: {
                 "@type": "Answer",
                 text: faq.answer,
@@ -938,22 +773,17 @@ function getArticleStructuredData({
   ];
 
   return {
-    "@context":
-      "https://schema.org",
-
-    "@graph":
-      schemaGraph,
+    "@context": "https://schema.org",
+    "@graph": schemaGraph,
   };
 }
 
 export default async function BlogArticlePage({
   params,
 }: BlogPageProps) {
-  const { slug } =
-    await params;
+  const { slug } = await params;
 
-  const post =
-    await getBlogPost(slug);
+  const post = await getBlogPost(slug);
 
   if (!post) {
     notFound();
@@ -974,17 +804,13 @@ export default async function BlogArticlePage({
     ),
 
     getRelatedServices(
-      Array.isArray(
-        post.relatedServices,
-      )
+      Array.isArray(post.relatedServices)
         ? post.relatedServices
         : [],
     ),
 
     getRelatedServiceAreas(
-      Array.isArray(
-        post.relatedServiceAreas,
-      )
+      Array.isArray(post.relatedServiceAreas)
         ? post.relatedServiceAreas
         : [],
     ),
@@ -993,151 +819,82 @@ export default async function BlogArticlePage({
   ]);
 
   const normalizedPost = {
-    title:
-      post.title,
+    title: post.title,
 
-    slug:
-      post.slug,
+    slug: post.slug,
 
-    excerpt:
-      post.excerpt || "",
+    excerpt: post.excerpt || "",
 
-    content:
-      post.content || "",
+    content: post.content || "",
 
-    coverImage:
-      post.coverImage
-        ? {
-            publicId:
-              post.coverImage.publicId,
+    coverImage: post.coverImage
+      ? {
+          publicId: post.coverImage.publicId,
+          secureUrl: post.coverImage.secureUrl,
+          width: post.coverImage.width,
+          height: post.coverImage.height,
+          format: post.coverImage.format,
+          bytes: post.coverImage.bytes,
+          resourceType: post.coverImage.resourceType,
+          alt: post.coverImage.alt,
+        }
+      : null,
 
-            secureUrl:
-              post.coverImage.secureUrl,
+    ogImage: post.ogImage
+      ? {
+          publicId: post.ogImage.publicId,
+          secureUrl: post.ogImage.secureUrl,
+          width: post.ogImage.width,
+          height: post.ogImage.height,
+          format: post.ogImage.format,
+          bytes: post.ogImage.bytes,
+          resourceType: post.ogImage.resourceType,
+          alt: post.ogImage.alt,
+        }
+      : null,
 
-            width:
-              post.coverImage.width,
+    authorName: post.authorName || "",
 
-            height:
-              post.coverImage.height,
+    authorRole: post.authorRole || "",
 
-            format:
-              post.coverImage.format,
+    authorImage: post.authorImage
+      ? {
+          publicId: post.authorImage.publicId,
+          secureUrl: post.authorImage.secureUrl,
+          width: post.authorImage.width,
+          height: post.authorImage.height,
+          format: post.authorImage.format,
+          bytes: post.authorImage.bytes,
+          resourceType: post.authorImage.resourceType,
+          alt: post.authorImage.alt,
+        }
+      : null,
 
-            bytes:
-              post.coverImage.bytes,
+    category: post.category || "",
 
-            resourceType:
-              post.coverImage.resourceType,
+    tags: Array.isArray(post.tags)
+      ? post.tags
+      : [],
 
-            alt:
-              post.coverImage.alt,
-          }
-        : null,
+    featured: Boolean(post.featured),
 
-    ogImage:
-      post.ogImage
-        ? {
-            publicId:
-              post.ogImage.publicId,
+    publishedAt: post.publishedAt
+      ? new Date(post.publishedAt).toISOString()
+      : null,
 
-            secureUrl:
-              post.ogImage.secureUrl,
+    readingTime: post.readingTime ?? null,
 
-            width:
-              post.ogImage.width,
+    seoTitle: post.seoTitle || "",
 
-            height:
-              post.ogImage.height,
+    seoDescription: post.seoDescription || "",
 
-            format:
-              post.ogImage.format,
+    canonicalUrl: post.canonicalUrl || "",
 
-            bytes:
-              post.ogImage.bytes,
+    noIndex: Boolean(post.noIndex),
 
-            resourceType:
-              post.ogImage.resourceType,
+    ogTitle: post.ogTitle || "",
 
-            alt:
-              post.ogImage.alt,
-          }
-        : null,
-
-    authorName:
-      post.authorName || "",
-
-    authorRole:
-      post.authorRole || "",
-
-    authorImage:
-      post.authorImage
-        ? {
-            publicId:
-              post.authorImage.publicId,
-
-            secureUrl:
-              post.authorImage.secureUrl,
-
-            width:
-              post.authorImage.width,
-
-            height:
-              post.authorImage.height,
-
-            format:
-              post.authorImage.format,
-
-            bytes:
-              post.authorImage.bytes,
-
-            resourceType:
-              post.authorImage.resourceType,
-
-            alt:
-              post.authorImage.alt,
-          }
-        : null,
-
-    category:
-      post.category || "",
-
-    tags:
-      Array.isArray(post.tags)
-        ? post.tags
-        : [],
-
-    featured:
-      Boolean(
-        post.featured,
-      ),
-
-    publishedAt:
-      post.publishedAt
-        ? new Date(
-            post.publishedAt,
-          ).toISOString()
-        : null,
-
-    readingTime:
-      post.readingTime ?? null,
-
-    seoTitle:
-      post.seoTitle || "",
-
-    seoDescription:
-      post.seoDescription || "",
-
-    canonicalUrl:
-      post.canonicalUrl || "",
-
-    noIndex:
-      Boolean(post.noIndex),
-
-    ogTitle:
-      post.ogTitle || "",
-
-    ogDescription:
-      post.ogDescription || "",
+    ogDescription: post.ogDescription || "",
 
     relatedServices,
 
@@ -1146,65 +903,65 @@ export default async function BlogArticlePage({
     relatedProjects: [],
   };
 
-  const canonicalUrl =
-    getAbsoluteUrl(
-      post.canonicalUrl,
-      `/blog/${post.slug}`,
-    );
+  const canonicalUrl = getAbsoluteUrl(
+    post.canonicalUrl,
+    `/blog/${post.slug}`,
+  );
 
-  const articleImageUrl =
+  const articleImageValue =
     post.ogImage?.secureUrl ||
     post.coverImage?.secureUrl;
 
-  const articleImage =
-    articleImageUrl
-      ? {
-          url:
-            articleImageUrl,
+  const articleImageUrl = articleImageValue
+    ? getAbsoluteUrl(
+        articleImageValue,
+        `/blog/${post.slug}`,
+      )
+    : undefined;
 
-          width:
-            post.ogImage?.width ||
-            post.coverImage?.width,
+  const articleImage = articleImageUrl
+    ? {
+        url: articleImageUrl,
 
-          height:
-            post.ogImage?.height ||
-            post.coverImage?.height,
+        width:
+          post.ogImage?.width ||
+          post.coverImage?.width,
 
-          alt:
-            post.ogImage?.alt ||
-            post.coverImage?.alt ||
-            post.title,
-        }
-      : undefined;
+        height:
+          post.ogImage?.height ||
+          post.coverImage?.height,
 
-  const articleSchema =
-    getArticleStructuredData({
-      post,
+        alt:
+          post.ogImage?.alt ||
+          post.coverImage?.alt ||
+          post.title,
+      }
+    : undefined;
 
-      business,
+  const articleSchema = getArticleStructuredData({
+    post,
+    canonicalUrl,
+    articleImage,
+  });
 
-      canonicalUrl,
-
-      articleImage,
-    });
+  const safeStructuredData = JSON.stringify(
+    articleSchema,
+  ).replace(/</g, "\\u003c");
 
   return (
     <>
       <main>
-     <BlogDetailPage
-  post={normalizedPost}
-  relatedPosts={relatedPosts}
-  business={business}
-/>
+        <BlogDetailPage
+          post={normalizedPost}
+          relatedPosts={relatedPosts}
+          business={business}
+        />
       </main>
 
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html:
-            JSON.stringify(
-              articleSchema,
-            ),
+          __html: safeStructuredData,
         }}
       />
     </>

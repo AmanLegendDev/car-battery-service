@@ -1,3 +1,4 @@
+
 import type { Metadata } from "next";
 
 import { connectDB } from "@/lib/db";
@@ -7,80 +8,52 @@ import BookingPage from "@/components/booking/BookingPage";
 
 export const dynamic = "force-dynamic";
 
-const SITE_URL =
-  "https://www.mobilecarservices.com.au";
+const SITE_URL = "https://www.mobilecarservices.com.au";
 
-const PAGE_URL =
-  `${SITE_URL}/book-service`;
+const PAGE_URL = `${SITE_URL}/book-service`;
 
 const SEO_TITLE =
-  "Book Mobile Car Battery Replacement Online | 7 Days";
+  "Book a Mobile Mechanic in Melbourne West | Mobile Car Services";
 
 const SEO_DESCRIPTION =
-  "Book a Mobile Car Services in Melbourne West. Choose your service, provide your vehicle and location details, and request an appointment online.";
+  "Request a mobile car service appointment in Melbourne West. Choose your service, provide your vehicle and location details, and submit your booking request online.";
 
-const OG_IMAGE =
-  "/images/seo/og-image.jpg";
+const OG_IMAGE = `${SITE_URL}/images/seo/og-image.jpg`;
 
 export const metadata: Metadata = {
   title: {
-    absolute:
-      SEO_TITLE,
+    absolute: SEO_TITLE,
   },
 
-  description:
-    SEO_DESCRIPTION,
+  description: SEO_DESCRIPTION,
 
   alternates: {
-    canonical:
-      PAGE_URL,
+    canonical: PAGE_URL,
   },
 
   openGraph: {
     type: "website",
-
     locale: "en_AU",
-
-    url:
-      PAGE_URL,
-
-    siteName:
-      "Mobile Car Services",
-
-    title:
-      SEO_TITLE,
-
-    description:
-      SEO_DESCRIPTION,
+    url: PAGE_URL,
+    siteName: "Mobile Car Services",
+    title: SEO_TITLE,
+    description: SEO_DESCRIPTION,
 
     images: [
       {
-        url:
-          OG_IMAGE,
-
+        url: OG_IMAGE,
         width: 1200,
-
         height: 630,
-
-        alt:
-          "Book Mobile Car Battery Replacement Online - Mobile Car Services",
+        alt: "Book a Mobile Car Service in Melbourne West - Mobile Car Services",
       },
     ],
   },
 
   twitter: {
-    card:
-      "summary_large_image",
-
-    title:
-      SEO_TITLE,
-
-    description:
-      SEO_DESCRIPTION,
-
-    images: [
-      OG_IMAGE,
-    ],
+    card: "summary_large_image",
+    title: SEO_TITLE,
+    description: SEO_DESCRIPTION,
+    images: [OG_IMAGE],
   },
 
   robots: {
@@ -90,110 +63,82 @@ export const metadata: Metadata = {
     googleBot: {
       index: true,
       follow: true,
-      "max-image-preview":
-        "large",
-      "max-snippet":
-        -1,
-      "max-video-preview":
-        -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+      "max-video-preview": -1,
     },
   },
 };
 
 function getBookingStructuredData() {
   return {
-    "@context":
-      "https://schema.org",
+    "@context": "https://schema.org",
 
     "@graph": [
       {
-        "@type":
-          "WebPage",
+        "@type": "WebPage",
 
-        "@id":
-          `${PAGE_URL}#webpage`,
+        "@id": `${PAGE_URL}#webpage`,
 
-        url:
-          PAGE_URL,
+        url: PAGE_URL,
 
-        name:
-          SEO_TITLE,
+        name: SEO_TITLE,
 
-        description:
-          SEO_DESCRIPTION,
+        description: SEO_DESCRIPTION,
 
         isPartOf: {
-          "@id":
-            `${SITE_URL}/#website`,
+          "@id": `${SITE_URL}/#website`,
         },
 
         about: {
-          "@id":
-            `${SITE_URL}/#organization`,
+          "@id": `${SITE_URL}/#organization`,
         },
 
         publisher: {
-          "@id":
-            `${SITE_URL}/#organization`,
+          "@id": `${SITE_URL}/#organization`,
         },
 
         primaryImageOfPage: {
-          "@type":
-            "ImageObject",
+          "@type": "ImageObject",
 
-          url:
-            `${SITE_URL}${OG_IMAGE}`,
+          url: OG_IMAGE,
 
-          width:
-            1200,
+          width: 1200,
 
-          height:
-            630,
+          height: 630,
         },
 
         breadcrumb: {
-          "@id":
-            `${PAGE_URL}#breadcrumb`,
+          "@id": `${PAGE_URL}#breadcrumb`,
         },
 
-        inLanguage:
-          "en-AU",
+        inLanguage: "en-AU",
       },
 
       {
-        "@type":
-          "BreadcrumbList",
+        "@type": "BreadcrumbList",
 
-        "@id":
-          `${PAGE_URL}#breadcrumb`,
+        "@id": `${PAGE_URL}#breadcrumb`,
 
         itemListElement: [
           {
-            "@type":
-              "ListItem",
+            "@type": "ListItem",
 
-            position:
-              1,
+            position: 1,
 
-            name:
-              "Home",
+            name: "Home",
 
-            item:
-              SITE_URL,
+            item: SITE_URL,
           },
 
           {
-            "@type":
-              "ListItem",
+            "@type": "ListItem",
 
-            position:
-              2,
+            position: 2,
 
-            name:
-              "Book a Service",
+            name: "Book a Service",
 
-            item:
-              PAGE_URL,
+            item: PAGE_URL,
           },
         ],
       },
@@ -204,54 +149,40 @@ function getBookingStructuredData() {
 export default async function BookServicePage() {
   await connectDB();
 
-  const services =
-    await Service.find({
-      status: "active",
+  const services = await Service.find({
+    status: "active",
+  })
+    .select("_id title shortDescription")
+    .sort({
+      displayOrder: 1,
+      createdAt: 1,
     })
-      .select(
-        "_id title shortDescription heroImage",
-      )
-      .sort({
-        displayOrder: 1,
-        createdAt: 1,
-      })
-      .lean();
+    .lean();
 
-  const publicServices =
-    services.map(
-      (service) => ({
-        id:
-          service._id.toString(),
+  const publicServices = services.map((service) => ({
+    id: service._id.toString(),
 
-        title:
-          service.title,
+    title: service.title,
 
-        shortDescription:
-          service.shortDescription ||
-          "",
-      }),
-    );
+    shortDescription: service.shortDescription || "",
+  }));
 
-  const structuredData =
-    getBookingStructuredData();
+  const structuredData = getBookingStructuredData();
+
+  const safeStructuredData = JSON.stringify(
+    structuredData,
+  ).replace(/</g, "\\u003c");
 
   return (
     <>
       <main>
-        <BookingPage
-          services={
-            publicServices
-          }
-        />
+        <BookingPage services={publicServices} />
       </main>
 
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html:
-            JSON.stringify(
-              structuredData,
-            ),
+          __html: safeStructuredData,
         }}
       />
     </>

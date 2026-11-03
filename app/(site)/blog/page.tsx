@@ -1,3 +1,4 @@
+
 import type { Metadata } from "next";
 
 import { connectDB } from "@/lib/db";
@@ -6,14 +7,11 @@ import Blog, {
   type BlogStatus,
 } from "@/models/Blog";
 
-import SiteSettings from "@/models/SiteSettings";
-
 import BlogListingPage from "@/components/blog/listing/BlogListingPage";
 
 export const dynamic = "force-dynamic";
 
-const SITE_URL =
-  "https://www.mobilecarservices.com.au";
+const SITE_URL = "https://www.mobilecarservices.com.au";
 
 const POSTS_PER_PAGE = 6;
 
@@ -24,63 +22,38 @@ const SEO_DESCRIPTION =
   "Practical car battery tips and guides covering battery replacement, battery testing, jump starts, starter motors and alternators in Melbourne West.";
 
 const OG_IMAGE =
-  "/images/seo/blog-og.jpg";
+  `${SITE_URL}/images/seo/blog-og.jpg`;
 
 interface BlogPageProps {
   searchParams: Promise<{
-    page?: string;
+    page?: string | string[];
   }>;
 }
 
-async function getSiteSettings() {
-  await connectDB();
+function getCurrentPage(pageParam?: string | string[]) {
+  const value = Array.isArray(pageParam)
+    ? pageParam[0]
+    : pageParam;
 
-  const settings =
-    await SiteSettings.findOne()
-      .select(
-        "businessName tagline defaultSiteTitle defaultSiteDescription",
-      )
-      .lean();
+  if (!value || !/^\d+$/.test(value)) {
+    return 1;
+  }
 
-  return {
-    businessName:
-      settings?.businessName ||
-      "Mobile Car Services",
+  const page = Number(value);
 
-    tagline:
-      settings?.tagline ||
-      "Mobile Car Assistance in Melbourne West",
-
-    title:
-      settings?.defaultSiteTitle ||
-      SEO_TITLE,
-
-    description:
-      settings?.defaultSiteDescription ||
-      SEO_DESCRIPTION,
-  };
+  return Number.isSafeInteger(page) && page > 0
+    ? page
+    : 1;
 }
 
 export async function generateMetadata({
   searchParams,
 }: BlogPageProps): Promise<Metadata> {
-  const params =
-    await searchParams;
+  const params = await searchParams;
 
-  const rawPage =
-    Number.parseInt(
-      params.page || "1",
-      10,
-    );
+  const currentPage = getCurrentPage(params.page);
 
-  const currentPage =
-    Number.isFinite(rawPage) &&
-    rawPage > 0
-      ? rawPage
-      : 1;
-
-  const isPaginated =
-    currentPage > 1;
+  const isPaginated = currentPage > 1;
 
   const title = isPaginated
     ? `${SEO_TITLE} - Page ${currentPage}`
@@ -92,63 +65,38 @@ export async function generateMetadata({
 
   return {
     title: {
-      absolute:
-        title,
+      absolute: title,
     },
 
-    description:
-      SEO_DESCRIPTION,
+    description: SEO_DESCRIPTION,
 
     alternates: {
-      canonical:
-        canonicalUrl,
+      canonical: canonicalUrl,
     },
 
     openGraph: {
       type: "website",
-
       locale: "en_AU",
-
-      url:
-        canonicalUrl,
-
-      siteName:
-        "Mobile Car Services",
-
-      title:
-        title,
-
-      description:
-        SEO_DESCRIPTION,
+      url: canonicalUrl,
+      siteName: "Mobile Car Services",
+      title,
+      description: SEO_DESCRIPTION,
 
       images: [
         {
-          url:
-            OG_IMAGE,
-
+          url: OG_IMAGE,
           width: 1200,
-
           height: 630,
-
-          alt:
-            "Car Battery Tips & Guides - Mobile Car Services Blog",
+          alt: "Car Battery Tips and Guides - Mobile Car Services Blog",
         },
       ],
     },
 
     twitter: {
-      card:
-        "summary_large_image",
-
-      title:
-        title,
-
-      description:
-        SEO_DESCRIPTION,
-
-      images: [
-        OG_IMAGE,
-      ],
+      card: "summary_large_image",
+      title,
+      description: SEO_DESCRIPTION,
+      images: [OG_IMAGE],
     },
 
     robots: {
@@ -158,12 +106,9 @@ export async function generateMetadata({
       googleBot: {
         index: true,
         follow: true,
-        "max-image-preview":
-          "large",
-        "max-snippet":
-          -1,
-        "max-video-preview":
-          -1,
+        "max-image-preview": "large",
+        "max-snippet": -1,
+        "max-video-preview": -1,
       },
     },
   };
@@ -172,9 +117,7 @@ export async function generateMetadata({
 async function getBlogPosts(page: number) {
   await connectDB();
 
-  const skip =
-    (page - 1) *
-    POSTS_PER_PAGE;
+  const skip = (page - 1) * POSTS_PER_PAGE;
 
   const filter: {
     status: BlogStatus;
@@ -184,10 +127,7 @@ async function getBlogPosts(page: number) {
     noIndex: false,
   };
 
-  const [
-    posts,
-    totalPosts,
-  ] = await Promise.all([
+  const [posts, totalPosts] = await Promise.all([
     Blog.find(filter)
       .select(
         [
@@ -219,77 +159,44 @@ async function getBlogPosts(page: number) {
 
   return {
     posts: posts.map((post) => ({
-      title:
-        post.title,
+      title: post.title,
 
-      slug:
-        post.slug,
+      slug: post.slug,
 
-      excerpt:
-        post.excerpt || "",
+      excerpt: post.excerpt || "",
 
-      coverImage:
-        post.coverImage
-          ? {
-              publicId:
-                post.coverImage.publicId,
+      coverImage: post.coverImage
+        ? {
+            publicId: post.coverImage.publicId,
+            secureUrl: post.coverImage.secureUrl,
+            width: post.coverImage.width,
+            height: post.coverImage.height,
+            format: post.coverImage.format,
+            bytes: post.coverImage.bytes,
+            resourceType: post.coverImage.resourceType,
+            alt: post.coverImage.alt,
+          }
+        : null,
 
-              secureUrl:
-                post.coverImage.secureUrl,
+      category: post.category || "",
 
-              width:
-                post.coverImage.width,
+      tags: Array.isArray(post.tags)
+        ? post.tags
+        : [],
 
-              height:
-                post.coverImage.height,
+      featured: Boolean(post.featured),
 
-              format:
-                post.coverImage.format,
+      publishedAt: post.publishedAt
+        ? new Date(post.publishedAt).toISOString()
+        : null,
 
-              bytes:
-                post.coverImage.bytes,
+      authorName: post.authorName || "",
 
-              resourceType:
-                post.coverImage.resourceType,
+      authorRole: post.authorRole || "",
 
-              alt:
-                post.coverImage.alt,
-            }
-          : null,
+      readingTime: post.readingTime ?? null,
 
-      category:
-        post.category || "",
-
-      tags:
-        Array.isArray(post.tags)
-          ? post.tags
-          : [],
-
-      featured:
-        Boolean(
-          post.featured,
-        ),
-
-      publishedAt:
-        post.publishedAt
-          ? new Date(
-              post.publishedAt,
-            ).toISOString()
-          : null,
-
-      authorName:
-        post.authorName || "",
-
-      authorRole:
-        post.authorRole || "",
-
-      readingTime:
-        post.readingTime ??
-        null,
-
-      displayOrder:
-        post.displayOrder ??
-        0,
+      displayOrder: post.displayOrder ?? 0,
     })),
 
     totalPosts,
@@ -321,195 +228,141 @@ function getBlogStructuredData({
       ? `${SITE_URL}/blog?page=${currentPage}`
       : `${SITE_URL}/blog`;
 
-  const itemList = posts.map(
-    (post, index) => {
-      const articleUrl =
-        `${SITE_URL}/blog/${post.slug}`;
+  const itemList = posts.map((post, index) => {
+    const articleUrl = `${SITE_URL}/blog/${post.slug}`;
 
-      return {
-        "@type":
-          "ListItem",
+    const position =
+      (currentPage - 1) * POSTS_PER_PAGE + index + 1;
 
-        position:
-          index + 1,
+    return {
+      "@type": "ListItem",
 
-        url:
-          articleUrl,
+      position,
 
-        item: {
-          "@type":
-            "Article",
+      url: articleUrl,
 
-          "@id":
-            `${articleUrl}#article`,
+      item: {
+        "@type": "BlogPosting",
 
-          url:
-            articleUrl,
+        "@id": `${articleUrl}#article`,
 
-          headline:
-            post.title,
+        url: articleUrl,
 
-          description:
-            post.excerpt ||
-            undefined,
+        headline: post.title,
 
-          ...(post.coverImage
-            ? {
-                image: [
-                  post.coverImage
-                    .secureUrl,
-                ],
-              }
-            : {}),
+        ...(post.excerpt
+          ? {
+              description: post.excerpt,
+            }
+          : {}),
 
-          ...(post.publishedAt
-            ? {
-                datePublished:
-                  post.publishedAt,
-              }
-            : {}),
+        ...(post.coverImage?.secureUrl
+          ? {
+              image: [post.coverImage.secureUrl],
+            }
+          : {}),
 
-          ...(post.authorName
-            ? {
-                author: {
-                  "@type":
-                    "Person",
+        ...(post.publishedAt
+          ? {
+              datePublished: post.publishedAt,
+            }
+          : {}),
 
-                  name:
-                    post.authorName,
-                },
-              }
-            : {}),
+        ...(post.authorName
+          ? {
+              author: {
+                "@type": "Person",
+                name: post.authorName,
+              },
+            }
+          : {}),
 
-          publisher: {
-            "@id":
-              `${SITE_URL}/#organization`,
-          },
-
-          mainEntityOfPage: {
-            "@type":
-              "WebPage",
-
-            "@id":
-              articleUrl,
-          },
-
-          inLanguage:
-            "en-AU",
+        publisher: {
+          "@id": `${SITE_URL}/#organization`,
         },
-      };
-    },
-  );
+
+        mainEntityOfPage: {
+          "@type": "WebPage",
+          "@id": articleUrl,
+        },
+
+        inLanguage: "en-AU",
+      },
+    };
+  });
 
   return {
-    "@context":
-      "https://schema.org",
+    "@context": "https://schema.org",
 
     "@graph": [
       {
-        "@type":
-          "CollectionPage",
+        "@type": "CollectionPage",
 
-        "@id":
-          `${blogUrl}#webpage`,
+        "@id": `${blogUrl}#webpage`,
 
-        url:
-          blogUrl,
+        url: blogUrl,
 
         name:
           currentPage > 1
             ? `${SEO_TITLE} - Page ${currentPage}`
             : SEO_TITLE,
 
-        description:
-          SEO_DESCRIPTION,
+        description: SEO_DESCRIPTION,
 
         isPartOf: {
-          "@id":
-            `${SITE_URL}/#website`,
+          "@id": `${SITE_URL}/#website`,
         },
 
         about: {
-          "@id":
-            `${SITE_URL}/#organization`,
+          "@id": `${SITE_URL}/#organization`,
         },
 
         publisher: {
-          "@id":
-            `${SITE_URL}/#organization`,
+          "@id": `${SITE_URL}/#organization`,
         },
 
-        inLanguage:
-          "en-AU",
+        inLanguage: "en-AU",
       },
 
       {
-        "@type":
-          "ItemList",
+        "@type": "ItemList",
 
-        "@id":
-          `${blogUrl}#itemlist`,
+        "@id": `${blogUrl}#itemlist`,
 
-        name:
-          "Mobile Car Services Blog Articles",
+        name: "Mobile Car Services Blog Articles",
 
-        numberOfItems:
-          posts.length,
+        numberOfItems: posts.length,
 
-        itemListElement:
-          itemList,
+        itemListElement: itemList,
       },
 
       {
-        "@type":
-          "BreadcrumbList",
+        "@type": "BreadcrumbList",
 
-        "@id":
-          `${blogUrl}#breadcrumb`,
+        "@id": `${blogUrl}#breadcrumb`,
 
         itemListElement: [
           {
-            "@type":
-              "ListItem",
-
-            position:
-              1,
-
-            name:
-              "Home",
-
-            item:
-              SITE_URL,
+            "@type": "ListItem",
+            position: 1,
+            name: "Home",
+            item: SITE_URL,
           },
 
           {
-            "@type":
-              "ListItem",
-
-            position:
-              2,
-
-            name:
-              "Blog",
-
-            item:
-              `${SITE_URL}/blog`,
+            "@type": "ListItem",
+            position: 2,
+            name: "Blog",
+            item: `${SITE_URL}/blog`,
           },
 
           ...(currentPage > 1
             ? [
                 {
-                  "@type":
-                    "ListItem",
-
-                  position:
-                    3,
-
-                  name:
-                    `Page ${currentPage}`,
-
-                  item:
-                    blogUrl,
+                  "@type": "ListItem",
+                  position: 3,
+                  name: `Page ${currentPage}`,
+                  item: blogUrl,
                 },
               ]
             : []),
@@ -522,69 +375,44 @@ function getBlogStructuredData({
 export default async function BlogPage({
   searchParams,
 }: BlogPageProps) {
-  const params =
-    await searchParams;
+  const params = await searchParams;
 
-  const rawPage =
-    Number.parseInt(
-      params.page || "1",
-      10,
-    );
-
-  const currentPage =
-    Number.isFinite(rawPage) &&
-    rawPage > 0
-      ? rawPage
-      : 1;
+  const currentPage = getCurrentPage(params.page);
 
   const {
     posts,
     totalPosts,
-  } =
-    await getBlogPosts(
-      currentPage,
-    );
+  } = await getBlogPosts(currentPage);
 
-  const totalPages =
-    Math.max(
-      1,
-      Math.ceil(
-        totalPosts /
-          POSTS_PER_PAGE,
-      ),
-    );
+  const totalPages = Math.max(
+    1,
+    Math.ceil(totalPosts / POSTS_PER_PAGE),
+  );
 
-  const structuredData =
-    getBlogStructuredData({
-      posts,
+  const structuredData = getBlogStructuredData({
+    posts,
+    currentPage,
+  });
 
-      currentPage,
-    });
+  const safeStructuredData = JSON.stringify(
+    structuredData,
+  ).replace(/</g, "\\u003c");
 
   return (
     <>
       <main>
         <BlogListingPage
           posts={posts}
-          currentPage={
-            currentPage
-          }
-          totalPages={
-            totalPages
-          }
-          totalPosts={
-            totalPosts
-          }
+          currentPage={currentPage}
+          totalPages={totalPages}
+          totalPosts={totalPosts}
         />
       </main>
 
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html:
-            JSON.stringify(
-              structuredData,
-            ),
+          __html: safeStructuredData,
         }}
       />
     </>

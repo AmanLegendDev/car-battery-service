@@ -1,26 +1,42 @@
-const SITE_URL = "https://www.mobilecarservices.com.au/";
+
+const SITE_URL = "https://www.mobilecarservices.com.au";
 
 const BUSINESS_NAME = "Mobile Car Services";
 
 const BUSINESS_DESCRIPTION =
-  "Mobile Car Services provides mobile  vehicle electrical assistance across Melbourne West, including battery replacement, battery testing, jump start assistance, starter motor replacement and alternator replacement at your vehicle's location.";
+  "Mobile Car Services provides mobile vehicle electrical assistance across Melbourne West, including battery replacement, battery testing, jump start assistance, starter motor replacement and alternator replacement at your vehicle's location.";
 
 const PHONE = "+61 467 037 886";
+
+const LOGO_URL = `${SITE_URL}/images/logo/logo.png`;
+
+/* ============================================================
+   ORGANIZATION SCHEMA
+============================================================ */
 
 export function getOrganizationSchema() {
   return {
     "@type": "Organization",
+
     "@id": `${SITE_URL}/#organization`,
+
     name: BUSINESS_NAME,
+
     url: SITE_URL,
 
     logo: {
       "@type": "ImageObject",
+
       "@id": `${SITE_URL}/#logo`,
-      url: `${SITE_URL}/images/logo/logo.png`,
-      contentUrl: `${SITE_URL}/images/logo/logo.png`,
+
+      url: LOGO_URL,
+
+      contentUrl: LOGO_URL,
+
       width: 1254,
+
       height: 1254,
+
       caption: BUSINESS_NAME,
     },
 
@@ -34,17 +50,26 @@ export function getOrganizationSchema() {
 
     areaServed: {
       "@type": "Place",
+
       name: "Melbourne West",
     },
   };
 }
 
+/* ============================================================
+   WEBSITE SCHEMA
+============================================================ */
+
 export function getWebsiteSchema() {
   return {
     "@type": "WebSite",
+
     "@id": `${SITE_URL}/#website`,
+
     url: SITE_URL,
+
     name: BUSINESS_NAME,
+
     description: BUSINESS_DESCRIPTION,
 
     publisher: {
@@ -55,12 +80,17 @@ export function getWebsiteSchema() {
   };
 }
 
+/* ============================================================
+   GLOBAL STRUCTURED DATA
+============================================================ */
+
 export function getGlobalStructuredData() {
   return {
     "@context": "https://schema.org",
 
     "@graph": [
       getOrganizationSchema(),
+
       getWebsiteSchema(),
     ],
   };

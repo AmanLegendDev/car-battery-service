@@ -1,3 +1,4 @@
+
 import type { MetadataRoute } from "next";
 
 import { connectDB } from "@/lib/db";
@@ -6,28 +7,58 @@ import Blog from "@/models/Blog";
 import Service from "@/models/Service";
 import ServiceArea from "@/models/ServiceArea";
 
-const SITE_URL =
-  "https://www.mobilecarservices.com.au";
+const SITE_URL = "https://www.mobilecarservices.com.au";
 
-export const dynamic =
-  "force-dynamic";
+const SITE_ORIGIN = new URL(SITE_URL).origin;
+
+export const dynamic = "force-dynamic";
+
+/* ============================================================
+   URL HELPERS
+============================================================ */
 
 function absoluteUrl(path: string): string {
-  return `${SITE_URL}${
-    path.startsWith("/")
-      ? path
-      : `/${path}`
-  }`;
+  return new URL(
+    path.startsWith("/") ? path : `/${path}`,
+    SITE_URL,
+  ).toString();
 }
 
-export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const now = new Date();
+function getValidCanonicalUrl(
+  canonicalUrl: unknown,
+  fallbackPath: string,
+): string {
+  if (typeof canonicalUrl !== "string" || !canonicalUrl.trim()) {
+    return absoluteUrl(fallbackPath);
+  }
 
-  /* ============================================================
-     STATIC PUBLIC PAGES
-  ============================================================ */
+  try {
+    const parsedUrl = new URL(canonicalUrl);
 
-  const staticPages: MetadataRoute.Sitemap = [
+    const isValid =
+      parsedUrl.protocol === "https:" &&
+      parsedUrl.origin === SITE_ORIGIN &&
+      !parsedUrl.username &&
+      !parsedUrl.password &&
+      !parsedUrl.search &&
+      !parsedUrl.hash;
+
+    return isValid
+      ? parsedUrl.toString()
+      : absoluteUrl(fallbackPath);
+  } catch {
+    return absoluteUrl(fallbackPath);
+  }
+}
+
+/* ============================================================
+   STATIC PUBLIC PAGES
+============================================================ */
+
+function getStaticPages(
+  now: Date,
+): MetadataRoute.Sitemap {
+  return [
     {
       url: absoluteUrl("/"),
       lastModified: now,
@@ -57,12 +88,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     },
 
     {
-  url: absoluteUrl("/testimonials"),
-  lastModified: now,
-  changeFrequency: "monthly",
-  priority: 0.8,
-},
-
+      url: absoluteUrl("/testimonials"),
+      lastModified: now,
+      changeFrequency: "monthly",
+      priority: 0.8,
+    },
 
     {
       url: absoluteUrl("/blog"),
@@ -106,157 +136,165 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.3,
     },
   ];
+}
+
+/* ============================================================
+   FINAL SITEMAP
+============================================================ */
+
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const now = new Date();
+
+  const staticPages = getStaticPages(now);
 
   try {
     await connectDB();
 
-    /* ============================================================
-       FETCH PUBLIC CMS CONTENT
-    ============================================================ */
+    /* --------------------------------------------------------
+       FETCH ACTIVE SERVICES, AREAS AND INDEXABLE BLOGS
+    -------------------------------------------------------- */
 
-    const [
-      services,
-      serviceAreas,
-      blogPosts,
-    ] = await Promise.all([
-      Service.find({
-        status: "active",
-      })
-        .select("slug updatedAt")
-        .sort({
-          displayOrder: 1,
+    const [services, serviceAreas, blogPosts] =
+      await Promise.all([
+        Service.find({
+          status: "active",
         })
-        .lean(),
+          .select("slug updatedAt")
+          .sort({
+            displayOrder: 1,
+          })
+          .lean(),
 
-      ServiceArea.find({
-        status: "active",
-      })
-        .select("slug updatedAt")
-        .sort({
-          displayOrder: 1,
+        ServiceArea.find({
+          status: "active",
         })
-        .lean(),
+          .select("slug updatedAt")
+          .sort({
+            displayOrder: 1,
+          })
+          .lean(),
 
-      Blog.find({
-        status: "published",
-        noIndex: false,
-      })
-        .select(
-          "slug updatedAt publishedAt canonicalUrl"
-        )
-        .sort({
-          publishedAt: -1,
+        Blog.find({
+          status: "published",
+
+          noIndex: {
+            $ne: true,
+          },
         })
-        .lean(),
-    ]);
+          .select(
+            "slug updatedAt publishedAt canonicalUrl",
+          )
+          .sort({
+            publishedAt: -1,
+          })
+          .lean(),
+      ]);
 
-    /* ============================================================
+    /* --------------------------------------------------------
        SERVICE DETAIL PAGES
-    ============================================================ */
+    -------------------------------------------------------- */
 
     const servicePages: MetadataRoute.Sitemap =
       services
         .filter(
           (service) =>
-            Boolean(service.slug)
+            typeof service.slug === "string" &&
+            service.slug.trim().length > 0,
         )
         .map((service) => ({
           url: absoluteUrl(
-            `/services/${service.slug}`
+            `/services/${service.slug}`,
           ),
 
           lastModified:
-            service.updatedAt ??
-            now,
+            service.updatedAt ?? now,
 
-          changeFrequency:
-            "monthly" as const,
+          changeFrequency: "monthly",
 
           priority: 0.85,
         }));
 
-    /* ============================================================
+    /* --------------------------------------------------------
        SERVICE AREA DETAIL PAGES
-    ============================================================ */
+    -------------------------------------------------------- */
 
     const serviceAreaPages: MetadataRoute.Sitemap =
       serviceAreas
         .filter(
           (area) =>
-            Boolean(area.slug)
+            typeof area.slug === "string" &&
+            area.slug.trim().length > 0,
         )
         .map((area) => ({
           url: absoluteUrl(
-            `/service-areas/${area.slug}`
+            `/service-areas/${area.slug}`,
           ),
 
           lastModified:
-            area.updatedAt ??
-            now,
+            area.updatedAt ?? now,
 
-          changeFrequency:
-            "monthly" as const,
+          changeFrequency: "monthly",
 
           priority: 0.8,
         }));
 
-    /* ============================================================
+    /* --------------------------------------------------------
        BLOG DETAIL PAGES
-    ============================================================ */
+    -------------------------------------------------------- */
 
     const blogPages: MetadataRoute.Sitemap =
       blogPosts
         .filter(
           (post) =>
-            Boolean(post.slug)
+            typeof post.slug === "string" &&
+            post.slug.trim().length > 0,
         )
-        .map((post) => {
-          const canonicalUrl =
-            typeof post.canonicalUrl ===
-              "string" &&
-            post.canonicalUrl.startsWith(
-              SITE_URL
-            )
-              ? post.canonicalUrl
-              : absoluteUrl(
-                  `/blog/${post.slug}`
-                );
+        .map((post) => ({
+          url: getValidCanonicalUrl(
+            post.canonicalUrl,
+            `/blog/${post.slug}`,
+          ),
 
-          return {
-            url: canonicalUrl,
+          lastModified:
+            post.updatedAt ??
+            post.publishedAt ??
+            now,
 
-            lastModified:
-              post.updatedAt ??
-              post.publishedAt ??
-              now,
+          changeFrequency: "monthly",
 
-            changeFrequency:
-              "monthly" as const,
+          priority: 0.75,
+        }));
 
-            priority: 0.75,
-          };
-        });
+    /* --------------------------------------------------------
+       COMBINE AND REMOVE DUPLICATE URLS
+    -------------------------------------------------------- */
 
-    /* ============================================================
-       FINAL SITEMAP
-    ============================================================ */
-
-    return [
+    const allPages = [
       ...staticPages,
       ...servicePages,
       ...serviceAreaPages,
       ...blogPages,
     ];
+
+    const uniquePages = new Map<
+      string,
+      MetadataRoute.Sitemap[number]
+    >();
+
+    for (const page of allPages) {
+      if (!uniquePages.has(page.url)) {
+        uniquePages.set(page.url, page);
+      }
+    }
+
+    return Array.from(uniquePages.values());
   } catch (error) {
     console.error(
       "Failed to generate sitemap:",
-      error
+      error,
     );
 
-    /*
-     * Keep the sitemap available even if
-     * the database is temporarily unavailable.
-     */
+    // Preserve static URLs if the database is unavailable.
     return staticPages;
   }
 }

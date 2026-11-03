@@ -1,3 +1,4 @@
+
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 
@@ -17,35 +18,28 @@ const geistMono = Geist_Mono({
 
 const SITE_URL = "https://www.mobilecarservices.com.au";
 
+const SITE_NAME = "Mobile Car Services";
+
+const SITE_DESCRIPTION =
+  "Mobile Car Services across Melbourne West, including battery replacement, battery testing, jump starts, starter motor replacement and alternator replacement.";
+
+const OG_IMAGE = `${SITE_URL}/images/seo/og-image.jpg`;
+
+/* ============================================================
+   GLOBAL METADATA
+============================================================ */
+
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
 
-  /*
-   * Global fallback metadata.
-   *
-   * Individual pages will provide their own exact SEO titles
-   * and descriptions from the SEO sheet.
-   *
-   * IMPORTANT:
-   * Page-specific titles should use:
-   *
-   * title: {
-   *   absolute: "Exact SEO Title",
-   * }
-   *
-   * so the global template does not append the brand again.
-   */
   title: {
-    default: "Mobile Car Services",
-    template: "%s | Mobile Car Services",
+    default: SITE_NAME,
+    template: `%s | ${SITE_NAME}`,
   },
 
-  description:
-    "Mobile Car Services across Melbourne West, including battery replacement, battery testing, jump starts, starter motor replacement and alternator replacement.",
+  description: SITE_DESCRIPTION,
 
-  applicationName: "Mobile Car Services",
-
-  generator: "Next.js",
+  applicationName: SITE_NAME,
 
   keywords: [
     "car service Melbourne West",
@@ -60,20 +54,24 @@ export const metadata: Metadata = {
 
   authors: [
     {
-      name: "Mobile Car Services",
+      name: SITE_NAME,
     },
   ],
 
-  creator: "Mobile Car Services",
+  creator: SITE_NAME,
 
-  publisher: "Mobile Car Services",
+  publisher: SITE_NAME,
 
-  /*
-   * Keep the current site-wide canonical here as the fallback.
-   * Individual pages will define their own canonical URLs.
-   */
   alternates: {
-    canonical: SITE_URL,
+    canonical: "/",
+  },
+
+  verification: {
+    google: "jV4EXGEJcQzKFC1hkGN9yy7tEL-oc5jYXlegXGp1KL4",
+
+    other: {
+      "msvalidate.01": "6C56034BC8A4093CC1774D376348B66E",
+    },
   },
 
   icons: {
@@ -103,67 +101,62 @@ export const metadata: Metadata = {
     ],
   },
 
-  /*
-   * Global Open Graph fallback.
-   *
-   * Individual pages will override title/description/url
-   * with their page-specific SEO metadata.
-   */
   openGraph: {
     type: "website",
+
     locale: "en_AU",
+
     url: SITE_URL,
-    siteName: "Mobile Car Services",
 
-    title: "Mobile Car Services",
+    siteName: SITE_NAME,
 
-    description:
-      "Mobile Car Services across Melbourne West, including battery replacement, battery testing, jump starts, starter motor replacement and alternator replacement.",
+    title: SITE_NAME,
+
+    description: SITE_DESCRIPTION,
 
     images: [
       {
-        url: "/images/seo/og-image.jpg",
+        url: OG_IMAGE,
+
         width: 1200,
+
         height: 630,
-        alt: "Mobile Car Services - Mobile Car Services Melbourne West",
+
+        alt: "Mobile Car Services - Automotive Assistance in Melbourne West",
       },
     ],
   },
 
-  /*
-   * Global Twitter fallback.
-   */
   twitter: {
     card: "summary_large_image",
 
-    title: "Mobile Car Services",
+    title: SITE_NAME,
 
-    description:
-      "Mobile Car Services across Melbourne West, including battery replacement, testing, jump starts, starter motor replacement and alternator replacement.",
+    description: SITE_DESCRIPTION,
 
     images: [
       {
-        url: "/images/seo/og-image.jpg",
+        url: OG_IMAGE,
+
         alt: "Mobile Car Services - Melbourne West",
       },
     ],
   },
 
-  /*
-   * Site-wide crawl directives.
-   *
-   * Individual pages such as Privacy/Terms can override this
-   * later if we decide to noindex them.
-   */
   robots: {
     index: true,
+
     follow: true,
 
     googleBot: {
       index: true,
+
       follow: true,
+
       "max-image-preview": "large",
+
       "max-snippet": -1,
+
       "max-video-preview": -1,
     },
   },
@@ -171,17 +164,32 @@ export const metadata: Metadata = {
   category: "automotive",
 };
 
+/* ============================================================
+   VIEWPORT
+============================================================ */
+
 export const viewport: Viewport = {
   width: "device-width",
+
   initialScale: 1,
+
   colorScheme: "dark",
+
   themeColor: "#061A2B",
 };
+
+/* ============================================================
+   ROOT LAYOUT
+============================================================ */
 
 export default function RootLayout({
   children,
 }: LayoutProps<"/">) {
   const globalStructuredData = getGlobalStructuredData();
+
+  const safeStructuredData = JSON.stringify(
+    globalStructuredData,
+  ).replace(/</g, "\\u003c");
 
   return (
     <html
@@ -189,16 +197,8 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <head>
-        {/* Google Search Console Verification */}
-        <meta name="google-site-verification" content="jV4EXGEJcQzKFC1hkGN9yy7tEL-oc5jYXlegXGp1KL4" />
+        {/* Cloudinary Connection Optimization */}
 
-        {/* Bing Webmaster Tools Verification */}
-        <meta
-          name="msvalidate.01"
-          content="6C56034BC8A4093CC1774D376348B66E"
-        />
-
-        {/* Cloudinary connection optimization */}
         <link
           rel="preconnect"
           href="https://res.cloudinary.com"
@@ -213,10 +213,12 @@ export default function RootLayout({
       <body className="min-h-full bg-[#061A2B] text-[#F8FAFC]">
         {children}
 
+        {/* GLOBAL STRUCTURED DATA */}
+
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
-            __html: JSON.stringify(globalStructuredData),
+            __html: safeStructuredData,
           }}
         />
       </body>

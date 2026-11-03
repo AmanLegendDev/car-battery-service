@@ -1,3 +1,4 @@
+
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
@@ -7,68 +8,113 @@ import Service from "@/models/Service";
 
 import ServiceDetailPage from "@/components/services/detail/ServiceDetailPage";
 
+export const dynamic = "force-dynamic";
+
 interface ServicePageProps {
   params: Promise<{
     slug: string;
   }>;
 }
 
-const SITE_URL =
-  "https://www.mobilecarservices.com.au/";
+const SITE_URL = "https://www.mobilecarservices.com.au";
 
-const DEFAULT_BUSINESS_NAME =
-  "Mobile Car Services";
+const DEFAULT_BUSINESS_NAME = "Mobile Car Services";
 
 const DEFAULT_DESCRIPTION =
-  "Mobile car battery assistance from Mobile Car Services.";
+  "Mobile automotive assistance from Mobile Car Services across Melbourne West.";
 
 const DEFAULT_OG_IMAGE =
-  "/images/seo/service-og.jpg";
+  `${SITE_URL}/images/seo/service-og.jpg`;
 
 /* ============================================================
    GET SERVICE
 ============================================================ */
 
-async function getServiceBySlug(
-  slug: string,
-) {
+async function getServiceBySlug(slug: string) {
   await connectDB();
 
-  const service =
-    await Service.findOne({
-      slug:
-        slug.toLowerCase(),
+  const service = await Service.findOne({
+    slug: slug.toLowerCase(),
 
-      status: "active",
-    })
-      .select(
-        [
-          "title",
-          "slug",
-          "shortDescription",
-          "description",
-          "heroImage",
-          "gallery",
-          "processSteps",
-          "benefits",
-          "included",
-          "suitableFor",
-          "estimatedTime",
-          "pricing",
-          "emergencyService",
-          "onSiteService",
-          "ctaText",
-          "ctaLink",
-          "featured",
-          "displayOrder",
-          "seoTitle",
-          "seoDescription",
-          "ogImage",
-        ].join(" "),
-      )
-      .lean();
+    status: "active",
+  })
+    .select(
+      [
+        "title",
+        "slug",
+        "shortDescription",
+        "description",
+        "heroImage",
+        "gallery",
+        "processSteps",
+        "benefits",
+        "included",
+        "suitableFor",
+        "estimatedTime",
+        "pricing",
+        "emergencyService",
+        "onSiteService",
+        "ctaText",
+        "ctaLink",
+        "featured",
+        "displayOrder",
+        "seoTitle",
+        "seoDescription",
+        "ogImage",
+      ].join(" "),
+    )
+    .lean();
 
   return service;
+}
+
+/* ============================================================
+   GET SEO VALUES
+============================================================ */
+
+function getServiceSEO(service: NonNullable<
+  Awaited<ReturnType<typeof getServiceBySlug>>
+>) {
+  const title =
+    typeof service.seoTitle === "string" &&
+    service.seoTitle.trim()
+      ? service.seoTitle.trim()
+      : `${service.title} | ${DEFAULT_BUSINESS_NAME}`;
+
+  const description =
+    typeof service.seoDescription === "string" &&
+    service.seoDescription.trim()
+      ? service.seoDescription.trim()
+      : typeof service.shortDescription === "string" &&
+          service.shortDescription.trim()
+        ? service.shortDescription.trim()
+        : DEFAULT_DESCRIPTION;
+
+  const canonicalUrl =
+    `${SITE_URL}/services/${service.slug}`;
+
+  const ogImage =
+    service.ogImage?.secureUrl
+      ? service.ogImage
+      : service.heroImage?.secureUrl
+        ? service.heroImage
+        : null;
+
+  const imageUrl =
+    ogImage?.secureUrl || DEFAULT_OG_IMAGE;
+
+  const imageAlt =
+    ogImage?.alt?.trim() ||
+    `${service.title} - ${DEFAULT_BUSINESS_NAME}`;
+
+  return {
+    title,
+    description,
+    canonicalUrl,
+    imageUrl,
+    imageAlt,
+    ogImage,
+  };
 }
 
 /* ============================================================
@@ -78,65 +124,33 @@ async function getServiceBySlug(
 export async function generateMetadata({
   params,
 }: ServicePageProps): Promise<Metadata> {
-  const { slug } =
-    await params;
+  const { slug } = await params;
 
-  const service =
-    await getServiceBySlug(
-      slug,
-    );
+  const service = await getServiceBySlug(slug);
 
   if (!service) {
     return {
-      title:
-        "Service Not Found | Mobile Car Services",
+      title: "Service Not Found | Mobile Car Services",
 
       description:
         "The requested service could not be found.",
 
       robots: {
         index: false,
-        follow: false,
+        follow: true,
       },
     };
   }
 
-  const title =
-    typeof service.seoTitle ===
-      "string" &&
-    service.seoTitle.trim()
-      ? service.seoTitle.trim()
-      : `${service.title} | ${DEFAULT_BUSINESS_NAME}`;
-
-  const description =
-    typeof service.seoDescription ===
-      "string" &&
-    service.seoDescription.trim()
-      ? service.seoDescription.trim()
-      : typeof service.shortDescription ===
-          "string" &&
-        service.shortDescription.trim()
-      ? service.shortDescription.trim()
-      : DEFAULT_DESCRIPTION;
-
-  const canonicalPath =
-    `/services/${service.slug}`;
-
-  const heroImage =
-    service.heroImage;
-
-  const ogImage =
-    service.ogImage ||
-    heroImage;
+  const seo = getServiceSEO(service);
 
   return {
-    title,
+    title: seo.title,
 
-    description,
+    description: seo.description,
 
     alternates: {
-      canonical:
-        canonicalPath,
+      canonical: seo.canonicalUrl,
     },
 
     openGraph: {
@@ -144,58 +158,43 @@ export async function generateMetadata({
 
       locale: "en_AU",
 
-      url:
-        `${SITE_URL}${canonicalPath}`,
+      url: seo.canonicalUrl,
 
-      siteName:
-        DEFAULT_BUSINESS_NAME,
+      siteName: DEFAULT_BUSINESS_NAME,
 
-      title,
+      title: seo.title,
 
-      description,
+      description: seo.description,
 
       images: [
-        ogImage?.secureUrl
-          ? {
-              url:
-                ogImage.secureUrl,
+        {
+          url: seo.imageUrl,
 
-              width:
-                ogImage.width,
+          ...(seo.ogImage?.width
+            ? {
+                width: seo.ogImage.width,
+              }
+            : {}),
 
-              height:
-                ogImage.height,
+          ...(seo.ogImage?.height
+            ? {
+                height: seo.ogImage.height,
+              }
+            : {}),
 
-              alt:
-                ogImage.alt?.trim() ||
-                service.title,
-            }
-          : {
-              url:
-                `${SITE_URL}${DEFAULT_OG_IMAGE}`,
-
-              width: 1200,
-
-              height: 630,
-
-              alt:
-                `${service.title} | ${DEFAULT_BUSINESS_NAME}`,
-            },
+          alt: seo.imageAlt,
+        },
       ],
     },
 
     twitter: {
-      card:
-        "summary_large_image",
+      card: "summary_large_image",
 
-      title,
+      title: seo.title,
 
-      description,
+      description: seo.description,
 
-      images: [
-        ogImage?.secureUrl ||
-          `${SITE_URL}${DEFAULT_OG_IMAGE}`,
-      ],
+      images: [seo.imageUrl],
     },
 
     robots: {
@@ -208,14 +207,11 @@ export async function generateMetadata({
 
         follow: true,
 
-        "max-image-preview":
-          "large",
+        "max-image-preview": "large",
 
-        "max-snippet":
-          -1,
+        "max-snippet": -1,
 
-        "max-video-preview":
-          -1,
+        "max-video-preview": -1,
       },
     },
   };
@@ -227,72 +223,40 @@ export async function generateMetadata({
 
 function getServiceStructuredData(
   service: NonNullable<
-    Awaited<
-      ReturnType<
-        typeof getServiceBySlug
-      >
-    >
+    Awaited<ReturnType<typeof getServiceBySlug>>
   >,
 ) {
-  const canonicalUrl =
-    `${SITE_URL}/services/${service.slug}`;
+  const seo = getServiceSEO(service);
 
-  const title =
-    typeof service.seoTitle ===
-      "string" &&
-    service.seoTitle.trim()
-      ? service.seoTitle.trim()
-      : `${service.title} | ${DEFAULT_BUSINESS_NAME}`;
-
-  const description =
-    typeof service.seoDescription ===
-      "string" &&
-    service.seoDescription.trim()
-      ? service.seoDescription.trim()
-      : typeof service.shortDescription ===
-          "string" &&
-        service.shortDescription.trim()
-      ? service.shortDescription.trim()
-      : DEFAULT_DESCRIPTION;
-
-  const ogImage =
-    service.ogImage ||
-    service.heroImage;
-
-  const graph: Record<
-    string,
-    unknown
-  >[] = [];
+  const graph: Record<string, unknown>[] = [];
 
   /* ----------------------------------------------------------
      PRIMARY IMAGE
   ---------------------------------------------------------- */
 
-  if (
-    ogImage?.secureUrl
-  ) {
+  if (seo.ogImage?.secureUrl) {
     graph.push({
-      "@type":
-        "ImageObject",
+      "@type": "ImageObject",
 
-      "@id":
-        `${canonicalUrl}#primaryimage`,
+      "@id": `${seo.canonicalUrl}#primaryimage`,
 
-      url:
-        ogImage.secureUrl,
+      url: seo.imageUrl,
 
-      contentUrl:
-        ogImage.secureUrl,
+      contentUrl: seo.imageUrl,
 
-      width:
-        ogImage.width,
+      ...(seo.ogImage.width
+        ? {
+            width: seo.ogImage.width,
+          }
+        : {}),
 
-      height:
-        ogImage.height,
+      ...(seo.ogImage.height
+        ? {
+            height: seo.ogImage.height,
+          }
+        : {}),
 
-      caption:
-        ogImage.alt?.trim() ||
-        service.title,
+      caption: seo.imageAlt,
     });
   }
 
@@ -301,43 +265,34 @@ function getServiceStructuredData(
   ---------------------------------------------------------- */
 
   graph.push({
-    "@type":
-      "Service",
+    "@type": "Service",
 
-    "@id":
-      `${canonicalUrl}#service`,
+    "@id": `${seo.canonicalUrl}#service`,
 
-    name:
-      service.title,
+    name: service.title,
 
-    description,
+    description: seo.description,
 
-    serviceType:
-      service.title,
+    serviceType: service.title,
 
     provider: {
-      "@id":
-        `${SITE_URL}/#organization`,
+      "@id": `${SITE_URL}/#organization`,
     },
 
-    url:
-      canonicalUrl,
+    url: seo.canonicalUrl,
 
-    ...(ogImage?.secureUrl
+    ...(seo.ogImage?.secureUrl
       ? {
           image: {
-            "@id":
-              `${canonicalUrl}#primaryimage`,
+            "@id": `${seo.canonicalUrl}#primaryimage`,
           },
         }
       : {}),
 
     areaServed: {
-      "@type":
-        "Place",
+      "@type": "Place",
 
-      name:
-        "Melbourne West",
+      name: "Melbourne West",
     },
   });
 
@@ -346,56 +301,45 @@ function getServiceStructuredData(
   ---------------------------------------------------------- */
 
   graph.push({
-    "@type":
-      "WebPage",
+    "@type": "WebPage",
 
-    "@id":
-      `${canonicalUrl}#webpage`,
+    "@id": `${seo.canonicalUrl}#webpage`,
 
-    url:
-      canonicalUrl,
+    url: seo.canonicalUrl,
 
-    name:
-      title,
+    name: seo.title,
 
-    description,
+    description: seo.description,
 
     isPartOf: {
-      "@id":
-        `${SITE_URL}/#website`,
+      "@id": `${SITE_URL}/#website`,
     },
 
     about: {
-      "@id":
-        `${canonicalUrl}#service`,
+      "@id": `${seo.canonicalUrl}#service`,
     },
 
     mainEntity: {
-      "@id":
-        `${canonicalUrl}#service`,
+      "@id": `${seo.canonicalUrl}#service`,
     },
 
     publisher: {
-      "@id":
-        `${SITE_URL}/#organization`,
+      "@id": `${SITE_URL}/#organization`,
     },
 
-    ...(ogImage?.secureUrl
+    ...(seo.ogImage?.secureUrl
       ? {
           primaryImageOfPage: {
-            "@id":
-              `${canonicalUrl}#primaryimage`,
+            "@id": `${seo.canonicalUrl}#primaryimage`,
           },
         }
       : {}),
 
     breadcrumb: {
-      "@id":
-        `${canonicalUrl}#breadcrumb`,
+      "@id": `${seo.canonicalUrl}#breadcrumb`,
     },
 
-    inLanguage:
-      "en-AU",
+    inLanguage: "en-AU",
   });
 
   /* ----------------------------------------------------------
@@ -403,60 +347,47 @@ function getServiceStructuredData(
   ---------------------------------------------------------- */
 
   graph.push({
-    "@type":
-      "BreadcrumbList",
+    "@type": "BreadcrumbList",
 
-    "@id":
-      `${canonicalUrl}#breadcrumb`,
+    "@id": `${seo.canonicalUrl}#breadcrumb`,
 
     itemListElement: [
       {
-        "@type":
-          "ListItem",
+        "@type": "ListItem",
 
         position: 1,
 
-        name:
-          "Home",
+        name: "Home",
 
-        item:
-          SITE_URL,
+        item: SITE_URL,
       },
 
       {
-        "@type":
-          "ListItem",
+        "@type": "ListItem",
 
         position: 2,
 
-        name:
-          "Services",
+        name: "Services",
 
-        item:
-          `${SITE_URL}/services`,
+        item: `${SITE_URL}/services`,
       },
 
       {
-        "@type":
-          "ListItem",
+        "@type": "ListItem",
 
         position: 3,
 
-        name:
-          service.title,
+        name: service.title,
 
-        item:
-          canonicalUrl,
+        item: seo.canonicalUrl,
       },
     ],
   });
 
   return {
-    "@context":
-      "https://schema.org",
+    "@context": "https://schema.org",
 
-    "@graph":
-      graph,
+    "@graph": graph,
   };
 }
 
@@ -467,22 +398,20 @@ function getServiceStructuredData(
 export default async function ServicePage({
   params,
 }: ServicePageProps) {
-  const { slug } =
-    await params;
+  const { slug } = await params;
 
-  const service =
-    await getServiceBySlug(
-      slug,
-    );
+  const service = await getServiceBySlug(slug);
 
   if (!service) {
     notFound();
   }
 
   const structuredData =
-    getServiceStructuredData(
-      service,
-    );
+    getServiceStructuredData(service);
+
+  const safeStructuredData = JSON.stringify(
+    structuredData,
+  ).replace(/</g, "\\u003c");
 
   return (
     <>
@@ -495,10 +424,7 @@ export default async function ServicePage({
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html:
-            JSON.stringify(
-              structuredData,
-            ),
+          __html: safeStructuredData,
         }}
       />
     </>

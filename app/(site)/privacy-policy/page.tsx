@@ -1,3 +1,4 @@
+
 import type { Metadata } from "next";
 
 import { connectDB } from "@/lib/db";
@@ -7,26 +8,21 @@ import PrivacyPolicyPage from "@/components/legal/privacy/PrivacyPolicyPage";
 
 export const dynamic = "force-dynamic";
 
-const SITE_URL =
-  "https://www.mobilecarservices.com.au/";
+const SITE_URL = "https://www.mobilecarservices.com.au";
 
-const PAGE_URL =
-  `${SITE_URL}/privacy-policy`;
+const PAGE_URL = `${SITE_URL}/privacy-policy`;
 
 const SEO_TITLE =
   "Privacy Policy | Mobile Car Services";
 
 const SEO_DESCRIPTION =
-  "Read the Privacy Policy for Mobile Car Services, including how information is collected, used and handled when using our website or requesting mobile car services.";
+  "Read the Privacy Policy for Mobile Car Services, including how personal information is collected, used and handled when using our website or requesting mobile car services.";
 
-const OG_IMAGE =
-  "/images/seo/og-image.jpg";
+const OG_IMAGE = `${SITE_URL}/images/seo/og-image.jpg`;
 
-const DEFAULT_BUSINESS_NAME =
-  "Mobile Car Services";
+const DEFAULT_BUSINESS_NAME = "Mobile Car Services";
 
-const DEFAULT_REGION =
-  "Melbourne West";
+const DEFAULT_REGION = "Melbourne West";
 
 /* ============================================================
    BUSINESS TYPE
@@ -50,74 +46,61 @@ interface PrivacyBusiness {
 async function getBusinessSettings(): Promise<PrivacyBusiness> {
   await connectDB();
 
-  const business =
-    await SiteSettings.findOne()
-      .select(
-        "businessName tagline description phone primaryCallNumber whatsapp email primaryServiceRegion",
-      )
-      .lean();
+  const business = await SiteSettings.findOne()
+    .select(
+      "businessName tagline description phone primaryCallNumber whatsapp email primaryServiceRegion",
+    )
+    .lean();
 
   const businessName =
-    typeof business?.businessName ===
-      "string" &&
+    typeof business?.businessName === "string" &&
     business.businessName.trim()
       ? business.businessName.trim()
       : DEFAULT_BUSINESS_NAME;
+
+  const phone =
+    typeof business?.phone === "string"
+      ? business.phone
+      : "";
+
+  const primaryCallNumber =
+    typeof business?.primaryCallNumber === "string" &&
+    business.primaryCallNumber.trim()
+      ? business.primaryCallNumber
+      : phone;
+
+  const whatsapp =
+    typeof business?.whatsapp === "string" &&
+    business.whatsapp.trim()
+      ? business.whatsapp
+      : primaryCallNumber || phone;
 
   return {
     businessName,
 
     tagline:
-      typeof business?.tagline ===
-        "string"
+      typeof business?.tagline === "string"
         ? business.tagline
         : "",
 
     description:
-      typeof business?.description ===
-        "string"
+      typeof business?.description === "string"
         ? business.description
         : "",
 
-    phone:
-      typeof business?.phone ===
-        "string"
-        ? business.phone
-        : "",
+    phone,
 
-    primaryCallNumber:
-      typeof business?.primaryCallNumber ===
-        "string" &&
-      business.primaryCallNumber.trim()
-        ? business.primaryCallNumber
-        : typeof business?.phone ===
-            "string"
-          ? business.phone
-          : "",
+    primaryCallNumber,
 
-    whatsapp:
-      typeof business?.whatsapp ===
-        "string" &&
-      business.whatsapp.trim()
-        ? business.whatsapp
-        : typeof business?.primaryCallNumber ===
-              "string" &&
-            business.primaryCallNumber.trim()
-          ? business.primaryCallNumber
-          : typeof business?.phone ===
-              "string"
-            ? business.phone
-            : "",
+    whatsapp,
 
     email:
-      typeof business?.email ===
-        "string"
+      typeof business?.email === "string"
         ? business.email
         : "",
 
     primaryServiceRegion:
-      typeof business?.primaryServiceRegion ===
-        "string" &&
+      typeof business?.primaryServiceRegion === "string" &&
       business.primaryServiceRegion.trim()
         ? business.primaryServiceRegion
         : DEFAULT_REGION,
@@ -128,98 +111,71 @@ async function getBusinessSettings(): Promise<PrivacyBusiness> {
    SEO METADATA
 ============================================================ */
 
-export async function generateMetadata(): Promise<Metadata> {
-  return {
-    title: {
-      absolute:
-        SEO_TITLE,
-    },
+export const metadata: Metadata = {
+  title: {
+    absolute: SEO_TITLE,
+  },
 
-    description:
-      SEO_DESCRIPTION,
+  description: SEO_DESCRIPTION,
 
-    alternates: {
-      canonical:
-        PAGE_URL,
-    },
+  alternates: {
+    canonical: PAGE_URL,
+  },
 
-    openGraph: {
-      type:
-        "website",
+  openGraph: {
+    type: "website",
 
-      locale:
-        "en_AU",
+    locale: "en_AU",
 
-      url:
-        PAGE_URL,
+    url: PAGE_URL,
 
-      siteName:
-        "Mobile Car Services",
+    siteName: "Mobile Car Services",
 
-      title:
-        SEO_TITLE,
+    title: SEO_TITLE,
 
-      description:
-        SEO_DESCRIPTION,
+    description: SEO_DESCRIPTION,
 
-      images: [
-        {
-          url:
-            OG_IMAGE,
+    images: [
+      {
+        url: OG_IMAGE,
 
-          width:
-            1200,
+        width: 1200,
 
-          height:
-            630,
+        height: 630,
 
-          alt:
-            "Mobile Car Services - Privacy Policy",
-        },
-      ],
-    },
-
-    twitter: {
-      card:
-        "summary_large_image",
-
-      title:
-        SEO_TITLE,
-
-      description:
-        SEO_DESCRIPTION,
-
-      images: [
-        OG_IMAGE,
-      ],
-    },
-
-    robots: {
-      index:
-        true,
-
-      follow:
-        true,
-
-      googleBot: {
-        index:
-          true,
-
-        follow:
-          true,
-
-        "max-image-preview":
-          "large",
-
-        "max-snippet":
-          -1,
-
-        "max-video-preview":
-          -1,
+        alt: "Mobile Car Services - Privacy Policy",
       },
+    ],
+  },
+
+  twitter: {
+    card: "summary_large_image",
+
+    title: SEO_TITLE,
+
+    description: SEO_DESCRIPTION,
+
+    images: [OG_IMAGE],
+  },
+
+  robots: {
+    index: true,
+
+    follow: true,
+
+    googleBot: {
+      index: true,
+
+      follow: true,
+
+      "max-image-preview": "large",
+
+      "max-snippet": -1,
+
+      "max-video-preview": -1,
     },
-  };
-}
+  },
+};
 
 /* ============================================================
    STRUCTURED DATA
@@ -227,101 +183,75 @@ export async function generateMetadata(): Promise<Metadata> {
 
 function getPrivacyStructuredData() {
   return {
-    "@context":
-      "https://schema.org",
+    "@context": "https://schema.org",
 
     "@graph": [
       {
-        "@type":
-          "WebPage",
+        "@type": "WebPage",
 
-        "@id":
-          `${PAGE_URL}#webpage`,
+        "@id": `${PAGE_URL}#webpage`,
 
-        url:
-          PAGE_URL,
+        url: PAGE_URL,
 
-        name:
-          SEO_TITLE,
+        name: SEO_TITLE,
 
-        description:
-          SEO_DESCRIPTION,
+        description: SEO_DESCRIPTION,
 
         isPartOf: {
-          "@id":
-            `${SITE_URL}/#website`,
+          "@id": `${SITE_URL}/#website`,
         },
 
         about: {
-          "@id":
-            `${SITE_URL}/#organization`,
+          "@id": `${SITE_URL}/#organization`,
         },
 
         publisher: {
-          "@id":
-            `${SITE_URL}/#organization`,
+          "@id": `${SITE_URL}/#organization`,
         },
 
         breadcrumb: {
-          "@id":
-            `${PAGE_URL}#breadcrumb`,
+          "@id": `${PAGE_URL}#breadcrumb`,
         },
 
         primaryImageOfPage: {
-          "@type":
-            "ImageObject",
+          "@type": "ImageObject",
 
-          url:
-            `${SITE_URL}${OG_IMAGE}`,
+          url: OG_IMAGE,
 
-          width:
-            1200,
+          width: 1200,
 
-          height:
-            630,
+          height: 630,
 
-          caption:
-            "Mobile Car Services - Privacy Policy",
+          caption: "Mobile Car Services - Privacy Policy",
         },
 
-        inLanguage:
-          "en-AU",
+        inLanguage: "en-AU",
       },
 
       {
-        "@type":
-          "BreadcrumbList",
+        "@type": "BreadcrumbList",
 
-        "@id":
-          `${PAGE_URL}#breadcrumb`,
+        "@id": `${PAGE_URL}#breadcrumb`,
 
         itemListElement: [
           {
-            "@type":
-              "ListItem",
+            "@type": "ListItem",
 
-            position:
-              1,
+            position: 1,
 
-            name:
-              "Home",
+            name: "Home",
 
-            item:
-              SITE_URL,
+            item: SITE_URL,
           },
 
           {
-            "@type":
-              "ListItem",
+            "@type": "ListItem",
 
-            position:
-              2,
+            position: 2,
 
-            name:
-              "Privacy Policy",
+            name: "Privacy Policy",
 
-            item:
-              PAGE_URL,
+            item: PAGE_URL,
           },
         ],
       },
@@ -334,29 +264,24 @@ function getPrivacyStructuredData() {
 ============================================================ */
 
 export default async function PrivacyPolicyRoute() {
-  const business =
-    await getBusinessSettings();
+  const business = await getBusinessSettings();
 
-  const structuredData =
-    getPrivacyStructuredData();
+  const structuredData = getPrivacyStructuredData();
+
+  const safeStructuredData = JSON.stringify(
+    structuredData,
+  ).replace(/</g, "\\u003c");
 
   return (
     <>
       <main>
-        <PrivacyPolicyPage
-          business={
-            business
-          }
-        />
+        <PrivacyPolicyPage business={business} />
       </main>
 
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html:
-            JSON.stringify(
-              structuredData,
-            ),
+          __html: safeStructuredData,
         }}
       />
     </>
