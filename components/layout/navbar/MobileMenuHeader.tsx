@@ -1,5 +1,7 @@
+
 import Image from "next/image";
 import Link from "next/link";
+
 import { NAVBAR_BRAND } from "./navbarData";
 
 interface MobileMenuHeaderProps {
@@ -14,19 +16,21 @@ export default function MobileMenuHeader({
       href="/"
       onClick={onClick}
       aria-label={`${NAVBAR_BRAND.name} - Home`}
-      className="group flex min-w-0 items-center gap-3"
+      className="group flex min-w-0 items-center gap-3 rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-[#FFD400]/50"
     >
+      {/* Brand logo */}
       <span className="relative flex h-12 w-12 shrink-0 items-center justify-center transition-transform duration-200 group-hover:scale-[1.02]">
-      <Image
-  src={NAVBAR_BRAND.logoSrc}
-  alt={NAVBAR_BRAND.name}
-  width={48}
-  height={48}
-  priority
-  className="h-12 w-12 object-contain"
-/>
+        <Image
+          src={NAVBAR_BRAND.logoSrc}
+          alt=""
+          width={48}
+          height={48}
+          sizes="48px"
+          className="h-12 w-12 object-contain"
+        />
       </span>
 
+      {/* Brand information */}
       <span className="min-w-0 leading-none">
         <span className="block truncate text-[15px] font-extrabold tracking-[-0.025em] text-[#F8FAFC]">
           {NAVBAR_BRAND.name}

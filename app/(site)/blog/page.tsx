@@ -1,6 +1,8 @@
 
 import type { Metadata } from "next";
 
+import { notFound } from "next/navigation";
+
 import { connectDB } from "@/lib/db";
 
 import Blog, {
@@ -21,13 +23,26 @@ const SEO_TITLE =
 const SEO_DESCRIPTION =
   "Practical car battery tips and guides covering battery replacement, battery testing, jump starts, starter motors and alternators in Melbourne West.";
 
-const OG_IMAGE =
-  `${SITE_URL}/images/seo/blog-og.jpg`;
+const OG_IMAGE = `${SITE_URL}/images/seo/blog-og.jpg`;
 
 interface BlogPageProps {
   searchParams: Promise<{
     page?: string | string[];
   }>;
+}
+
+interface BlogStructuredPost {
+  title: string;
+  slug: string;
+  excerpt: string;
+  coverImage: {
+    secureUrl: string;
+    width: number;
+    height: number;
+    alt: string;
+  } | null;
+  publishedAt: string | null;
+  authorName: string;
 }
 
 function getCurrentPage(pageParam?: string | string[]) {
@@ -207,20 +222,7 @@ function getBlogStructuredData({
   posts,
   currentPage,
 }: {
-  posts: Array<{
-    title: string;
-    slug: string;
-    excerpt: string;
-    coverImage: {
-      secureUrl: string;
-      width: number;
-      height: number;
-      alt: string;
-    } | null;
-    publishedAt: string | null;
-    authorName: string;
-  }>;
-
+  posts: BlogStructuredPost[];
   currentPage: number;
 }) {
   const blogUrl =
@@ -388,6 +390,10 @@ export default async function BlogPage({
     1,
     Math.ceil(totalPosts / POSTS_PER_PAGE),
   );
+
+  if (currentPage > totalPages) {
+    notFound();
+  }
 
   const structuredData = getBlogStructuredData({
     posts,

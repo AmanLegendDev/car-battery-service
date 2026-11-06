@@ -35,7 +35,8 @@ export default async function EmergencyAssistance() {
     if (settings) {
       businessName = settings.businessName || businessName;
       phone = settings.phone || phone;
-      callNumber = settings.primaryCallNumber || phone;
+      callNumber =
+        settings.primaryCallNumber || settings.phone || callNumber;
       bookingCta = settings.bookingCta || bookingCta;
       serviceRegion =
         settings.primaryServiceRegion || serviceRegion;
@@ -54,7 +55,7 @@ export default async function EmergencyAssistance() {
       aria-labelledby="emergency-assistance-heading"
       className="relative isolate overflow-hidden bg-[#061A2B] text-[#F8FAFC]"
     >
-      {/* Ambient automotive atmosphere */}
+      {/* Background atmosphere */}
       <div
         aria-hidden="true"
         className="pointer-events-none absolute inset-0"
@@ -75,7 +76,7 @@ export default async function EmergencyAssistance() {
           />
 
           <div className="grid lg:grid-cols-[minmax(0,1fr)_330px]">
-            {/* Main message */}
+            {/* Main content */}
             <div className="relative px-6 py-8 sm:px-9 sm:py-10 lg:px-12 lg:py-12">
               <div className="flex flex-wrap items-center gap-x-4 gap-y-3">
                 <span className="inline-flex items-center gap-2.5 rounded-full border border-[#FFD400]/20 bg-[#FFD400]/[0.07] px-3 py-2">
@@ -113,18 +114,19 @@ export default async function EmergencyAssistance() {
                     id="emergency-assistance-heading"
                     className="max-w-3xl text-[clamp(1.8rem,5vw,3.25rem)] font-black leading-[1.05] tracking-[-0.045em] text-[#F8FAFC]"
                   >
-                    Need automotive
+                    Need a mobile mechanic
                     <span className="mt-1 block text-[#FFD400]">
-                      assistance?
+                      in Melbourne West?
                     </span>
                   </h2>
 
                   <p className="mt-4 max-w-2xl text-sm leading-6 text-[#B5C5D0] sm:mt-5 sm:text-base sm:leading-7">
-                    {businessName} provides convenient automotive
-                    assistance across {serviceRegion}. From battery
-                    services to vehicle maintenance and roadside
-                    assistance, contact our team to discuss your
-                    vehicle&apos;s needs and confirm service availability.
+                    {businessName} provides mobile automotive assistance
+                    across {serviceRegion}, including car battery
+                    replacement, battery testing, jump start assistance
+                    and selected vehicle maintenance. Contact our team
+                    to discuss your vehicle&apos;s needs and confirm
+                    service availability.
                   </p>
                 </div>
               </div>
@@ -136,7 +138,7 @@ export default async function EmergencyAssistance() {
                     aria-hidden="true"
                     className="h-4 w-4 shrink-0 text-[#FFD400]"
                   />
-                  Personalised service enquiries
+                  Mobile service enquiries
                 </li>
 
                 <li className="flex items-center gap-2 text-xs font-semibold text-[#E5EDF2]">
@@ -144,7 +146,7 @@ export default async function EmergencyAssistance() {
                     aria-hidden="true"
                     className="h-4 w-4 shrink-0 text-[#FFD400]"
                   />
-                  Service availability confirmation
+                  Appointment availability confirmation
                 </li>
               </ul>
 

@@ -4,9 +4,7 @@ import {
   ArrowRight,
   ArrowUpRight,
   CalendarCheck,
-  CheckCircle2,
   ClipboardList,
-  MapPin,
   Phone,
   Wrench,
 } from "lucide-react";
@@ -18,25 +16,25 @@ const PROCESS_STEPS = [
   {
     number: "01",
     eyebrow: "Tell us what you need",
-    title: "Describe your vehicle needs",
+    title: "Describe your vehicle issue",
     description:
-      "Tell us about your vehicle, the issue you're experiencing and your location. Our team can help you understand the next steps.",
+      "Share your vehicle details, explain the issue you're experiencing and tell us your location.",
     icon: ClipboardList,
   },
   {
     number: "02",
     eyebrow: "Discuss your options",
-    title: "Find the right service",
+    title: "Explore suitable services",
     description:
-      "We'll discuss your requirements, explain the available service options and help you confirm whether we can assist with your vehicle.",
+      "Our team will discuss your requirements, explain relevant service options and help you understand how we may be able to assist.",
     icon: Wrench,
   },
   {
     number: "03",
     eyebrow: "Arrange your service",
-    title: "Plan your next step",
+    title: "Confirm the next steps",
     description:
-      "Once the service and availability are confirmed, arrange an appointment with our team and get clear information about what happens next.",
+      "Once the service and availability are confirmed, arrange an appointment and receive the relevant service details.",
     icon: CalendarCheck,
   },
 ];
@@ -74,7 +72,11 @@ export default async function HowItWorks() {
     );
   }
 
-  const phoneHref = `tel:${callNumber.replace(/[^\d+]/g, "")}`;
+  const normalizedPhone = callNumber.replace(/[^\d+]/g, "");
+  const phoneHref =
+    normalizedPhone && /\d/.test(normalizedPhone)
+      ? `tel:${normalizedPhone}`
+      : undefined;
 
   return (
     <section
@@ -108,8 +110,8 @@ export default async function HowItWorks() {
             </div>
 
             <p className="mt-4 max-w-xs text-sm font-semibold leading-6 text-slate-400 sm:mt-5">
-              A clear, straightforward process from your first enquiry
-              to arranging the service you need.
+              A simple process to help you understand your options
+              and arrange the service you need.
             </p>
           </div>
 
@@ -126,9 +128,9 @@ export default async function HowItWorks() {
             </h2>
 
             <p className="mt-5 max-w-2xl text-sm leading-6 text-slate-600 sm:mt-6 sm:text-lg sm:leading-7">
-              {businessName} helps you take the next step with clear
-              communication, service information and appointment
-              coordination across {serviceRegion}.
+              {businessName} helps customers across {serviceRegion}
+              understand available automotive services, discuss
+              their requirements and arrange the next steps.
             </p>
           </div>
         </div>
@@ -246,8 +248,8 @@ export default async function HowItWorks() {
 
               <p className="mt-1 max-w-xl text-xs leading-5 text-slate-500 sm:text-sm">
                 Contact {businessName} to discuss your vehicle,
-                confirm service availability and understand your
-                options.
+                understand available options and confirm service
+                availability.
               </p>
             </div>
           </div>
@@ -265,20 +267,22 @@ export default async function HowItWorks() {
               />
             </Link>
 
-            <a
-              href={phoneHref}
-              aria-label={`Call ${businessName} on ${phone}`}
-              className="group inline-flex min-h-12 items-center gap-3 bg-[#FFD400] px-5 text-xs font-black uppercase tracking-[0.1em] text-[#061A2B] transition-colors hover:bg-[#F5B800] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0D6E91] sm:tracking-[0.12em]"
-            >
-              <Phone aria-hidden="true" className="h-4 w-4" />
+            {phoneHref && (
+              <a
+                href={phoneHref}
+                aria-label={`Call ${businessName} on ${phone}`}
+                className="group inline-flex min-h-12 items-center gap-3 bg-[#FFD400] px-5 text-xs font-black uppercase tracking-[0.1em] text-[#061A2B] transition-colors hover:bg-[#F5B800] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0D6E91] sm:tracking-[0.12em]"
+              >
+                <Phone aria-hidden="true" className="h-4 w-4" />
 
-              Call Our Team
+                Call Our Team
 
-              <ArrowRight
-                aria-hidden="true"
-                className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1"
-              />
-            </a>
+                <ArrowRight
+                  aria-hidden="true"
+                  className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1"
+                />
+              </a>
+            )}
           </div>
         </div>
       </div>

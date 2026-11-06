@@ -1,10 +1,8 @@
 
 import Link from "next/link";
 import {
-  ArrowRight,
   ArrowUpRight,
   Check,
-  CheckCircle2,
   ClipboardCheck,
   MapPin,
   Phone,
@@ -66,14 +64,32 @@ export default async function WhyChooseUs() {
       .lean();
 
     if (settings) {
-      businessName = settings.businessName || businessName;
-      serviceRegion =
-        settings.primaryServiceRegion || serviceRegion;
-      phone = settings.phone || phone;
+      if (
+        typeof settings.businessName === "string" &&
+        settings.businessName.trim()
+      ) {
+        businessName = settings.businessName.trim();
+      }
+
+      if (
+        typeof settings.primaryServiceRegion === "string" &&
+        settings.primaryServiceRegion.trim()
+      ) {
+        serviceRegion = settings.primaryServiceRegion.trim();
+      }
+
+      if (
+        typeof settings.phone === "string" &&
+        settings.phone.trim()
+      ) {
+        phone = settings.phone.trim();
+      }
+
       callNumber =
-        settings.primaryCallNumber ||
-        settings.phone ||
-        callNumber;
+        typeof settings.primaryCallNumber === "string" &&
+        settings.primaryCallNumber.trim()
+          ? settings.primaryCallNumber.trim()
+          : phone;
     }
   } catch (error) {
     console.error(
@@ -82,7 +98,10 @@ export default async function WhyChooseUs() {
     );
   }
 
-  const phoneHref = `tel:${callNumber.replace(/[^\d+]/g, "")}`;
+  const normalizedPhone = callNumber.replace(/[^\d+]/g, "");
+  const phoneHref = /\d/.test(normalizedPhone)
+    ? `tel:${normalizedPhone}`
+    : null;
 
   return (
     <section
@@ -413,23 +432,25 @@ export default async function WhyChooseUs() {
               />
             </Link>
 
-            <a
-              href={phoneHref}
-              aria-label={`Call ${businessName} on ${phone}`}
-              className="group inline-flex min-h-12 items-center gap-3 bg-[#FFD400] px-4 text-[11px] font-black uppercase tracking-[0.08em] text-[#061A2B] transition-colors hover:bg-[#F5B800] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FFD400] sm:px-5 sm:text-xs sm:tracking-[0.12em]"
-            >
-              <Phone
-                aria-hidden="true"
-                className="h-4 w-4"
-              />
+            {phoneHref && (
+              <a
+                href={phoneHref}
+                aria-label={`Call ${businessName} on ${phone}`}
+                className="group inline-flex min-h-12 items-center gap-3 bg-[#FFD400] px-4 text-[11px] font-black uppercase tracking-[0.08em] text-[#061A2B] transition-colors hover:bg-[#F5B800] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FFD400] sm:px-5 sm:text-xs sm:tracking-[0.12em]"
+              >
+                <Phone
+                  aria-hidden="true"
+                  className="h-4 w-4"
+                />
 
-              Call Our Team
+                Call Our Team
 
-              <ArrowUpRight
-                aria-hidden="true"
-                className="h-4 w-4 transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
-              />
-            </a>
+                <ArrowUpRight
+                  aria-hidden="true"
+                  className="h-4 w-4 transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
+                />
+              </a>
+            )}
           </div>
         </div>
       </div>

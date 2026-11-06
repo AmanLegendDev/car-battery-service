@@ -3,12 +3,12 @@ export const HERO_DATA = {
   eyebrow: "PROFESSIONAL MOBILE AUTOMOTIVE ASSISTANCE",
 
   title: {
-    lineOne: "Mobile Car Care.",
-    lineTwo: "Right Where You Are.",
+    lineOne: "Mobile Car Services.",
+    lineTwo: "Melbourne West.",
   },
 
   description:
-    "Mobile Car Services provides convenient, professional automotive assistance across Melbourne West. From battery services to vehicle maintenance and roadside assistance, contact our team to discuss your vehicle's needs and confirm service availability.",
+    "Mobile Car Services provides mobile automotive assistance across Melbourne West, including battery replacement, battery testing, jump start assistance and selected vehicle maintenance. Contact our team to discuss your vehicle's needs and confirm service availability.",
 
   primaryCta: {
     label: "Book a Service",
@@ -28,6 +28,6 @@ export const HERO_DATA = {
 
   image: {
     src: "/images/home/hero/hero-main.webp",
-    alt: "Mobile automotive assistance for a vehicle in Melbourne West",
+    alt: "",
   },
 } as const;

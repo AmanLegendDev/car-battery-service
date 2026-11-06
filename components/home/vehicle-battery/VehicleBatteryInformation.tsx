@@ -13,7 +13,6 @@ import {
   SearchCheck,
   Settings2,
   Wrench,
-  Zap,
 } from "lucide-react";
 
 import { connectDB } from "@/lib/db";
@@ -24,7 +23,7 @@ interface HomepageService {
   _id: unknown;
   title: string;
   slug: string;
-  shortDescription: string;
+  shortDescription?: string;
 }
 
 const VEHICLE_SIGNS = [
@@ -62,7 +61,7 @@ const VEHICLE_SIGNS = [
   },
 ];
 
-export default async function VehicleBatteryInformation() {
+export default async function VehicleCareInformation() {
   let businessName = "Mobile Car Services";
   let phone = "+61 467 037 886";
   let callNumber = "+61 467 037 886";
@@ -82,11 +81,14 @@ export default async function VehicleBatteryInformation() {
 
       Service.find({
         status: "active",
+        title: { $type: "string", $ne: "" },
+        slug: { $type: "string", $ne: "" },
       })
         .select({
           title: 1,
           slug: 1,
           shortDescription: 1,
+          displayOrder: 1,
         })
         .sort({
           displayOrder: 1,
@@ -97,13 +99,31 @@ export default async function VehicleBatteryInformation() {
     ]);
 
     if (settings) {
-      businessName = settings.businessName || businessName;
-      phone = settings.phone || phone;
+      businessName =
+        typeof settings.businessName === "string" &&
+        settings.businessName.trim()
+          ? settings.businessName.trim()
+          : businessName;
+
+      phone =
+        typeof settings.phone === "string" && settings.phone.trim()
+          ? settings.phone.trim()
+          : phone;
+
       callNumber =
-        settings.primaryCallNumber || settings.phone || callNumber;
+        typeof settings.primaryCallNumber === "string" &&
+        settings.primaryCallNumber.trim()
+          ? settings.primaryCallNumber.trim()
+          : phone;
     }
 
-    services = serviceResults as unknown as HomepageService[];
+    services = (serviceResults as unknown as HomepageService[]).filter(
+      (service) =>
+        typeof service.title === "string" &&
+        service.title.trim().length > 0 &&
+        typeof service.slug === "string" &&
+        service.slug.trim().length > 0
+    );
   } catch (error) {
     console.error(
       "Failed to load vehicle information:",
@@ -111,7 +131,10 @@ export default async function VehicleBatteryInformation() {
     );
   }
 
-  const phoneHref = `tel:${callNumber.replace(/[^\d+]/g, "")}`;
+  const normalizedPhone = callNumber.replace(/[^\d+]/g, "");
+  const phoneHref = /\d/.test(normalizedPhone)
+    ? `tel:${normalizedPhone}`
+    : null;
 
   return (
     <section
@@ -360,7 +383,7 @@ export default async function VehicleBatteryInformation() {
               {services.map((service, index) => (
                 <Link
                   key={String(service._id)}
-                  href={`/services/${service.slug}`}
+                  href={`/services/${encodeURIComponent(service.slug.trim())}`}
                   className="group grid gap-4 border-b border-[#061A2B]/10 py-6 transition-colors duration-300 hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#0D6E91] sm:grid-cols-[44px_1fr_auto] sm:items-center sm:gap-5 sm:px-5"
                 >
                   <span className="font-mono text-[10px] font-bold tracking-[0.2em] text-slate-500">
@@ -511,24 +534,26 @@ export default async function VehicleBatteryInformation() {
               />
             </Link>
 
-            <a
-              href={phoneHref}
-              aria-label={`Call ${businessName} on ${phone}`}
-              className="group inline-flex min-h-12 items-center gap-3 bg-[#FFD400] px-5 text-xs font-black uppercase tracking-[0.12em] text-[#061A2B] transition-colors duration-300 hover:bg-[#F5B800] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0D6E91] focus-visible:ring-offset-2"
-            >
-              <Phone
-                aria-hidden="true"
-                className="h-4 w-4"
-                strokeWidth={2.2}
-              />
+            {phoneHref && (
+              <a
+                href={phoneHref}
+                aria-label={`Call ${businessName} on ${phone}`}
+                className="group inline-flex min-h-12 items-center gap-3 bg-[#FFD400] px-5 text-xs font-black uppercase tracking-[0.12em] text-[#061A2B] transition-colors duration-300 hover:bg-[#F5B800] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0D6E91] focus-visible:ring-offset-2"
+              >
+                <Phone
+                  aria-hidden="true"
+                  className="h-4 w-4"
+                  strokeWidth={2.2}
+                />
 
-              Call Now
+                Call Now
 
-              <ArrowUpRight
-                aria-hidden="true"
-                className="h-4 w-4 transition-transform duration-300 motion-safe:group-hover:-translate-y-0.5 motion-safe:group-hover:translate-x-0.5"
-              />
-            </a>
+                <ArrowUpRight
+                  aria-hidden="true"
+                  className="h-4 w-4 transition-transform duration-300 motion-safe:group-hover:-translate-y-0.5 motion-safe:group-hover:translate-x-0.5"
+                />
+              </a>
+            )}
           </div>
         </div>
 

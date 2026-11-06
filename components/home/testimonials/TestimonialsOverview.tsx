@@ -1,82 +1,120 @@
+
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowUpRight, Quote, Star } from "lucide-react";
+
 import { connectDB } from "@/lib/db";
 import Testimonial from "@/models/Testimonial";
-
-interface TestimonialPhoto {
-  publicId: string;
-  secureUrl: string;
-  width: number;
-  height: number;
-  format: string;
-  bytes: number;
-  resourceType: "image";
-  alt: string;
-}
 
 interface HomepageTestimonial {
   _id: string;
   name: string;
   businessName?: string;
   role?: string;
-  photo?: TestimonialPhoto;
+  photo?: {
+    secureUrl?: string;
+    alt?: string;
+  } | null;
   testimonial: string;
   rating?: number;
-  featured: boolean;
-  published: boolean;
-  displayOrder: number;
+  featured?: boolean;
+}
+
+function getSafeImageUrl(value?: string): string | undefined {
+  if (!value?.trim()) return undefined;
+
+  try {
+    const url = new URL(value.trim());
+
+    if (url.protocol !== "https:") return undefined;
+
+    return url.toString();
+  } catch {
+    return undefined;
+  }
+}
+
+function getSafeRating(rating?: number): number {
+  if (typeof rating !== "number" || !Number.isFinite(rating)) {
+    return 0;
+  }
+
+  return Math.min(5, Math.max(0, Math.round(rating)));
 }
 
 async function getTestimonials(): Promise<HomepageTestimonial[]> {
-  await connectDB();
+  try {
+    await connectDB();
 
-  const testimonials = await Testimonial.find({
-    published: true,
-  })
-    .select(
-      "name businessName role photo testimonial rating featured published displayOrder",
-    )
-    .sort({
-      featured: -1,
-      displayOrder: 1,
-      createdAt: -1,
+    const testimonials = await Testimonial.find({
+      published: true,
+      name: { $type: "string", $ne: "" },
+      testimonial: { $type: "string", $ne: "" },
     })
-    .limit(6)
-    .lean();
+      .select(
+        "name businessName role photo testimonial rating featured displayOrder createdAt",
+      )
+      .sort({
+        featured: -1,
+        displayOrder: 1,
+        createdAt: -1,
+      })
+      .limit(6)
+      .lean();
 
-  return testimonials.map((testimonial) => ({
-    _id: String(testimonial._id),
-    name: testimonial.name,
-    businessName: testimonial.businessName,
-    role: testimonial.role,
-    photo: testimonial.photo
-      ? {
-          publicId: testimonial.photo.publicId,
-          secureUrl: testimonial.photo.secureUrl,
-          width: testimonial.photo.width,
-          height: testimonial.photo.height,
-          format: testimonial.photo.format,
-          bytes: testimonial.photo.bytes,
-          resourceType: "image",
-          alt: testimonial.photo.alt,
-        }
-      : undefined,
-    testimonial: testimonial.testimonial,
-    rating: testimonial.rating,
-    featured: testimonial.featured,
-    published: testimonial.published,
-    displayOrder: testimonial.displayOrder,
-  }));
+    return testimonials
+      .filter(
+        (testimonial) =>
+          typeof testimonial.name === "string" &&
+          testimonial.name.trim().length > 0 &&
+          typeof testimonial.testimonial === "string" &&
+          testimonial.testimonial.trim().length > 0,
+      )
+      .map((testimonial) => ({
+        _id: String(testimonial._id),
+        name: testimonial.name.trim(),
+        businessName:
+          typeof testimonial.businessName === "string"
+            ? testimonial.businessName.trim()
+            : undefined,
+        role:
+          typeof testimonial.role === "string"
+            ? testimonial.role.trim()
+            : undefined,
+        photo: testimonial.photo
+          ? {
+              secureUrl:
+                typeof testimonial.photo.secureUrl === "string"
+                  ? testimonial.photo.secureUrl
+                  : undefined,
+              alt:
+                typeof testimonial.photo.alt === "string"
+                  ? testimonial.photo.alt
+                  : undefined,
+            }
+          : undefined,
+        testimonial: testimonial.testimonial.trim(),
+        rating:
+          typeof testimonial.rating === "number"
+            ? getSafeRating(testimonial.rating)
+            : undefined,
+        featured: Boolean(testimonial.featured),
+      }));
+  } catch (error) {
+    console.error("Failed to load homepage testimonials:", error);
+    return [];
+  }
 }
 
 function getInitials(name: string) {
-  return name
-    .trim()
-    .split(/\s+/)
-    .slice(0, 2)
-    .map((part) => part.charAt(0).toUpperCase())
-    .join("");
+  return (
+    name
+      .trim()
+      .split(/\s+/)
+      .slice(0, 2)
+      .map((part) => part.charAt(0).toUpperCase())
+      .join("") || "C"
+  );
 }
 
 function getIdentityLine(testimonial: HomepageTestimonial) {
@@ -86,21 +124,20 @@ function getIdentityLine(testimonial: HomepageTestimonial) {
 }
 
 function Rating({ rating }: { rating?: number }) {
-  const safeRating = Math.min(
-    5,
-    Math.max(0, Math.round(rating ?? 0)),
-  );
+  const safeRating = getSafeRating(rating);
 
   if (!safeRating) return null;
 
   return (
     <div
+      role="img"
       aria-label={`${safeRating} out of 5 stars`}
       className="flex items-center gap-1"
     >
       {Array.from({ length: 5 }).map((_, index) => (
         <Star
           key={index}
+          aria-hidden="true"
           className={`h-3.5 w-3.5 ${
             index < safeRating
               ? "fill-[#FFD400] text-[#FFD400]"
@@ -118,16 +155,17 @@ function CustomerIdentity({
   testimonial: HomepageTestimonial;
 }) {
   const identityLine = getIdentityLine(testimonial);
+  const photoUrl = getSafeImageUrl(testimonial.photo?.secureUrl);
 
   return (
     <div className="flex items-center gap-3">
-      {testimonial.photo?.secureUrl ? (
+      {photoUrl ? (
         <div className="relative h-11 w-11 shrink-0 overflow-hidden rounded-full border border-white/10">
           <Image
-            src={testimonial.photo.secureUrl}
+            src={photoUrl}
             alt={
-              testimonial.photo.alt ||
-              `${testimonial.name} testimonial`
+              testimonial.photo?.alt?.trim() ||
+              `Photo of ${testimonial.name}`
             }
             fill
             sizes="44px"
@@ -135,7 +173,10 @@ function CustomerIdentity({
           />
         </div>
       ) : (
-        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-white/10 bg-[#0D6E91]/20 text-xs font-bold text-[#FFD400]">
+        <div
+          aria-hidden="true"
+          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-white/10 bg-[#0D6E91]/20 text-xs font-bold text-[#FFD400]"
+        >
           {getInitials(testimonial.name)}
         </div>
       )}
@@ -183,7 +224,10 @@ function FeaturedTestimonial({
             )}
           </div>
 
-          <div className="mt-8 flex h-10 w-10 items-center justify-center rounded-full border border-[#FFD400]/20 bg-[#FFD400]/[0.05]">
+          <div
+            aria-hidden="true"
+            className="mt-8 flex h-10 w-10 items-center justify-center rounded-full border border-[#FFD400]/20 bg-[#FFD400]/[0.05]"
+          >
             <Quote className="h-4 w-4 text-[#FFD400]" />
           </div>
 
@@ -196,7 +240,6 @@ function FeaturedTestimonial({
         <div className="border-t border-white/10 bg-white/[0.025] p-7 sm:p-9 lg:min-w-[270px] lg:border-l lg:border-t-0 lg:p-9">
           <div className="flex flex-col gap-6">
             <Rating rating={testimonial.rating} />
-
             <CustomerIdentity testimonial={testimonial} />
           </div>
         </div>
@@ -236,9 +279,7 @@ function SmallTestimonial({
 export default async function TestimonialsOverview() {
   const testimonials = await getTestimonials();
 
-  if (testimonials.length === 0) {
-    return null;
-  }
+  if (testimonials.length === 0) return null;
 
   const featured =
     testimonials.find((testimonial) => testimonial.featured) ??
@@ -251,6 +292,7 @@ export default async function TestimonialsOverview() {
   return (
     <section
       id="testimonials"
+      aria-labelledby="testimonials-heading"
       className="relative overflow-hidden bg-[#08263D] text-[#F8FAFC]"
     >
       {/* Technical background */}
@@ -287,7 +329,10 @@ export default async function TestimonialsOverview() {
             </p>
           </div>
 
-          <h2 className="max-w-4xl text-[clamp(2.6rem,5vw,5rem)] font-semibold leading-[0.95] tracking-[-0.055em]">
+          <h2
+            id="testimonials-heading"
+            className="max-w-4xl text-[clamp(2.6rem,5vw,5rem)] font-semibold leading-[0.95] tracking-[-0.055em]"
+          >
             What customers
             <span className="block text-[#FFD400]">
               have to say.
@@ -325,7 +370,7 @@ export default async function TestimonialsOverview() {
 
           <Link
             href="/testimonials"
-            className="group inline-flex min-h-12 items-center justify-between gap-4 self-start rounded-full border border-white/15 px-5 py-2.5 text-sm font-semibold text-[#F8FAFC] transition-all duration-300 hover:border-[#FFD400]/50 hover:bg-white/[0.04]"
+            className="group inline-flex min-h-12 items-center justify-between gap-4 self-start rounded-full border border-white/15 px-5 py-2.5 text-sm font-semibold text-[#F8FAFC] transition-all duration-300 hover:border-[#FFD400]/50 hover:bg-white/[0.04] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FFD400] focus-visible:ring-offset-2 focus-visible:ring-offset-[#08263D]"
           >
             View All Testimonials
 

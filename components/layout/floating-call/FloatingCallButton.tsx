@@ -1,4 +1,6 @@
+
 import { Phone, ArrowUpRight } from "lucide-react";
+
 import { connectDB } from "@/lib/db";
 import SiteSettings from "@/models/SiteSettings";
 
@@ -8,39 +10,87 @@ interface FloatingCallSettings {
 }
 
 async function getFloatingCallSettings(): Promise<FloatingCallSettings> {
-  await connectDB();
+  try {
+    await connectDB();
 
-  const settings = await SiteSettings.findOne()
-    .select("phone primaryCallNumber")
-    .lean();
+    const settings = await SiteSettings.findOne()
+      .select("phone primaryCallNumber")
+      .lean();
+
+    return {
+      phone:
+        typeof settings?.phone === "string" && settings.phone.trim()
+          ? settings.phone.trim()
+          : "+61 467 037 886",
+
+      primaryCallNumber:
+        typeof settings?.primaryCallNumber === "string" &&
+        settings.primaryCallNumber.trim()
+          ? settings.primaryCallNumber.trim()
+          : typeof settings?.phone === "string" &&
+              settings.phone.trim()
+            ? settings.phone.trim()
+            : "+61 467 037 886",
+    };
+  } catch (error) {
+    console.error("Failed to load floating call settings:", error);
+
+    return {
+      phone: "+61 467 037 886",
+      primaryCallNumber: "+61 467 037 886",
+    };
+  }
+}
+
+function getMelbourneBusinessStatus() {
+  const parts = new Intl.DateTimeFormat("en-AU", {
+    timeZone: "Australia/Melbourne",
+    weekday: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23",
+  }).formatToParts(new Date());
+
+  const weekday = parts.find((part) => part.type === "weekday")?.value;
+  const hour = Number(
+    parts.find((part) => part.type === "hour")?.value
+  );
+  const minute = Number(
+    parts.find((part) => part.type === "minute")?.value
+  );
+
+  const currentMinutes = hour * 60 + minute;
+
+  const isOpen =
+    weekday !== undefined &&
+    currentMinutes >= 8 * 60 &&
+    currentMinutes < 21 * 60;
 
   return {
-    phone: settings?.phone || "",
-    primaryCallNumber:
-      settings?.primaryCallNumber ||
-      settings?.phone ||
-      "",
+    isOpen,
+    label: isOpen ? "Open Now" : "Hours: 8 AM – 9 PM",
   };
 }
 
 function phoneHref(phone: string) {
-  return `tel:${phone.replace(/[^\d+]/g, "")}`;
+  const normalized = phone.replace(/[^\d+]/g, "");
+
+  return /\d/.test(normalized) ? `tel:${normalized}` : null;
 }
 
 export default async function FloatingCallButton() {
   const settings = await getFloatingCallSettings();
 
-  if (!settings.primaryCallNumber) {
-    return null;
-  }
+  const businessStatus = getMelbourneBusinessStatus();
+  const href = phoneHref(settings.primaryCallNumber);
+
+  if (!href) return null;
 
   return (
     <div className="pointer-events-none fixed inset-x-0 bottom-0 z-50 px-4 pb-[max(1rem,env(safe-area-inset-bottom))] sm:inset-x-auto sm:bottom-6 sm:right-6 sm:px-0 sm:pb-0">
       <a
-        href={phoneHref(settings.primaryCallNumber)}
-        aria-label={`Call ${
-          settings.phone || "Mobile Car Services"
-        }`}
+        href={href}
+        aria-label={`Call ${settings.phone || "Mobile Car Services"}. Business hours Monday to Sunday, 8 AM to 9 PM Melbourne time.`}
         className="
           pointer-events-auto
           group
@@ -61,12 +111,8 @@ export default async function FloatingCallButton() {
           hover:bg-[#F5B800]
           hover:shadow-[0_18px_50px_rgba(6,26,43,0.28)]
           active:scale-[0.94]
-
-          /* MOBILE — PERFECT CIRCLE */
           h-14
           w-14
-
-          /* DESKTOP — PREMIUM PILL */
           sm:h-auto
           sm:w-fit
           sm:gap-3.5
@@ -76,10 +122,7 @@ export default async function FloatingCallButton() {
           sm:pr-4
         "
       >
-        {/* =================================================
-            SOFT GLOW
-        ================================================== */}
-
+        {/* Soft glow */}
         <span
           aria-hidden="true"
           className="
@@ -96,10 +139,7 @@ export default async function FloatingCallButton() {
           "
         />
 
-        {/* =================================================
-            MOBILE ICON
-        ================================================== */}
-
+        {/* Call icon */}
         <span
           className="
             relative
@@ -111,13 +151,13 @@ export default async function FloatingCallButton() {
             rounded-full
             bg-[#061A2B]
             text-[#FFD400]
-
             sm:h-12
             sm:w-12
             sm:shrink-0
           "
         >
           <Phone
+            aria-hidden="true"
             className="
               h-[19px]
               w-[19px]
@@ -130,7 +170,6 @@ export default async function FloatingCallButton() {
             strokeWidth={2}
           />
 
-          {/* Live indicator */}
           <span
             aria-hidden="true"
             className="
@@ -143,20 +182,16 @@ export default async function FloatingCallButton() {
               border-2
               border-[#061A2B]
               bg-[#FFD400]
-
               sm:right-0.5
               sm:top-0.5
             "
           />
         </span>
 
-        {/* =================================================
-            DESKTOP TEXT ONLY
-        ================================================== */}
-
+        {/* Desktop text */}
         <span className="hidden pr-0.5 sm:block">
           <span className="block text-[9px] font-bold uppercase tracking-[0.18em] text-[#061A2B]/55">
-            Need Help?
+            {businessStatus.label}
           </span>
 
           <span className="mt-0.5 block text-sm font-bold leading-none">
@@ -164,11 +199,9 @@ export default async function FloatingCallButton() {
           </span>
         </span>
 
-        {/* =================================================
-            DESKTOP ARROW ONLY
-        ================================================== */}
-
+        {/* Desktop arrow */}
         <span
+          aria-hidden="true"
           className="
             hidden
             h-9

@@ -26,9 +26,9 @@ const DEFAULT_BUSINESS_NAME = "Mobile Car Services";
 
 async function getServiceArea(slug: string) {
   await connectDB();
-
+const normalizedSlug = slug.trim().toLowerCase();
   const serviceArea = await ServiceArea.findOne({
-    slug: slug.toLowerCase(),
+    slug: normalizedSlug,
     status: "active",
   })
     .select(

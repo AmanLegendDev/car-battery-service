@@ -1,8 +1,15 @@
 
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import {
+  useEffect,
+  useId,
+  useRef,
+  useState,
+} from "react";
+
 import Link from "next/link";
+
 import {
   ArrowUpRight,
   Wrench,
@@ -25,15 +32,18 @@ export default function ServicesDropdown({
   onOpenChange,
 }: ServicesDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
+
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
 
-  // Only five services appear in the dropdown.
-  const visibleServices = services.slice(0, 5);
+  const dropdownId = useId();
 
+  // Notify parent when dropdown state changes.
   useEffect(() => {
     onOpenChange?.(isOpen);
   }, [isOpen, onOpenChange]);
 
+  // Close when clicking outside.
   useEffect(() => {
     function handlePointerDown(event: PointerEvent) {
       if (
@@ -44,30 +54,56 @@ export default function ServicesDropdown({
       }
     }
 
-    document.addEventListener("pointerdown", handlePointerDown);
+    document.addEventListener(
+      "pointerdown",
+      handlePointerDown
+    );
 
     return () => {
-      document.removeEventListener("pointerdown", handlePointerDown);
+      document.removeEventListener(
+        "pointerdown",
+        handlePointerDown
+      );
     };
   }, []);
 
+  // Close on Escape and restore trigger focus.
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
-      if (event.key === "Escape") {
-        setIsOpen(false);
-      }
+      if (event.key !== "Escape" || !isOpen) return;
+
+      event.preventDefault();
+      setIsOpen(false);
+      triggerRef.current?.focus();
     }
 
     document.addEventListener("keydown", handleKeyDown);
 
     return () => {
-      document.removeEventListener("keydown", handleKeyDown);
+      document.removeEventListener(
+        "keydown",
+        handleKeyDown
+      );
     };
-  }, []);
+  }, [isOpen]);
 
   function toggleDropdown() {
     setIsOpen((current) => !current);
   }
+
+  // Validate service links before rendering.
+  const visibleServices = services
+    .filter((service) => {
+      return (
+        typeof service.id === "string" &&
+        service.id.length > 0 &&
+        typeof service.title === "string" &&
+        service.title.trim().length > 0 &&
+        typeof service.slug === "string" &&
+        /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(service.slug)
+      );
+    })
+    .slice(0, 5);
 
   return (
     <div ref={dropdownRef} className="relative">
@@ -82,10 +118,15 @@ export default function ServicesDropdown({
         </Link>
 
         <button
+          ref={triggerRef}
           type="button"
-          aria-label="Toggle services menu"
-          aria-haspopup="true"
+          aria-label={
+            isOpen
+              ? "Close services dropdown"
+              : "Open services dropdown"
+          }
           aria-expanded={isOpen}
+          aria-controls={dropdownId}
           onClick={toggleDropdown}
           className="flex h-10 items-center rounded-r-[13px] px-2 text-[#718895] transition-all duration-200 hover:bg-white/[0.055] hover:text-[#FFD400] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#FFD400]/50"
         >
@@ -100,7 +141,9 @@ export default function ServicesDropdown({
 
       {/* Dropdown panel */}
       <div
+        id={dropdownId}
         aria-hidden={!isOpen}
+        inert={!isOpen}
         className={`absolute right-0 top-[calc(100%+12px)] w-[285px] origin-top-right transition-[opacity,transform] duration-200 ${
           isOpen
             ? "pointer-events-auto translate-y-0 scale-100 opacity-100"
@@ -112,7 +155,10 @@ export default function ServicesDropdown({
           <div className="px-3 pb-2.5 pt-3">
             <div className="flex items-center gap-2">
               <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#FFD400]/[0.1] text-[#FFD400]">
-                <Wrench aria-hidden="true" className="h-3.5 w-3.5" />
+                <Wrench
+                  aria-hidden="true"
+                  className="h-3.5 w-3.5"
+                />
               </span>
 
               <div>
@@ -121,7 +167,7 @@ export default function ServicesDropdown({
                 </p>
 
                 <p className="mt-0.5 text-[9px] text-[#718895]">
-                  Automotive care & repairs
+                  Automotive care &amp; repairs
                 </p>
               </div>
             </div>
@@ -133,14 +179,12 @@ export default function ServicesDropdown({
               <Link
                 key={service.id}
                 href={`/services/${service.slug}`}
-                role="menuitem"
-                tabIndex={isOpen ? 0 : -1}
                 onClick={() => setIsOpen(false)}
-                className="group flex items-center justify-between rounded-[15px] px-3 py-3 transition-all duration-150 hover:bg-white/[0.055] focus:bg-white/[0.055] focus:outline-none"
+                className="group flex items-center justify-between rounded-[15px] px-3 py-3 transition-all duration-150 hover:bg-white/[0.055] focus:bg-white/[0.055] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#FFD400]/50"
               >
                 <div className="flex min-w-0 flex-col">
                   <span className="text-[13px] font-bold text-[#F8FAFC] transition-colors duration-150 group-hover:text-[#FFD400]">
-                    {service.title}
+                    {service.title.trim()}
                   </span>
 
                   <span className="mt-0.5 text-[9px] font-medium uppercase tracking-[0.12em] text-[#718895]">
@@ -165,14 +209,12 @@ export default function ServicesDropdown({
           </div>
 
           {/* View all services */}
-          {services.length > 0 && (
+          {visibleServices.length > 0 && (
             <div className="mt-1 border-t border-white/[0.07] pt-1">
               <Link
                 href="/services"
-                role="menuitem"
-                tabIndex={isOpen ? 0 : -1}
                 onClick={() => setIsOpen(false)}
-                className="group flex items-center justify-between rounded-[15px] px-3 py-3 transition-all duration-150 hover:bg-white/[0.055] focus:bg-white/[0.055] focus:outline-none"
+                className="group flex items-center justify-between rounded-[15px] px-3 py-3 transition-all duration-150 hover:bg-white/[0.055] focus:bg-white/[0.055] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#FFD400]/50"
               >
                 <div className="flex min-w-0 flex-col">
                   <span className="text-[12px] font-bold text-[#A8BBC8] transition-colors duration-150 group-hover:text-[#FFD400]">

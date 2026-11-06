@@ -13,7 +13,7 @@ export default function HeroVisual() {
       <div className="absolute inset-0">
         <Image
           src={HERO_DATA.image.src}
-          alt={HERO_DATA.image.alt}
+          alt=""
           fill
           priority
           sizes="100vw"

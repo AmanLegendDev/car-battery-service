@@ -70,76 +70,34 @@ const DEFAULT_SETTINGS: FooterSettings = {
   description:
     "Get in touch with Mobile Car Services to discuss your vehicle's needs, explore available services and find out about service availability in your area.",
   logo: null,
-  phone: "",
-  primaryCallNumber: "",
+  phone: "+61 467 037 886",
+  primaryCallNumber: "+61 467 037 886",
   email: "",
   primaryServiceRegion: "Melbourne West",
   businessHours: [],
   social: {},
 };
 
-async function getFooterData(): Promise<FooterData> {
-  await connectDB();
+const DAY_ORDER: FooterBusinessHour["day"][] = [
+  "Monday",
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday",
+  "Saturday",
+  "Sunday",
+];
 
-  const [settings, services] = await Promise.all([
-    SiteSettings.findOne()
-      .select(
-        "businessName tagline description logo phone primaryCallNumber email primaryServiceRegion businessHours social",
-      )
-      .lean(),
-
-    Service.find({ status: "active" })
-      .select("_id title slug")
-      .sort({
-        featured: -1,
-        displayOrder: 1,
-        title: 1,
-      })
-      .limit(6)
-      .lean(),
-  ]);
-
-  const businessName =
-    settings?.businessName || DEFAULT_SETTINGS.businessName;
-
-  const logo = settings?.logo?.secureUrl
-    ? {
-        secureUrl: settings.logo.secureUrl,
-        alt: settings.logo.alt || businessName,
-      }
-    : null;
-
-  return {
-    settings: {
-      businessName,
-      tagline: settings?.tagline || DEFAULT_SETTINGS.tagline,
-      description:
-        settings?.description || DEFAULT_SETTINGS.description,
-      logo,
-      phone: settings?.phone || "",
-      primaryCallNumber:
-        settings?.primaryCallNumber || settings?.phone || "",
-      email: settings?.email || "",
-      primaryServiceRegion:
-        settings?.primaryServiceRegion ||
-        DEFAULT_SETTINGS.primaryServiceRegion,
-      businessHours: Array.isArray(settings?.businessHours)
-        ? settings.businessHours
-        : [],
-      social: settings?.social || {},
-    },
-
-    services: services.map((service) => ({
-      id: String(service._id),
-      title: service.title,
-      slug: service.slug,
-    })),
-  };
+function cleanString(value: unknown, fallback = ""): string {
+  return typeof value === "string" && value.trim()
+    ? value.trim()
+    : fallback;
 }
 
 function phoneHref(phone: string): string | undefined {
   const normalized = phone.replace(/[^\d+]/g, "");
-  return normalized ? `tel:${normalized}` : undefined;
+
+  return /\d/.test(normalized) ? `tel:${normalized}` : undefined;
 }
 
 function isExternalUrl(value?: string): boolean {
@@ -153,20 +111,143 @@ function isExternalUrl(value?: string): boolean {
   }
 }
 
+function isValidEmail(value: string): boolean {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+}
+
+function isValidTime(value?: string): boolean {
+  return typeof value === "string" &&
+    /^(?:[01]\d|2[0-3]):[0-5]\d$/.test(value);
+}
+
+function getEnabledHours(
+  hours: FooterBusinessHour[]
+): FooterBusinessHour[] {
+  return hours
+    .filter(
+      (hour) =>
+        hour.enabled &&
+        isValidTime(hour.open) &&
+        isValidTime(hour.close)
+    )
+    .sort(
+      (a, b) =>
+        DAY_ORDER.indexOf(a.day) - DAY_ORDER.indexOf(b.day)
+    );
+}
+
+async function getFooterData(): Promise<FooterData> {
+  await connectDB();
+
+  const [settings, serviceResults] = await Promise.all([
+    SiteSettings.findOne()
+      .select(
+        "businessName tagline description logo phone primaryCallNumber email primaryServiceRegion businessHours social"
+      )
+      .lean(),
+
+    Service.find({
+      status: "active",
+      title: { $type: "string", $ne: "" },
+      slug: { $type: "string", $ne: "" },
+    })
+      .select("_id title slug")
+      .sort({
+        featured: -1,
+        displayOrder: 1,
+        title: 1,
+      })
+      .limit(6)
+      .lean(),
+  ]);
+
+  const businessName = cleanString(
+    settings?.businessName,
+    DEFAULT_SETTINGS.businessName
+  );
+
+  const logoUrl = cleanString(settings?.logo?.secureUrl);
+
+  const logo: FooterMedia | null = isExternalUrl(logoUrl)
+    ? {
+        secureUrl: logoUrl,
+        alt: cleanString(settings?.logo?.alt, businessName),
+      }
+    : null;
+
+  const businessHours = Array.isArray(settings?.businessHours)
+    ? settings.businessHours.filter(
+        (hour: any) =>
+          hour &&
+          DAY_ORDER.includes(hour.day) &&
+          typeof hour.enabled === "boolean"
+      )
+    : [];
+
+  const socialData = settings?.social || {};
+
+  const social: FooterSocial = {
+    instagram: cleanString(socialData.instagram),
+    facebook: cleanString(socialData.facebook),
+    googleBusiness: cleanString(socialData.googleBusiness),
+    other: cleanString(socialData.other),
+  };
+
+  const phone = cleanString(
+    settings?.phone,
+    DEFAULT_SETTINGS.phone
+  );
+
+  const primaryCallNumber = cleanString(
+    settings?.primaryCallNumber,
+    phone
+  );
+
+  const services: FooterService[] = serviceResults
+    .filter(
+      (service: any) =>
+        typeof service.title === "string" &&
+        service.title.trim() &&
+        typeof service.slug === "string" &&
+        service.slug.trim()
+    )
+    .map((service: any) => ({
+      id: String(service._id),
+      title: service.title.trim(),
+      slug: service.slug.trim(),
+    }));
+
+  return {
+    settings: {
+      businessName,
+      tagline: cleanString(
+        settings?.tagline,
+        DEFAULT_SETTINGS.tagline
+      ),
+      description: cleanString(
+        settings?.description,
+        DEFAULT_SETTINGS.description
+      ),
+      logo,
+      phone,
+      primaryCallNumber,
+      email: cleanString(settings?.email),
+      primaryServiceRegion: cleanString(
+        settings?.primaryServiceRegion,
+        DEFAULT_SETTINGS.primaryServiceRegion
+      ),
+      businessHours,
+      social,
+    },
+    services,
+  };
+}
+
 function formatDay(day: FooterBusinessHour["day"]) {
   return day.slice(0, 3);
 }
 
-function getEnabledHours(hours: FooterBusinessHour[]) {
-  return hours.filter(
-    (hour) => hour.enabled && hour.open && hour.close,
-  );
-}
-
-
-
 export default async function Footer() {
-  
   let data: FooterData = {
     settings: DEFAULT_SETTINGS,
     services: [],
@@ -179,10 +260,14 @@ export default async function Footer() {
   }
 
   const { settings, services } = data;
+
   const enabledHours = getEnabledHours(settings.businessHours);
+
   const callHref = phoneHref(
-    settings.primaryCallNumber || settings.phone,
+    settings.primaryCallNumber || settings.phone
   );
+
+  const emailIsValid = isValidEmail(settings.email);
 
   const socialLinks = [
     {
@@ -207,8 +292,6 @@ export default async function Footer() {
     },
   ].filter((item) => isExternalUrl(item.url));
 
-  
-
   return (
     <footer className="relative isolate overflow-hidden bg-[#061A2B] text-[#F8FAFC]">
       {/* Background atmosphere */}
@@ -229,7 +312,7 @@ export default async function Footer() {
         aria-hidden="true"
         className="pointer-events-none absolute -bottom-5 left-1/2 -translate-x-1/2 select-none whitespace-nowrap text-[clamp(5rem,16vw,18rem)] font-black uppercase leading-none tracking-[-0.1em] text-white/[0.018]"
       >
-        CAR 
+        CAR
       </div>
 
       <div className="relative mx-auto max-w-[1420px] px-5 sm:px-6 lg:px-8">
@@ -237,8 +320,7 @@ export default async function Footer() {
         <div className="border-b border-white/[0.08] py-16 sm:py-20 lg:py-24">
           <div className="grid gap-14 lg:grid-cols-[1.15fr_0.85fr] lg:items-end lg:gap-20">
             <div>
-              
-<div className="flex items-start gap-5">
+              <div className="flex items-start gap-5">
                 <FooterAnimatedLogo
                   businessName={settings.businessName}
                   logo={settings.logo}
@@ -261,7 +343,6 @@ export default async function Footer() {
                 </div>
               </div>
 
-
               {settings.description && (
                 <p className="mt-8 max-w-2xl text-sm leading-7 text-[#A8BBC8]/90 sm:text-[15px] sm:leading-8">
                   {settings.description}
@@ -272,6 +353,7 @@ export default async function Footer() {
                 {callHref && (
                   <a
                     href={callHref}
+                    aria-label={`Call ${settings.businessName} on ${settings.phone || settings.primaryCallNumber}`}
                     className="group inline-flex min-h-12 items-center gap-3 rounded-full border border-white/[0.08] bg-white/[0.025] px-3 py-2 transition-colors hover:border-[#FFD400]/25 hover:bg-[#FFD400]/[0.05] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FFD400]"
                   >
                     <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#FFD400] text-[#061A2B]">
@@ -362,7 +444,7 @@ export default async function Footer() {
                 services.map((service) => (
                   <Link
                     key={service.id}
-                    href={`/services/${service.slug}`}
+                    href={`/services/${encodeURIComponent(service.slug)}`}
                     className="group flex w-full max-w-[280px] items-center justify-between gap-3 rounded-xl py-2 text-sm text-[#F8FAFC] transition-colors duration-200 hover:text-[#FFD400] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FFD400]"
                   >
                     <span>{service.title}</span>
@@ -510,7 +592,7 @@ export default async function Footer() {
               </p>
             )}
 
-            {settings.email && (
+            {emailIsValid && (
               <a
                 href={`mailto:${settings.email}`}
                 className="group mt-6 flex w-fit max-w-full items-start gap-2.5 break-all text-xs text-[#A8BBC8] transition-colors hover:text-[#FFD400] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FFD400]"
@@ -573,9 +655,11 @@ export default async function Footer() {
           </div>
         </div>
 
-        
         {/* Google Maps Location */}
-        <section className="border-b border-white/[0.08] py-10 sm:py-12">
+        <section
+          aria-labelledby="footer-map-heading"
+          className="border-b border-white/[0.08] py-10 sm:py-12"
+        >
           <div className="grid gap-7 lg:grid-cols-[0.8fr_1.2fr] lg:items-center lg:gap-12">
             <div>
               <div className="flex items-center gap-2">
@@ -585,7 +669,10 @@ export default async function Footer() {
                 </p>
               </div>
 
-              <h3 className="mt-4 text-2xl font-semibold tracking-[-0.04em] text-[#F8FAFC] sm:text-3xl">
+              <h3
+                id="footer-map-heading"
+                className="mt-4 text-2xl font-semibold tracking-[-0.04em] text-[#F8FAFC] sm:text-3xl"
+              >
                 Find Mobile Car Services on the Map.
               </h3>
 
@@ -602,7 +689,7 @@ export default async function Footer() {
                 className="group mt-6 inline-flex min-h-11 items-center gap-3 rounded-full bg-[#FFD400] px-5 text-xs font-extrabold uppercase tracking-[0.08em] text-[#061A2B] transition-colors hover:bg-[#F5B800] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
               >
                 Get Directions
-                <ArrowUpRight className="h-4 w-4 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+                <ArrowUpRight className="h-4 w-4 transition-transform motion-safe:group-hover:-translate-y-0.5 motion-safe:group-hover:translate-x-0.5" />
               </a>
             </div>
 
@@ -621,7 +708,6 @@ export default async function Footer() {
             </div>
           </div>
         </section>
-
 
         {/* Legal and credit */}
         <div className="flex flex-col gap-5 py-7 sm:flex-row sm:items-center sm:justify-between">

@@ -41,7 +41,12 @@ async function getFinalCTASettings(): Promise<FinalCTASettings> {
 
 function phoneHref(phone: string) {
   const normalizedPhone = phone.replace(/[^\d+]/g, "");
-  return normalizedPhone ? `tel:${normalizedPhone}` : undefined;
+
+  if (!normalizedPhone || !/\d/.test(normalizedPhone)) {
+    return undefined;
+  }
+
+  return `tel:${normalizedPhone}`;
 }
 
 export default async function FinalCTA() {
@@ -232,13 +237,15 @@ export default async function FinalCTA() {
               </div>
             )}
 
-            {settings.phone && (
-              <a
-                href={phoneHref(
-                  settings.primaryCallNumber || settings.phone,
-                )}
-                className="flex items-center gap-2.5 text-xs font-medium text-[#A8BBC8] transition-colors hover:text-[#F8FAFC] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FFD400] focus-visible:ring-offset-4 focus-visible:ring-offset-[#061A2B]"
-              >
+         {settings.phone && phoneHref(
+  settings.primaryCallNumber || settings.phone,
+) && (
+  <a
+    href={phoneHref(
+      settings.primaryCallNumber || settings.phone,
+    )!}
+    className="flex items-center gap-2.5 text-xs font-medium text-[#A8BBC8] transition-colors hover:text-[#F8FAFC] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FFD400] focus-visible:ring-offset-4 focus-visible:ring-offset-[#061A2B]"
+  >
                 <Phone
                   aria-hidden="true"
                   className="h-3.5 w-3.5 text-[#FFD400]"

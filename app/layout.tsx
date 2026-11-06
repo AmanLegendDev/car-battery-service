@@ -62,9 +62,7 @@ export const metadata: Metadata = {
 
   publisher: SITE_NAME,
 
-  alternates: {
-    canonical: "/",
-  },
+
 
   verification: {
     google: "jV4EXGEJcQzKFC1hkGN9yy7tEL-oc5jYXlegXGp1KL4",

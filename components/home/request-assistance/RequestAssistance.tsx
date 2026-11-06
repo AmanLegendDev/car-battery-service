@@ -2,7 +2,6 @@
 import Link from "next/link";
 import {
   ArrowUpRight,
-  CalendarCheck,
   CarFront,
   ClipboardCheck,
   MapPin,
@@ -47,11 +46,30 @@ async function getSiteSettings(): Promise<SiteSettingsData> {
 }
 
 function phoneHref(phone: string) {
-  return `tel:${phone.replace(/[^\d+]/g, "")}`;
+  const normalizedPhone = phone.replace(/[^\d+]/g, "");
+
+  if (!normalizedPhone || !/\d/.test(normalizedPhone)) {
+    return undefined;
+  }
+
+  return `tel:${normalizedPhone}`;
 }
 
 export default async function RequestAssistance() {
-  const settings = await getSiteSettings();
+  let settings: SiteSettingsData = {
+    businessName: "Mobile Car Services",
+    primaryServiceRegion: "Melbourne West, Victoria",
+    phone: "+61 467 037 886",
+    primaryCallNumber: "+61 467 037 886",
+    bookingCta: "Book a Service",
+    quoteCta: "Request a Quote",
+  };
+
+  try {
+    settings = await getSiteSettings();
+  } catch (error) {
+    console.error("Failed to load request assistance settings:", error);
+  }
 
   const callHref = phoneHref(settings.primaryCallNumber);
 
@@ -122,7 +140,7 @@ export default async function RequestAssistance() {
                 </span>
               </div>
 
-              {settings.primaryCallNumber && (
+              {callHref && (
                 <a
                   href={callHref}
                   aria-label={`Call ${settings.businessName} on ${settings.phone}`}
@@ -152,6 +170,7 @@ export default async function RequestAssistance() {
                   <p className="text-sm font-bold text-[#061A2B]">
                     Vehicle-focused assistance
                   </p>
+
                   <p className="mt-1 text-xs leading-5 text-[#526675]">
                     Tell us about your vehicle and the issue you are
                     experiencing.
@@ -171,6 +190,7 @@ export default async function RequestAssistance() {
                   <p className="text-sm font-bold text-[#061A2B]">
                     Clear next steps
                   </p>
+
                   <p className="mt-1 text-xs leading-5 text-[#526675]">
                     Discuss suitable services and confirm availability
                     before proceeding.
@@ -238,12 +258,10 @@ export default async function RequestAssistance() {
               {/* Secondary actions */}
               <div
                 className={`mt-3 grid gap-3 ${
-                  settings.primaryCallNumber
-                    ? "grid-cols-2"
-                    : "grid-cols-1"
+                  callHref ? "grid-cols-2" : "grid-cols-1"
                 }`}
               >
-                {settings.primaryCallNumber && (
+                {callHref && (
                   <a
                     href={callHref}
                     aria-label={`Call ${settings.businessName} on ${settings.phone}`}
@@ -275,6 +293,7 @@ export default async function RequestAssistance() {
                 className="mt-4 inline-flex items-center gap-2 text-xs font-semibold text-[#A8BBC8] transition-colors hover:text-[#FFD400] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FFD400]"
               >
                 {settings.quoteCta}
+
                 <ArrowUpRight
                   aria-hidden="true"
                   className="h-3.5 w-3.5"

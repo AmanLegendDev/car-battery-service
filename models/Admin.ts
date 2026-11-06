@@ -1,3 +1,4 @@
+
 import mongoose, { Document, Model, Schema } from "mongoose";
 
 export interface IAdmin extends Document {
@@ -26,7 +27,6 @@ const AdminSchema = new Schema<IAdmin>(
       unique: true,
       lowercase: true,
       trim: true,
-      index: true,
     },
 
     passwordHash: {
@@ -55,7 +55,8 @@ const AdminSchema = new Schema<IAdmin>(
   }
 );
 
-AdminSchema.index({ email: 1 }, { unique: true });
+// Unique email index
+// AdminSchema.index({ email: 1 }, { unique: true });
 
 const Admin: Model<IAdmin> =
   mongoose.models.Admin ||

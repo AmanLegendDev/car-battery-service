@@ -1,9 +1,10 @@
 
 "use client";
 
-import { useState } from "react";
+import { useEffect, useId, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+
 import {
   ArrowRight,
   ArrowUpRight,
@@ -18,7 +19,11 @@ import {
   Star,
 } from "lucide-react";
 
-import { NAVBAR_LINKS, NAVBAR_PHONE_HREF } from "./navbarData";
+import {
+  NAVBAR_LINKS,
+  NAVBAR_PHONE_HREF,
+} from "./navbarData";
+
 import type { NavbarService } from "./ServicesDropdown";
 
 interface MobileMenuNavProps {
@@ -41,24 +46,55 @@ export default function MobileMenuNav({
   services,
 }: MobileMenuNavProps) {
   const pathname = usePathname();
+  const servicesMenuId = useId();
+
+  const isServicesRoute =
+    pathname === "/services" ||
+    pathname.startsWith("/services/");
 
   const [servicesOpen, setServicesOpen] = useState(
-    pathname.startsWith("/services")
+    isServicesRoute
   );
 
-  const visibleServices = services.slice(0, 5);
+  // Keep the accordion synchronized with route changes.
+  useEffect(() => {
+    if (isServicesRoute) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setServicesOpen(true);
+    }
+  }, [isServicesRoute]);
+
+  // Validate service data before creating navigation links.
+  const visibleServices = services
+    .filter((service) => {
+      return (
+        typeof service.title === "string" &&
+        service.title.trim().length > 0 &&
+        typeof service.slug === "string" &&
+        /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(service.slug)
+      );
+    })
+    .slice(0, 5);
+
+  const hasServices = visibleServices.length > 0;
 
   const isActive = (href: string) => {
     if (href === "/") {
       return pathname === "/";
     }
 
-    return pathname === href || pathname.startsWith(`${href}/`);
+    return (
+      pathname === href ||
+      pathname.startsWith(`${href}/`)
+    );
   };
 
   return (
-    <nav aria-label="Mobile navigation" className="flex flex-col">
-      {/* Navigation */}
+    <nav
+      aria-label="Mobile navigation"
+      className="flex flex-col"
+    >
+      {/* Main navigation */}
       <div>
         <div className="mb-4 flex items-center justify-between px-1">
           <p className="text-[9px] font-bold uppercase tracking-[0.24em] text-[#718895]">
@@ -73,7 +109,11 @@ export default function MobileMenuNav({
         <div className="space-y-1.5">
           {NAVBAR_LINKS.map((link) => {
             const active = isActive(link.href);
-            const Icon = NAV_ICONS[link.label as keyof typeof NAV_ICONS];
+
+            const Icon =
+              NAV_ICONS[
+                link.label as keyof typeof NAV_ICONS
+              ] ?? Info;
 
             return (
               <Link
@@ -161,7 +201,7 @@ export default function MobileMenuNav({
               >
                 <span
                   className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-[11px] border transition-all duration-200 ${
-                    servicesOpen
+                    isServicesRoute
                       ? "border-[#FFD400]/20 bg-[#FFD400]/[0.09]"
                       : "border-white/[0.06] bg-white/[0.025] group-hover:border-[#FFD400]/15 group-hover:bg-[#FFD400]/[0.06]"
                   }`}
@@ -169,7 +209,7 @@ export default function MobileMenuNav({
                   <Wrench
                     aria-hidden="true"
                     className={`h-4 w-4 ${
-                      servicesOpen
+                      isServicesRoute
                         ? "text-[#FFD400]"
                         : "text-[#718895] group-hover:text-[#FFD400]"
                     }`}
@@ -180,7 +220,7 @@ export default function MobileMenuNav({
                 <div className="min-w-0">
                   <p
                     className={`text-[13px] font-semibold ${
-                      servicesOpen
+                      isServicesRoute
                         ? "text-[#F8FAFC]"
                         : "text-[#A8BBC8] group-hover:text-[#F8FAFC]"
                     }`}
@@ -189,7 +229,7 @@ export default function MobileMenuNav({
                   </p>
 
                   <p className="mt-0.5 text-[9px] font-medium uppercase tracking-[0.12em] text-[#718895]">
-                    Automotive care & repairs
+                    Automotive care &amp; repairs
                   </p>
                 </div>
               </Link>
@@ -197,17 +237,23 @@ export default function MobileMenuNav({
               <button
                 type="button"
                 aria-label={
-                  servicesOpen ? "Collapse services" : "Expand services"
+                  servicesOpen
+                    ? "Collapse services"
+                    : "Expand services"
                 }
                 aria-expanded={servicesOpen}
-                aria-controls="mobile-services-menu"
-                onClick={() => setServicesOpen((current) => !current)}
+                aria-controls={servicesMenuId}
+                onClick={() =>
+                  setServicesOpen((current) => !current)
+                }
                 className="mr-2 flex h-10 w-10 shrink-0 items-center justify-center rounded-[12px] border border-white/[0.07] bg-white/[0.025] text-[#718895] transition-all duration-200 hover:border-[#FFD400]/20 hover:bg-[#FFD400]/[0.06] hover:text-[#FFD400] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#FFD400]/50 active:scale-95"
               >
                 <ChevronDown
                   aria-hidden="true"
                   className={`h-4 w-4 transition-transform duration-200 ${
-                    servicesOpen ? "rotate-180 text-[#FFD400]" : ""
+                    servicesOpen
+                      ? "rotate-180 text-[#FFD400]"
+                      : ""
                   }`}
                 />
               </button>
@@ -215,8 +261,10 @@ export default function MobileMenuNav({
 
             {/* Expandable services */}
             <div
-              id="mobile-services-menu"
-              className={`grid transition-[grid-template-rows,opacity] duration-250 ease-out ${
+              id={servicesMenuId}
+              aria-hidden={!servicesOpen}
+              inert={!servicesOpen}
+              className={`grid transition-[grid-template-rows,opacity] duration-[250ms] ease-out ${
                 servicesOpen
                   ? "grid-rows-[1fr] opacity-100"
                   : "grid-rows-[0fr] opacity-0"
@@ -226,85 +274,93 @@ export default function MobileMenuNav({
                 <div className="px-2.5 pb-2.5">
                   <div className="mb-2 border-t border-white/[0.06]" />
 
-                  {visibleServices.length > 0 ? (
+                  {hasServices ? (
                     <div className="space-y-1">
-                      {visibleServices.map((service, index) => {
-                        const serviceHref = `/services/${service.slug}`;
-                        const active = isActive(serviceHref);
+                      {visibleServices.map(
+                        (service, index) => {
+                          const serviceHref =
+                            `/services/${service.slug}`;
 
-                        return (
-                          <Link
-                            key={service.id}
-                            href={serviceHref}
-                            onClick={onNavigate}
-                            aria-current={active ? "page" : undefined}
-                            className={`group flex min-h-[64px] items-center gap-3 rounded-[14px] border px-3 transition-all duration-200 ${
-                              active
-                                ? "border-[#FFD400]/15 bg-[#FFD400]/[0.055]"
-                                : "border-transparent bg-[#061A2B]/[0.28] hover:border-white/[0.07] hover:bg-white/[0.04]"
-                            }`}
-                          >
-                            <span
-                              className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-[10px] text-[9px] font-bold ${
+                          const active = isActive(serviceHref);
+
+                          return (
+                            <Link
+                              key={service.id}
+                              href={serviceHref}
+                              onClick={onNavigate}
+                              aria-current={
+                                active ? "page" : undefined
+                              }
+                              className={`group flex min-h-[64px] items-center gap-3 rounded-[14px] border px-3 transition-all duration-200 ${
                                 active
-                                  ? "bg-[#FFD400] text-[#061A2B]"
-                                  : "border border-white/[0.07] bg-white/[0.025] text-[#718895]"
+                                  ? "border-[#FFD400]/15 bg-[#FFD400]/[0.055]"
+                                  : "border-transparent bg-[#061A2B]/[0.28] hover:border-white/[0.07] hover:bg-white/[0.04]"
                               }`}
                             >
-                              {String(index + 1).padStart(2, "0")}
-                            </span>
-
-                            <span
-                              className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-[10px] ${
-                                active
-                                  ? "bg-[#FFD400]/[0.08]"
-                                  : "bg-[#0D6E91]/[0.12]"
-                              }`}
-                            >
-                              <Wrench
-                                aria-hidden="true"
-                                className={`h-4 w-4 ${
-                                  active ? "text-[#FFD400]" : "text-[#0D6E91]"
-                                }`}
-                                strokeWidth={1.8}
-                              />
-                            </span>
-
-                            <div className="min-w-0 flex-1">
-                              <p
-                                className={`truncate text-[12px] font-semibold transition-colors duration-200 ${
+                              <span
+                                className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-[10px] text-[9px] font-bold ${
                                   active
-                                    ? "text-[#F8FAFC]"
-                                    : "text-[#A8BBC8] group-hover:text-[#F8FAFC]"
+                                    ? "bg-[#FFD400] text-[#061A2B]"
+                                    : "border border-white/[0.07] bg-white/[0.025] text-[#718895]"
                                 }`}
                               >
-                                {service.title}
-                              </p>
+                                {String(index + 1).padStart(2, "0")}
+                              </span>
 
-                              <p className="mt-1 text-[8px] font-semibold uppercase tracking-[0.14em] text-[#718895]">
-                                Automotive service
-                              </p>
-                            </div>
-
-                            <span
-                              className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-[10px] transition-all duration-200 ${
-                                active
-                                  ? "bg-[#FFD400] text-[#061A2B]"
-                                  : "border border-white/[0.06] bg-white/[0.02] text-[#718895] group-hover:border-[#FFD400]/15 group-hover:bg-[#FFD400]/[0.06] group-hover:text-[#FFD400]"
-                              }`}
-                            >
-                              <ArrowUpRight
-                                aria-hidden="true"
-                                className={`h-3.5 w-3.5 transition-transform duration-200 ${
+                              <span
+                                className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-[10px] ${
                                   active
-                                    ? ""
-                                    : "group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
+                                    ? "bg-[#FFD400]/[0.08]"
+                                    : "bg-[#0D6E91]/[0.12]"
                                 }`}
-                              />
-                            </span>
-                          </Link>
-                        );
-                      })}
+                              >
+                                <Wrench
+                                  aria-hidden="true"
+                                  className={`h-4 w-4 ${
+                                    active
+                                      ? "text-[#FFD400]"
+                                      : "text-[#0D6E91]"
+                                  }`}
+                                  strokeWidth={1.8}
+                                />
+                              </span>
+
+                              <div className="min-w-0 flex-1">
+                                <p
+                                  className={`truncate text-[12px] font-semibold transition-colors duration-200 ${
+                                    active
+                                      ? "text-[#F8FAFC]"
+                                      : "text-[#A8BBC8] group-hover:text-[#F8FAFC]"
+                                  }`}
+                                >
+                                  {service.title.trim()}
+                                </p>
+
+                                <p className="mt-1 text-[8px] font-semibold uppercase tracking-[0.14em] text-[#718895]">
+                                  Automotive service
+                                </p>
+                              </div>
+
+                              <span
+                                className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-[10px] transition-all duration-200 ${
+                                  active
+                                    ? "bg-[#FFD400] text-[#061A2B]"
+                                    : "border border-white/[0.06] bg-white/[0.02] text-[#718895] group-hover:border-[#FFD400]/15 group-hover:bg-[#FFD400]/[0.06] group-hover:text-[#FFD400]"
+                                }`}
+                              >
+                                <ArrowUpRight
+                                  aria-hidden="true"
+                                  className={`h-3.5 w-3.5 transition-transform duration-200 ${
+                                    active
+                                      ? ""
+                                      : "group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
+                                  }`}
+                                />
+                              </span>
+                            </Link>
+                          );
+                        }
+                      )}
                     </div>
                   ) : (
                     <div className="rounded-[14px] border border-white/[0.06] bg-white/[0.02] px-4 py-5 text-center">
@@ -319,12 +375,17 @@ export default function MobileMenuNav({
                     </div>
                   )}
 
-                  {/* View all */}
-                  {services.length > 0 && (
+                  {/* View all services */}
+                  {hasServices && (
                     <Link
                       href="/services"
                       onClick={onNavigate}
-                      className="group mt-2 flex min-h-11 items-center justify-between rounded-[13px] border border-[#FFD400]/10 bg-[#FFD400]/[0.035] px-3.5 transition-all duration-200 hover:border-[#FFD400]/20 hover:bg-[#FFD400]/[0.06]"
+                      aria-current={
+                        pathname === "/services"
+                          ? "page"
+                          : undefined
+                      }
+                      className="group mt-2 flex min-h-11 items-center justify-between rounded-[13px] border border-[#FFD400]/10 bg-[#FFD400]/[0.035] px-3.5 transition-all duration-200 hover:border-[#FFD400]/20 hover:bg-[#FFD400]/[0.06] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#FFD400]/50"
                     >
                       <div className="flex items-center gap-2.5">
                         <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#FFD400] text-[#061A2B]">
@@ -382,15 +443,20 @@ export default function MobileMenuNav({
 
           <p className="relative mt-3 text-[10px] leading-5 text-[#718895]">
             Explore our automotive services or contact our team to discuss
-            your vehicle's requirements.
+            your vehicle&apos;s requirements.
           </p>
 
           <a
             href={NAVBAR_PHONE_HREF}
+            aria-label="Call Mobile Car Services"
             className="relative mt-4 inline-flex items-center gap-2 text-[12px] font-bold text-[#FFD400] transition-colors hover:text-[#F8FAFC] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#FFD400]/50"
           >
             +61 467 037 886
-            <ArrowUpRight aria-hidden="true" className="h-3.5 w-3.5" />
+
+            <ArrowUpRight
+              aria-hidden="true"
+              className="h-3.5 w-3.5"
+            />
           </a>
         </div>
       </div>

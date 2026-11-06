@@ -44,6 +44,7 @@ export default function FAQAccordion({
               onClick={() => toggleFAQ(faq._id)}
               aria-expanded={isOpen}
               aria-controls={`faq-answer-${faq._id}`}
+              aria-label={`${isOpen ? "Close" : "Open"} answer: ${faq.question}`}
               className="group flex w-full items-start gap-4 py-6 text-left sm:gap-7 sm:py-7"
             >
               {/* Number */}
@@ -59,13 +60,14 @@ export default function FAQAccordion({
 
               {/* Question */}
               <span className="min-w-0 flex-1 pr-2">
-                <span
-                  className={`block text-base font-semibold leading-6 tracking-[-0.015em] transition-colors duration-300 sm:text-lg sm:leading-7 ${
-                    isOpen
-                      ? "text-[#0D6E91]"
-                      : "text-[#061A2B] group-hover:text-[#0D6E91]"
-                  }`}
-                >
+               <span
+  id={`faq-question-${faq._id}`}
+  className={`block text-base font-semibold leading-6 tracking-[-0.015em] transition-colors duration-300 sm:text-lg sm:leading-7 ${
+    isOpen
+      ? "text-[#0D6E91]"
+      : "text-[#061A2B] group-hover:text-[#0D6E91]"
+  }`}
+>
                   {faq.question}
                 </span>
 
@@ -90,14 +92,17 @@ export default function FAQAccordion({
             </button>
 
             {/* Animated answer */}
-            <div
-              id={`faq-answer-${faq._id}`}
-              className={`grid transition-[grid-template-rows,opacity] duration-300 ease-out ${
-                isOpen
-                  ? "grid-rows-[1fr] opacity-100"
-                  : "grid-rows-[0fr] opacity-0"
-              }`}
-            >
+           <div
+  id={`faq-answer-${faq._id}`}
+  role="region"
+  aria-labelledby={`faq-question-${faq._id}`}
+  aria-hidden={!isOpen}
+  className={`grid transition-[grid-template-rows,opacity] duration-300 ease-out ${
+    isOpen
+      ? "grid-rows-[1fr] opacity-100"
+      : "grid-rows-[0fr] opacity-0"
+  }`}
+>
               <div className="overflow-hidden">
                 <div className="pb-7 pl-[3.75rem] pr-10 sm:pb-8 sm:pl-16 sm:pr-16">
                   <div className="max-w-2xl border-l border-[#0D6E91]/30 pl-5 sm:pl-6">

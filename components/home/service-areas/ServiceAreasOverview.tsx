@@ -14,29 +14,50 @@ import ServiceArea from "@/models/ServiceArea";
 
 const SERVICE_AREA_LIMIT = 3;
 
-interface HomepageServiceAreaMedia {
-  publicId: string;
-  secureUrl: string;
-  width: number;
-  height: number;
-  format: string;
-  bytes: number;
-  resourceType: "image";
-  alt: string;
-}
-
 interface HomepageServiceArea {
   _id: unknown;
   name: string;
   slug: string;
-  shortDescription: string;
-  suburbs: string[];
-  postcodes: string[];
-  heroImage: HomepageServiceAreaMedia | null;
-  mapUrl: string;
-  serviceAvailability: string;
-  featured: boolean;
-  displayOrder: number;
+  shortDescription?: string;
+  suburbs?: string[];
+  postcodes?: string[];
+  heroImage?: {
+    secureUrl?: string;
+    alt?: string;
+  } | null;
+  mapUrl?: string;
+  serviceAvailability?: string;
+}
+
+function cleanStringArray(values: unknown): string[] {
+  if (!Array.isArray(values)) return [];
+
+  return [
+    ...new Set(
+      values
+        .filter(
+          (value): value is string =>
+            typeof value === "string" && value.trim().length > 0,
+        )
+        .map((value) => value.trim()),
+    ),
+  ];
+}
+
+function safeExternalUrl(value: unknown): string | null {
+  if (typeof value !== "string" || !value.trim()) return null;
+
+  try {
+    const url = new URL(value.trim());
+
+    if (url.protocol !== "https:" && url.protocol !== "http:") {
+      return null;
+    }
+
+    return url.toString();
+  } catch {
+    return null;
+  }
 }
 
 export default async function ServiceAreasOverview() {
@@ -47,6 +68,8 @@ export default async function ServiceAreasOverview() {
 
     const results = await ServiceArea.find({
       status: "active",
+      name: { $type: "string", $ne: "" },
+      slug: { $type: "string", $ne: "" },
     })
       .select({
         name: 1,
@@ -57,8 +80,6 @@ export default async function ServiceAreasOverview() {
         heroImage: 1,
         mapUrl: 1,
         serviceAvailability: 1,
-        featured: 1,
-        displayOrder: 1,
       })
       .sort({
         featured: -1,
@@ -73,9 +94,7 @@ export default async function ServiceAreasOverview() {
     console.error("Failed to load homepage service areas:", error);
   }
 
-  if (serviceAreas.length === 0) {
-    return null;
-  }
+  if (serviceAreas.length === 0) return null;
 
   return (
     <section
@@ -134,9 +153,7 @@ export default async function ServiceAreasOverview() {
             >
               Find service in
               <br />
-              <span className="text-[#0D6E91]">
-                your area.
-              </span>
+              <span className="text-[#0D6E91]">your area.</span>
             </h2>
 
             <p className="mt-6 max-w-2xl text-base leading-7 text-slate-600 sm:text-lg">
@@ -151,25 +168,18 @@ export default async function ServiceAreasOverview() {
         {/* Published service areas */}
         <div className="mt-14 lg:mt-20">
           {serviceAreas.map((area, index) => {
-            const imageUrl = area.heroImage?.secureUrl || null;
+            const name = area.name?.trim();
+            const slug = area.slug?.trim();
 
-            const suburbs = Array.isArray(area.suburbs)
-              ? area.suburbs.filter(
-                  (suburb): suburb is string =>
-                    typeof suburb === "string" &&
-                    suburb.trim().length > 0,
-                )
-              : [];
+            if (!name || !slug) return null;
 
-            const postcodes = Array.isArray(area.postcodes)
-              ? area.postcodes.filter(
-                  (postcode): postcode is string =>
-                    typeof postcode === "string" &&
-                    postcode.trim().length > 0,
-                )
-              : [];
+            const imageUrl = safeExternalUrl(area.heroImage?.secureUrl);
+            const mapUrl = safeExternalUrl(area.mapUrl);
 
-            const areaHref = `/service-areas/${area.slug}`;
+            const suburbs = cleanStringArray(area.suburbs);
+            const postcodes = cleanStringArray(area.postcodes);
+
+            const areaHref = `/service-areas/${encodeURIComponent(slug)}`;
 
             return (
               <article
@@ -187,15 +197,15 @@ export default async function ServiceAreasOverview() {
                   {/* Area image */}
                   <Link
                     href={areaHref}
-                    aria-label={`Explore ${area.name} service area`}
+                    aria-label={`Explore ${name} service area`}
                     className="relative mt-6 block aspect-[16/10] overflow-hidden bg-[#08263D] outline-none focus-visible:ring-2 focus-visible:ring-[#0D6E91] focus-visible:ring-offset-4 lg:my-7 lg:mr-8 lg:mt-7 lg:aspect-auto"
                   >
                     {imageUrl ? (
                       <Image
                         src={imageUrl}
                         alt={
-                          area.heroImage?.alt ||
-                          `${area.name} service area`
+                          area.heroImage?.alt?.trim() ||
+                          `${name} service area`
                         }
                         fill
                         sizes="(max-width: 1023px) 100vw, (max-width: 1279px) 30vw, 330px"
@@ -243,7 +253,7 @@ export default async function ServiceAreasOverview() {
                         </p>
 
                         <p className="mt-1 break-words text-xl font-black tracking-[-0.025em] text-[#F8FAFC] sm:text-2xl">
-                          {area.name}
+                          {name}
                         </p>
                       </div>
 
@@ -276,14 +286,14 @@ export default async function ServiceAreasOverview() {
                             href={areaHref}
                             className="rounded-sm outline-none transition-colors duration-300 hover:text-[#0D6E91] focus-visible:ring-2 focus-visible:ring-[#0D6E91] focus-visible:ring-offset-4"
                           >
-                            {area.name}
+                            {name}
                           </Link>
                         </h3>
                       </div>
 
                       <Link
                         href={areaHref}
-                        aria-label={`View details for ${area.name}`}
+                        aria-label={`View details for ${name}`}
                         className="hidden h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[#061A2B]/15 outline-none transition-colors duration-300 hover:border-[#FFD400] hover:bg-[#FFD400] focus-visible:ring-2 focus-visible:ring-[#0D6E91] focus-visible:ring-offset-2 lg:flex"
                       >
                         <ArrowUpRight
@@ -392,12 +402,12 @@ export default async function ServiceAreasOverview() {
                     </div>
 
                     <div className="mt-8">
-                      {area.mapUrl?.trim() ? (
+                      {mapUrl ? (
                         <a
-                          href={area.mapUrl}
+                          href={mapUrl}
                           target="_blank"
                           rel="noopener noreferrer"
-                          aria-label={`Open map for ${area.name} service area (opens in a new tab)`}
+                          aria-label={`Open map for ${name} service area (opens in a new tab)`}
                           className="group/map inline-flex items-center gap-2 rounded-sm text-xs font-bold uppercase tracking-[0.1em] text-[#061A2B] outline-none focus-visible:ring-2 focus-visible:ring-[#0D6E91] focus-visible:ring-offset-4"
                         >
                           <Map

@@ -18,19 +18,54 @@ const SERVICE_LIMIT = 3;
 
 const FALLBACK_ICONS = [Wrench, CarFront, Settings];
 
-function getServiceIcon(index: number) {
-  return FALLBACK_ICONS[index % FALLBACK_ICONS.length] ?? Wrench;
-}
-function formatServicePrice(pricing?: {
+interface ServicePricing {
   type?: "fixed" | "from" | "quote";
   amount?: number;
   currency?: string;
-}) {
+}
+
+interface HomepageService {
+  _id: unknown;
+  title: string;
+  slug: string;
+  shortDescription?: string;
+  pricing?: ServicePricing;
+  heroImage?: {
+    secureUrl?: string;
+    alt?: string;
+  } | null;
+  estimatedTime?: string;
+  onSiteService?: boolean;
+  emergencyService?: boolean;
+  ctaText?: string;
+}
+
+function getServiceIcon(index: number) {
+  return FALLBACK_ICONS[index % FALLBACK_ICONS.length] ?? Wrench;
+}
+
+function getSafeImageUrl(value?: string): string | undefined {
+  if (!value?.trim()) return undefined;
+
+  try {
+    const url = new URL(value.trim());
+
+    if (url.protocol !== "https:") return undefined;
+
+    return url.toString();
+  } catch {
+    return undefined;
+  }
+}
+
+function formatServicePrice(pricing?: ServicePricing) {
   if (
     !pricing ||
     pricing.type === "quote" ||
+    (pricing.type !== "fixed" && pricing.type !== "from") ||
     typeof pricing.amount !== "number" ||
-    !Number.isFinite(pricing.amount)
+    !Number.isFinite(pricing.amount) ||
+    pricing.amount < 0
   ) {
     return {
       label: "Contact for a Quote",
@@ -38,32 +73,46 @@ function formatServicePrice(pricing?: {
     };
   }
 
-  const amount = new Intl.NumberFormat("en-AU", {
-    style: "currency",
-    currency: pricing.currency || "AUD",
-  }).format(pricing.amount);
+  const currency =
+    typeof pricing.currency === "string" &&
+    /^[A-Z]{3}$/.test(pricing.currency)
+      ? pricing.currency
+      : "AUD";
 
-  return {
-    label: pricing.type === "from" ? `From ${amount}` : amount,
-    type: pricing.type,
-  };
+  try {
+    const amount = new Intl.NumberFormat("en-AU", {
+      style: "currency",
+      currency,
+    }).format(pricing.amount);
+
+    return {
+      label: pricing.type === "from" ? `From ${amount}` : amount,
+      type: pricing.type,
+    };
+  } catch {
+    return {
+      label: "Contact for a Quote",
+      type: "quote" as const,
+    };
+  }
 }
 
 export default async function ServicesOverview() {
-  let services;
+  let services: HomepageService[] = [];
 
   try {
     await connectDB();
 
-    services = await Service.find({
+    const results = await Service.find({
       status: "active",
+      title: { $type: "string", $ne: "" },
+      slug: { $type: "string", $ne: "" },
     })
       .select({
         title: 1,
         slug: 1,
         shortDescription: 1,
         pricing: 1,
-        icon: 1,
         heroImage: 1,
         estimatedTime: 1,
         onSiteService: 1,
@@ -73,17 +122,17 @@ export default async function ServicesOverview() {
       })
       .sort({
         displayOrder: 1,
+        title: 1,
       })
       .limit(SERVICE_LIMIT)
       .lean();
+
+    services = results as unknown as HomepageService[];
   } catch (error) {
     console.error("Failed to load services overview:", error);
-    return null;
   }
 
-  if (!services.length) {
-    return null;
-  }
+  if (services.length === 0) return null;
 
   return (
     <section
@@ -130,7 +179,7 @@ export default async function ServicesOverview() {
             </h2>
 
             <p className="mt-5 max-w-2xl text-sm leading-6 text-slate-600 sm:mt-6 sm:text-base sm:leading-7">
-              Explore the automotive services available from Mobile Car 
+              Explore the automotive services available from Mobile Car
               Services. Find the option that suits your vehicle and
               contact our team to discuss your requirements.
             </p>
@@ -140,19 +189,26 @@ export default async function ServicesOverview() {
         {/* Dynamic service listings */}
         <div className="border-t border-[#061A2B]/10">
           {services.map((service, index) => {
-            const ServiceIcon = getServiceIcon(index);
+            const title = service.title?.trim();
+            const slug = service.slug?.trim();
 
-            const imageUrl =
-              service.heroImage?.secureUrl || undefined;
+            if (!title || !slug) return null;
+
+            const ServiceIcon = getServiceIcon(index);
+            const imageUrl = getSafeImageUrl(
+              service.heroImage?.secureUrl,
+            );
+            const price = formatServicePrice(service.pricing);
+            const serviceHref = `/services/${encodeURIComponent(slug)}`;
 
             return (
               <article
-                key={service._id.toString()}
+                key={String(service._id)}
                 className="group border-b border-[#061A2B]/10"
               >
                 <Link
-                  href={`/services/${service.slug}`}
-                  aria-label={`Explore ${service.title} services`}
+                  href={serviceHref}
+                  aria-label={`Explore ${title} services`}
                   className="grid gap-0 rounded-sm outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#0D6E91] lg:grid-cols-[60px_260px_minmax(0,1fr)_220px] xl:grid-cols-[90px_300px_minmax(0,1fr)_240px]"
                 >
                   {/* Service number */}
@@ -168,7 +224,7 @@ export default async function ServicesOverview() {
                       <Image
                         src={imageUrl}
                         alt={
-                          service.heroImage?.alt || service.title
+                          service.heroImage?.alt?.trim() || title
                         }
                         fill
                         sizes="(max-width: 639px) calc(100vw - 40px), (max-width: 1023px) calc(100vw - 64px), (max-width: 1279px) 260px, 300px"
@@ -220,7 +276,7 @@ export default async function ServicesOverview() {
                         </p>
 
                         <h3 className="max-w-xl text-2xl font-black tracking-[-0.035em] sm:text-3xl lg:text-3xl xl:text-4xl">
-                          {service.title}
+                          {title}
                         </h3>
                       </div>
 
@@ -232,37 +288,32 @@ export default async function ServicesOverview() {
                       </span>
                     </div>
 
-                    <p className="mt-4 max-w-2xl text-sm leading-6 text-slate-600 sm:mt-5 sm:text-base sm:leading-7">
-                      {service.shortDescription}
-                    </p>
-                    
-                    {/* Service Pricing */}
-                    {(() => {
-                      const price = formatServicePrice(service.pricing);
+                    {service.shortDescription?.trim() && (
+                      <p className="mt-4 max-w-2xl text-sm leading-6 text-slate-600 sm:mt-5 sm:text-base sm:leading-7">
+                        {service.shortDescription}
+                      </p>
+                    )}
 
-                      return (
-                        <div className="mt-5 flex w-fit max-w-full items-center gap-3 rounded-xl border border-[#FFD400]/40 bg-white px-4 py-3 shadow-[0_6px_24px_rgba(6,26,43,0.05)] transition-all duration-300 group-hover:border-[#FFD400] group-hover:shadow-[0_8px_28px_rgba(6,26,43,0.09)]">
-                          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[#061A2B] text-[#FFD400]">
-                            <span className="text-lg font-bold">$</span>
-                          </div>
+                    {/* Service pricing */}
+                    <div className="mt-5 flex w-fit max-w-full items-center gap-3 rounded-xl border border-[#FFD400]/40 bg-white px-4 py-3 shadow-[0_6px_24px_rgba(6,26,43,0.05)] transition-all duration-300 group-hover:border-[#FFD400] group-hover:shadow-[0_8px_28px_rgba(6,26,43,0.09)]">
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[#061A2B] text-[#FFD400]">
+                        <span className="text-lg font-bold">$</span>
+                      </div>
 
-                          <div className="min-w-0">
-                            <p className="text-[9px] font-bold uppercase tracking-[0.17em] text-slate-400">
-                              {price.type === "fixed"
-                                ? "Fixed Service Price"
-                                : price.type === "from"
-                                  ? "Starting Price"
-                                  : "Service Pricing"}
-                            </p>
+                      <div className="min-w-0">
+                        <p className="text-[9px] font-bold uppercase tracking-[0.17em] text-slate-400">
+                          {price.type === "fixed"
+                            ? "Fixed Service Price"
+                            : price.type === "from"
+                              ? "Starting Price"
+                              : "Service Pricing"}
+                        </p>
 
-                            <p className="mt-0.5 break-words text-base font-black tracking-tight text-[#061A2B] sm:text-lg">
-                              {price.label}
-                            </p>
-                          </div>
-                        </div>
-                      );
-                    })()}
-
+                        <p className="mt-0.5 break-words text-base font-black tracking-tight text-[#061A2B] sm:text-lg">
+                          {price.label}
+                        </p>
+                      </div>
+                    </div>
 
                     {/* Service attributes */}
                     <div className="mt-5 flex flex-wrap gap-2 sm:mt-6">
@@ -295,7 +346,7 @@ export default async function ServicesOverview() {
                         Service Details
                       </p>
 
-                      {service.estimatedTime ? (
+                      {service.estimatedTime?.trim() ? (
                         <div className="mt-4 flex items-start gap-3 text-sm font-semibold text-[#061A2B]">
                           <Clock3
                             aria-hidden="true"
@@ -313,7 +364,7 @@ export default async function ServicesOverview() {
 
                     <div className="mt-7 flex items-center justify-between gap-3">
                       <span className="text-xs font-bold uppercase tracking-[0.12em] text-[#061A2B]">
-                        {service.ctaText || "Explore Service"}
+                        {service.ctaText?.trim() || "Explore Service"}
                       </span>
 
                       <span

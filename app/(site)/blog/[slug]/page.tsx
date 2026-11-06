@@ -521,7 +521,7 @@ function getArticleStructuredData({
   canonicalUrl,
   articleImage,
 }: {
-  post: any;
+  post: NonNullable<Awaited<ReturnType<typeof getBlogPost>>>;
   canonicalUrl: string;
   articleImage?: {
     url: string;

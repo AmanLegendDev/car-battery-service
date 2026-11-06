@@ -33,11 +33,12 @@ const DEFAULT_OG_IMAGE =
 async function getServiceBySlug(slug: string) {
   await connectDB();
 
-  const service = await Service.findOne({
-    slug: slug.toLowerCase(),
+  const normalizedSlug = slug.trim().toLowerCase();
 
-    status: "active",
-  })
+const service = await Service.findOne({
+  slug: normalizedSlug,
+  status: "active",
+})
     .select(
       [
         "title",

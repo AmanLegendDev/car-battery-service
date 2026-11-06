@@ -23,30 +23,35 @@ const SITE_URL = "https://www.mobilecarservices.com.au";
 ============================================================ */
 
 async function getHomepageFAQs(): Promise<HomepageFAQ[]> {
-  await connectDB();
+  try {
+    await connectDB();
 
-  const faqs = await FAQ.find({
-    status: "active",
-  })
-    .select(
-      "question answer category featured displayOrder",
-    )
-    .sort({
-      featured: -1,
-      displayOrder: 1,
-      createdAt: -1,
+    const faqs = await FAQ.find({
+      status: "active",
+      question: { $exists: true, $ne: "" },
+      answer: { $exists: true, $ne: "" },
     })
-    .limit(10)
-    .lean();
+      .select("question answer category featured displayOrder")
+      .sort({
+        featured: -1,
+        displayOrder: 1,
+        createdAt: -1,
+      })
+      .limit(10)
+      .lean();
 
-  return faqs.map((faq) => ({
-    _id: String(faq._id),
-    question: faq.question,
-    answer: faq.answer,
-    category: faq.category,
-    featured: faq.featured,
-    displayOrder: faq.displayOrder,
-  }));
+    return faqs.map((faq) => ({
+      _id: String(faq._id),
+      question: faq.question || "",
+      answer: faq.answer || "",
+      category: faq.category || "",
+      featured: Boolean(faq.featured),
+      displayOrder: faq.displayOrder ?? 0,
+    }));
+  } catch (error) {
+    console.error("Failed to load homepage FAQs:", error);
+    return [];
+  }
 }
 
 /* ============================================================
@@ -78,9 +83,7 @@ function getFAQStructuredData(
 ) {
   const validFAQs = faqs.filter(
     (faq) =>
-      typeof faq.question === "string" &&
       faq.question.trim().length > 0 &&
-      typeof faq.answer === "string" &&
       cleanAnswer(faq.answer).length > 0,
   );
 
@@ -95,11 +98,9 @@ function getFAQStructuredData(
     url: `${pageUrl}#faqs`,
     name: "Frequently Asked Questions | Mobile Car Services",
     inLanguage: "en-AU",
-
     mainEntity: validFAQs.map((faq) => ({
       "@type": "Question",
       name: faq.question.trim(),
-
       acceptedAnswer: {
         "@type": "Answer",
         text: cleanAnswer(faq.answer),
@@ -132,6 +133,7 @@ export default async function FAQOverview({
     <>
       <section
         id="faqs"
+        aria-labelledby="homepage-faq-heading"
         className="relative overflow-hidden bg-[#F8FAFC] text-[#061A2B]"
       >
         {/* Technical background */}
@@ -169,7 +171,10 @@ export default async function FAQOverview({
             </div>
 
             <div>
-              <h2 className="max-w-4xl text-[clamp(2.7rem,5vw,5.2rem)] font-semibold leading-[0.94] tracking-[-0.055em]">
+              <h2
+                id="homepage-faq-heading"
+                className="max-w-4xl text-[clamp(2.7rem,5vw,5.2rem)] font-semibold leading-[0.94] tracking-[-0.055em]"
+              >
                 Got a question?
                 <span className="block text-[#0D6E91]">
                   Start here.
@@ -193,14 +198,14 @@ export default async function FAQOverview({
                 </p>
 
                 <p className="mt-3 max-w-xs text-sm leading-6 text-[#526675]">
-                  If your question is not answered here, you can contact the
-                  team directly or request the service you need.
+                  If your question is not answered here, you can contact
+                  the team directly or request the service you need.
                 </p>
               </div>
 
               <a
                 href="/contact"
-                className="group mt-7 inline-flex items-center gap-3 text-sm font-semibold text-[#061A2B]"
+                className="group mt-7 inline-flex items-center gap-3 text-sm font-semibold text-[#061A2B] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0D6E91]"
               >
                 Contact Us
 
@@ -238,7 +243,7 @@ export default async function FAQOverview({
 
             <a
               href="/faqs"
-              className="group inline-flex min-h-12 items-center justify-between gap-4 self-start rounded-full border border-[#061A2B]/15 px-5 py-2.5 text-sm font-semibold text-[#061A2B] transition-all duration-300 hover:border-[#0D6E91]/40 hover:bg-[#061A2B]/[0.03]"
+              className="group inline-flex min-h-12 items-center justify-between gap-4 self-start rounded-full border border-[#061A2B]/15 px-5 py-2.5 text-sm font-semibold text-[#061A2B] transition-all duration-300 hover:border-[#0D6E91]/40 hover:bg-[#061A2B]/[0.03] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0D6E91]"
             >
               View All FAQs
 
@@ -260,7 +265,6 @@ export default async function FAQOverview({
         </div>
       </section>
 
-      {/* Page-specific FAQ structured data */}
       {faqStructuredData && (
         <script
           type="application/ld+json"

@@ -110,58 +110,27 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-/**
- * Homepage structured data.
- *
- * Defines the website, organisation and homepage entities
- * so their @id references resolve consistently.
- *
- * Does not invent a physical business address or opening hours.
- */
-function getHomepageStructuredData(
-  phone: string,
-  businessName: string,
-  logoUrl?: string
-) {
-  const organization: Record<string, unknown> = {
-    "@type": "Organization",
-    "@id": `${SITE_URL}/#organization`,
-    name: businessName,
-    url: `${SITE_URL}/`,
-    contactPoint: {
-      "@id": `${SITE_URL}/#contact-point`,
-    },
-  };
 
-  if (logoUrl) {
-    organization.logo = {
-      "@type": "ImageObject",
-      url: logoUrl,
-    };
-  }
+/* ============================================================
+   HOMEPAGE STRUCTURED DATA
+   Organization + WebSite + ContactPoint are global.
+   Homepage defines only its WebPage.
+============================================================ */
 
+function getHomepageStructuredData() {
   return {
     "@context": "https://schema.org",
 
     "@graph": [
-      organization,
-
-      {
-        "@type": "WebSite",
-        "@id": `${SITE_URL}/#website`,
-        url: `${SITE_URL}/`,
-        name: businessName,
-        publisher: {
-          "@id": `${SITE_URL}/#organization`,
-        },
-        inLanguage: "en-AU",
-      },
-
       {
         "@type": "WebPage",
+
         "@id": `${SITE_URL}/#webpage`,
+
         url: `${SITE_URL}/`,
+
         name: HOME_TITLE,
+
         description: HOME_DESCRIPTION,
 
         isPartOf: {
@@ -185,21 +154,10 @@ function getHomepageStructuredData(
 
         inLanguage: "en-AU",
       },
-
-      {
-        "@type": "ContactPoint",
-        "@id": `${SITE_URL}/#contact-point`,
-        telephone: phone,
-        contactType: "customer service",
-        areaServed: {
-          "@type": "Place",
-          name: "Melbourne West",
-        },
-        availableLanguage: ["English"],
-      },
     ],
   };
 }
+
 
 export default async function HomePage() {
   const settings = await getSiteSettings();
@@ -224,25 +182,8 @@ export default async function HomePage() {
       }
     : null;
 
-  const phone =
-    settings?.primaryCallNumber ||
-    settings?.phone ||
-    "+61 467 037 886";
-
-  const businessName =
-    settings?.businessName ||
-    "Mobile Car Services";
-
-  const logoUrl = settings?.logo?.secureUrl
-    ? settings.logo.secureUrl
-    : undefined;
-
   const homepageStructuredData =
-    getHomepageStructuredData(
-      phone,
-      businessName,
-      logoUrl
-    );
+  getHomepageStructuredData();
 
   return (
     <>

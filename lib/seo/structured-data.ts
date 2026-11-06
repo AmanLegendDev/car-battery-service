@@ -4,25 +4,33 @@ const SITE_URL = "https://www.mobilecarservices.com.au";
 const BUSINESS_NAME = "Mobile Car Services";
 
 const BUSINESS_DESCRIPTION =
-  "Mobile Car Services provides mobile vehicle electrical assistance across Melbourne West, including battery replacement, battery testing, jump start assistance, starter motor replacement and alternator replacement at your vehicle's location.";
+  "Mobile Car Services provides mobile automotive assistance across Melbourne West, including car battery replacement, battery testing, jump start assistance, starter motor replacement and alternator replacement at your vehicle's location.";
 
 const PHONE = "+61 467 037 886";
 
 const LOGO_URL = `${SITE_URL}/images/logo/logo.png`;
 
 /* ============================================================
-   ORGANIZATION SCHEMA
+   AUTOMOTIVE BUSINESS SCHEMA
 ============================================================ */
 
 export function getOrganizationSchema() {
   return {
-    "@type": "Organization",
+    "@type": "AutoRepair",
 
     "@id": `${SITE_URL}/#organization`,
 
     name: BUSINESS_NAME,
 
     url: SITE_URL,
+
+    description: BUSINESS_DESCRIPTION,
+
+    telephone: PHONE,
+
+    contactPoint: {
+      "@id": `${SITE_URL}/#contact-point`,
+    },
 
     logo: {
       "@type": "ImageObject",
@@ -44,15 +52,35 @@ export function getOrganizationSchema() {
       "@id": `${SITE_URL}/#logo`,
     },
 
-    description: BUSINESS_DESCRIPTION,
+    areaServed: {
+      "@type": "Place",
+
+      name: "Melbourne West",
+    },
+  };
+}
+
+/* ============================================================
+   CONTACT POINT SCHEMA
+============================================================ */
+
+export function getContactPointSchema() {
+  return {
+    "@type": "ContactPoint",
+
+    "@id": `${SITE_URL}/#contact-point`,
 
     telephone: PHONE,
+
+    contactType: "customer service",
 
     areaServed: {
       "@type": "Place",
 
       name: "Melbourne West",
     },
+
+    availableLanguage: ["English"],
   };
 }
 
@@ -90,6 +118,8 @@ export function getGlobalStructuredData() {
 
     "@graph": [
       getOrganizationSchema(),
+
+      getContactPointSchema(),
 
       getWebsiteSchema(),
     ],
